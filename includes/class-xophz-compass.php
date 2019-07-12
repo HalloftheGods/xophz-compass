@@ -269,8 +269,4 @@ class Xophz_Compass {
     // Retrieve HTTP method
     return filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_SANITIZE_STRING);
   }
-
-  public function get_post_views(){
-
-  }
 }

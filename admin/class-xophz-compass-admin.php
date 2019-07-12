@@ -68,6 +68,7 @@ class Xophz_Compass_Admin {
       'all'
     );
 
+    // TODO Move this to Vue Project
     wp_enqueue_style(
       'font-awesome-pro',
       plugins_url( 'fonts/fontawesome-pro-5.8.1-web/css/all.css', __FILE__ ),
@@ -104,68 +105,6 @@ class Xophz_Compass_Admin {
      */
 
     if( false !== strpos($_GET['page'],$this->plugin_name)  ){
-      // wp_enqueue_script( $this->plugin_name.'-jquery',
-      //   plugin_dir_url( __FILE__ ) . 'lib/jquery/dist/jquery.min.js', 
-      //   array(  ), 
-      //   $this->version, 
-      //   false 
-      // );
-
-      // wp_enqueue_script( $this->plugin_name.'-pjax',
-      //   plugin_dir_url( __FILE__ ) . 'lib/jquery-pjax/jquery.pjax.js', 
-      //   array( $this->plugin_name.'-jquery' ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-bootstrap',
-      //   plugin_dir_url( __FILE__ ) . 'lib/bootstrap-sass/assets/javascripts/bootstrap.min.js', 
-      //   array( 'jquery' ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-widgster',
-      //   plugin_dir_url( __FILE__ ) . 'lib/widgster/widgster.js', 
-      //   array( 'jquery' ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-underscore',
-      //   plugin_dir_url( __FILE__ ) . 'lib/underscore/underscore.js', 
-      //   array( 'jquery' ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-app',
-      //   plugin_dir_url( __FILE__ ) . 'js/app.js', 
-      //   array( 'jquery' ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-settings',
-      //   plugin_dir_url( __FILE__ ) . 'js/settings.js', 
-      //   array( 'jquery' ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-messenger',
-      //   plugin_dir_url( __FILE__ ) . 'js/messenger.js', 
-      //   array(  ), 
-      //   $this->version, 
-      //   false 
-      // );
-      //
-      // wp_enqueue_script( $this->plugin_name.'-messenger-theme',
-      //   plugin_dir_url( __FILE__ ) . 'js/messenger-theme-flat.js', 
-      //   array(  ), 
-      //   $this->version, 
-      //   false 
-      // );
 
       // MAIN JS FILE
       wp_enqueue_script( $this->plugin_name.'-admin-js',
@@ -234,22 +173,23 @@ class Xophz_Compass_Admin {
     }
 
     public function getPluginsByXoph(){
-        // GET ALL PLUGINS
-        $all_plugins = get_plugins();
+        $plugins = get_plugins();
 
-        // LETS REMOVE EVERYTHING BUT XOPHZ 
-        foreach($all_plugins as $p => $plugin){
+        foreach($plugins as $p => $plugin){
             if(false === strpos($plugin['TextDomain'],'xophz-compass')){
-                unset($all_plugins[$p]);
-            }else{
-                $all_plugins[$p]['is_activated'] = is_plugin_active($p);
-                $all_plugins[$p]['is_installed'] = true;
-                $all_plugins[$p]['Name'] = trim(str_replace('Xophz','', $plugin['Name'])) ;
-                $all_plugins[$p]['icon'] = str_replace($_SERVER["DOCUMENT_ROOT"],"",plugin_dir_path( __DIR__ ))."assets/{$plugin['TextDomain']}.svg";
+              // LETS REMOVE EVERYTHING BUT XOPHZ 
+              unset($plugins[$p]);
+              continue;
             }
+            $plugin_dir = str_replace($_SERVER["DOCUMENT_ROOT"],"", plugins_url($plugin['TextDomain']));
+
+            $plugins[$p]['is_activated'] = is_plugin_active($p);
+            $plugins[$p]['is_installed'] = true;
+            $plugins[$p]['Name'] = trim(str_replace('Xophz','', $plugin['Name'])) ;
+            $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg";
         }
 
-        $this->output_json($all_plugins);
+        $this->output_json($plugins);
     }
 
     public function output_json($json){
