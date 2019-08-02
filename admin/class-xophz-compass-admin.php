@@ -312,12 +312,6 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    $connection = @fsockopen($_SERVER['REMOTE_ADDR'], '8080');
-
-    if ( $connection ) {
-        return true;
-    }
-
     return false;
   }
 }
