@@ -152,18 +152,25 @@ class Xophz_Compass {
 
 		$plugin_admin = new Xophz_Compass_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles', 9999 );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
 		$this->loader->add_action( 'wp_ajax_get_plugins', $plugin_admin, 'getPluginsByXoph'); 
 		$this->loader->add_action( 'wp_ajax_activate_plugin', $plugin_admin, 'activate_plugin'); 
 		$this->loader->add_action( 'wp_ajax_deactivate_plugin', $plugin_admin, 'deactivate_plugin'); 
+    $this->loader->add_action( 'wp_ajax_get_current_user', $plugin_admin, 'getCurrentUser' );
+		$this->loader->add_action( 'wp_ajax_deactivate_plugin', $plugin_admin, 'deactivate_plugin'); 
 
     $this->loader->add_filter( 'manage_posts_columns', $plugin_admin, 'posts_column_views');
+    
     $this->loader->add_action( 'manage_posts_custom_column', $plugin_admin,'posts_custom_column_views',5,2);
+
     $this->loader->add_filter( 'manage_pages_columns', $plugin_admin, 'posts_column_views');
+
     $this->loader->add_action( 'manage_pages_custom_column', $plugin_admin,'posts_custom_column_views',5,2);
 
+    $this->loader->add_action( 'admin_footer_text', $plugin_admin,'change_admin_footer',9999);
+    $this->loader->add_action( 'update_footer', $plugin_admin,'change_footer',9999);
 	}
 
 	/**
@@ -226,15 +233,20 @@ class Xophz_Compass {
 		return $this->version;
 	}
 
-  public function add_submenu($plugin){
+  public function add_submenu($plugin, $args=[]){
       global $submenu;
+
+      $args['cap'] = $args['cap'] 
+        ? $args['cap'] : "manage_options";
+
+
       $plugin = get_plugins()["{$plugin}/{$plugin}.php"];
       $compass = substr($plugin['TextDomain'], 0, 13);
       $page  = substr($plugin['TextDomain'], 14);
 
       $submenu[ $compass ][] = [
           __( str_replace("Xophz ","", $plugin['Name']), $compass ),
-          'manage_options',
+          $args['cap'],
           "admin.php?page={$compass}#/{$page}"
       ];
   }
@@ -245,8 +257,7 @@ class Xophz_Compass {
 	 * @since     1.0.0
 	 */
   public function output_json($json){
-      echo json_encode($json);
-      wp_die();
+    wp_send_json($json);
   }
 
 	/**
@@ -268,5 +279,39 @@ class Xophz_Compass {
   public function get_http_method(){
     // Retrieve HTTP method
     return filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_SANITIZE_STRING);
+  }
+
+  public function update_post_meta($id, $key, $payload){
+    if(is_array($key)){
+      foreach ($key  as $k) {
+        Xophz_Compass::update_post_meta(
+          $id, $k, $payload
+        );
+      }
+    }
+
+    $value = $payload[$key];
+    if( $value  ){
+      update_post_meta(
+        $id,
+        $key,
+        $value 
+      );
+    }
+  }
+
+  /**
+   * undocumented function
+   *
+   * @return void
+   */
+  public function output_error($msg, $status){
+    http_response_code($status);
+    Xophz_Compass::output_json([
+      'error' => [
+        'status' => $status,
+        'msg'   => $msg
+      ] 
+    ]);
   }
 }

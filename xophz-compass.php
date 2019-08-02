@@ -9,15 +9,15 @@
  * that starts the plugin.
  *
  * @link              http://mycompassconsulting.com/getcompass/
- * @since             1.0.0
+ * @since             0.0.1
  * @package           Xophz_COMPASS
  *
  * @wordpress-plugin
  * Plugin Name:       Xophz COMPASS
  * Plugin URI:        http://mycompassconsulting.com/getcompass/
- * Description:       It's dangerous to go alone! Take my Compass and go explore the depths of your site without getting lost.. 
- * Version:           1.0.0
- * Author:            Xoph 
+ * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
+ * Version:           0.0.1
+ * Author:            Xopher
  * Author URI:        http://mycompassconsulting.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'XOPHZ_COMPASS_VERSION', '1.0.1' );
+define( 'XOPHZ_COMPASS_VERSION', '0.0.1' );
 
 /**
  * The code that runs during plugin activation.
