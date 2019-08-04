@@ -99,7 +99,7 @@ class Xophz_Compass_Admin {
         plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
         array(),
         $this->version,
-        'all',
+        'all'
       );
 
 
