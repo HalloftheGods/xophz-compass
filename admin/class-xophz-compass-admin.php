@@ -310,6 +310,6 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return true;
+    return false;
   }
 }
