@@ -94,14 +94,13 @@ class Xophz_Compass_Admin {
         wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
       }
 
-      wp_enqueue_style(
-        $this->plugin_name.'admin-css',
-        plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
-        array(),
-        $this->version,
-        'all'
-      );
-
+    wp_enqueue_style(
+      $this->plugin_name.'admin-css',
+      plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
+      array(),
+      $this->version,
+      'all'
+    );
 
       // wp_enqueue_style(
       //   $this->plugin_name.'admin-vendors-css',
@@ -311,6 +310,6 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return false;
+    return true;
   }
 }
