@@ -237,8 +237,8 @@ class Xophz_Compass_Admin {
       }
       $plugin_dir = str_replace($_SERVER["DOCUMENT_ROOT"],"", plugins_url($plugin['TextDomain']));
 
-      $plugins[$p]['is_activated'] = is_plugin_active($p);
-      $plugins[$p]['is_installed'] = true;
+      $plugins[$p]['isActivated'] = is_plugin_active($p);
+      $plugins[$p]['isInstalled'] = true;
       $plugins[$p]['Name'] = trim(str_replace('Xophz','', $plugin['Name'])) ;
       $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg";
     }
@@ -310,6 +310,6 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return false;
+    return DB_HOST == 'compass-mysql-service:3306'; 
   }
 }
