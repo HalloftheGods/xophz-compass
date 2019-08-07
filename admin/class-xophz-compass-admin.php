@@ -87,7 +87,6 @@ class Xophz_Compass_Admin {
       );
 
       if ( $this->isDevServer() ) {
-        wp_enqueue_style( $this->plugin_name . '_style', "http://{$_SERVER['REMOTE_ADDR']}:8080/css/chunk-vendors.css", [], $this->version, 'all' );
         wp_enqueue_style( $this->plugin_name . '_dev', "http://{$_SERVER['REMOTE_ADDR']}:8080/css/index.css", [], $this->version, 'all' );
       } else {
         wp_enqueue_style( $this->plugin_name . '_vendors', plugin_dir_url( __FILE__ ) . 'dist/css/chunk-vendors.css', [], $this->version, 'all' );
@@ -310,7 +309,6 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return false;
-    // return DB_HOST == 'compass-mysql-service:3306'; 
+    return DB_HOST == 'compass-mysql-service:3306'; 
   }
 }
