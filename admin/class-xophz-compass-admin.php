@@ -69,15 +69,15 @@ class Xophz_Compass_Admin {
     //   'all'
     // );
 
-    // TODO Move this to Vue Project
     if( false !== strpos($_GET['page'],$this->plugin_name)  ){
-      wp_enqueue_style(
-        'font-awesome-pro',
-        plugins_url( 'fonts/fontawesome-pro-5.10.0-web/css/all.css', __FILE__ ),
-        array(),
-        $this->version,
-        'all'
-      );
+      // TODO Move this to Vue Project
+      // wp_enqueue_style(
+      //   'font-awesome-pro',
+      //   plugins_url( 'fonts/fontawesome-pro-5.10.0-web/css/all.css', __FILE__ ),
+      //   array(),
+      //   $this->version,
+      //   'all'
+      // );
 
       wp_enqueue_style(
           'google-fonts',
@@ -93,29 +93,13 @@ class Xophz_Compass_Admin {
         wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
       }
 
-    wp_enqueue_style(
-      $this->plugin_name.'admin-css',
-      plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
-      array(),
-      $this->version,
-      'all'
-    );
-
-      // wp_enqueue_style(
-      //   $this->plugin_name.'admin-vendors-css',
-      //   plugin_dir_url( __FILE__ ) . 'dist/css/chunk-vendors.css', 
-      //   array(),
-      //   $this->version,
-      //   'all'
-      // );
-      //
-      // wp_enqueue_style(
-      //   $this->plugin_name.'admin-css',
-      //   plugin_dir_url( __FILE__ ) . 'dist/css/index.css', 
-      //   array(),
-      //   $this->version,
-      //   'all'
-      // );
+      wp_enqueue_style(
+        $this->plugin_name.'admin-css',
+        plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
+        array(),
+        $this->version,
+        'all'
+      );
     }
 
   }
