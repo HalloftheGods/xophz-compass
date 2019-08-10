@@ -16,7 +16,7 @@
  * Plugin Name:       Xophz COMPASS
  * Plugin URI:        http://mycompassconsulting.com/getcompass/
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
- * Version:           0.0.1
+ * Version:           0.0.3
  * Author:            Xopher
  * Author URI:        http://mycompassconsulting.com/
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'XOPHZ_COMPASS_VERSION', '0.0.2' );
+define( 'XOPHZ_COMPASS_VERSION', '0.0.3' );
 
 /**
  * The code that runs during plugin activation.
