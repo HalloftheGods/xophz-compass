@@ -70,14 +70,6 @@ class Xophz_Compass_Admin {
     // );
 
     if( false !== strpos($_GET['page'],$this->plugin_name)  ){
-      // TODO Move this to Vue Project
-      // wp_enqueue_style(
-      //   'font-awesome-pro',
-      //   plugins_url( 'fonts/fontawesome-pro-5.10.0-web/css/all.css', __FILE__ ),
-      //   array(),
-      //   $this->version,
-      //   'all'
-      // );
 
       wp_enqueue_style(
           'google-fonts',
@@ -93,13 +85,13 @@ class Xophz_Compass_Admin {
         wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
       }
 
-      wp_enqueue_style(
-        $this->plugin_name.'admin-css',
-        plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
-        array(),
-        $this->version,
-        'all'
-      );
+      // wp_enqueue_style(
+      //   $this->plugin_name.'admin-css',
+      //   plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
+      //   array(),
+      //   $this->version,
+      //   'all'
+      // );
     }
 
   }
@@ -280,14 +272,25 @@ class Xophz_Compass_Admin {
   public function getCurrentUser(){
     $user = wp_get_current_user();
 
+    $currentUser = [
+      'avatar' => get_avatar_url($user->ID,250),
+      'caps'   => $user->caps,
+      'data'   => $user->data,
+      'roles'   => $user->roles,
+    ];
+
+    $blogInfo = [
+      'name' => get_bloginfo('name'),
+      'description' => get_bloginfo('description'),
+      'url' => get_bloginfo('url'),
+      'wpurl' => get_bloginfo('wpurl'),
+      'version' => get_bloginfo('version'),
+    ];
+
 
     Xophz_Compass::output_json([
-      'current_user' => [
-        'avatar' => get_avatar_url($user->ID,250),
-        'caps'   => $user->caps,
-        'data'   => $user->data,
-        'roles'   => $user->roles,
-      ] 
+      'current_user' => $currentUser,
+      'blog_info' => $blogInfo,
     ]);
   }
 
