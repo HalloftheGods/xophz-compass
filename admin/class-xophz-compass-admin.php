@@ -58,7 +58,7 @@ class Xophz_Compass_Admin {
    * @since    0.0.0
    */
   public function enqueue_styles() {
-    wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
+    // wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
 
     //
     // wp_enqueue_style(
@@ -68,15 +68,39 @@ class Xophz_Compass_Admin {
     //   $this->version,
     //   'all'
     // );
+    // Registered styles
+    // echo '<pre>';
+    // var_dump(wp_styles()->registered);
+    //
+    // // Queued styles
+    // var_dump(wp_styles()->queue);
+    // exit;
+    // get all styles data
+    global $wp_styles;
+
+    // create an array of stylesheet "handles" to allow to remain
 
     if( false !== strpos($_GET['page'],$this->plugin_name)  ){
 
-      wp_enqueue_style(
-          'google-fonts',
-          '//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons',
-          array(),
-          $this->version
-      );
+      // wp_enqueue_style(
+      //     'google-fonts',
+      //     '//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons',
+      //     array(),
+      //     $this->version
+      // );
+      // e.g. these styles will keep the admin bar styled
+      $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu",  "query-monitor");
+
+      $styles = wp_styles()->registered;
+      foreach ($styles as $handle => $value) {
+          // if we want to keep it, skip it
+          if ( in_array($handle, $styles_to_keep) ) continue;
+
+          // otherwise remove it
+          // wp_deregister_style($handle);
+          // if($handle != 'admin-menu')
+            wp_dequeue_style($handle);
+      }
 
       if ( $this->isDevServer() ) {
         wp_enqueue_style( $this->plugin_name . '_dev', "http://{$_SERVER['REMOTE_ADDR']}:8080/css/index.css", [], $this->version, 'all' );
@@ -85,6 +109,9 @@ class Xophz_Compass_Admin {
         wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
       }
 
+      foreach ($styles_to_keep as $style) {
+        wp_enqueue_style( $style );
+      }
       // wp_enqueue_style(
       //   $this->plugin_name.'admin-css',
       //   plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
@@ -285,8 +312,8 @@ class Xophz_Compass_Admin {
       'url' => get_bloginfo('url'),
       'wpurl' => get_bloginfo('wpurl'),
       'version' => get_bloginfo('version'),
+      'logouturl' => htmlspecialchars_decode(wp_logout_url())
     ];
-
 
     Xophz_Compass::output_json([
       'current_user' => $currentUser,
