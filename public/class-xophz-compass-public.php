@@ -27,9 +27,9 @@ class Xophz_Compass_Public {
 	 *
 	 * @since    0.0.0
 	 * @access   private
-	 * @var      string    $xophz_compass    The ID of this plugin.
+	 * @var      string    $plugin_name The ID of this plugin.
 	 */
-	private $xophz_compass;
+	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
@@ -49,7 +49,7 @@ class Xophz_Compass_Public {
 	 */
 	public function __construct( $plugin_name, $version ) {
 
-		$this->xophz_compass = $xophz_compass;
+		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
 	}
@@ -73,7 +73,7 @@ class Xophz_Compass_Public {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->xophz_compass, plugin_dir_url( __FILE__ ) . 'css/xophz-compass-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/xophz-compass-public.css', array(), $this->version, 'all' );
 
 	}
 
@@ -96,7 +96,7 @@ class Xophz_Compass_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->xophz_compass, plugin_dir_url( __FILE__ ) . 'js/xophz-compass-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/xophz-compass-public.js', array( 'jquery' ), $this->version, false );
 
 	}
 
