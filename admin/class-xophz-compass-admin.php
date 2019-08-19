@@ -58,38 +58,13 @@ class Xophz_Compass_Admin {
    * @since    0.0.0
    */
   public function enqueue_styles() {
-    // wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
-
-    //
-    // wp_enqueue_style(
-    //   $this->plugin_name.'admin-css',
-    //   plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
-    //   array(),
-    //   $this->version,
-    //   'all'
-    // );
-    // Registered styles
-    // echo '<pre>';
-    // var_dump(wp_styles()->registered);
-    //
-    // // Queued styles
-    // var_dump(wp_styles()->queue);
-    // exit;
-    // get all styles data
     global $wp_styles;
 
-    // create an array of stylesheet "handles" to allow to remain
+    wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
 
     if( false !== strpos($_GET['page'],$this->plugin_name)  ){
-
-      // wp_enqueue_style(
-      //     'google-fonts',
-      //     '//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons',
-      //     array(),
-      //     $this->version
-      // );
       // e.g. these styles will keep the admin bar styled
-      $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu",  "query-monitor");
+      $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu",  "query-monitor", "button-color");
 
       $styles = wp_styles()->registered;
       foreach ($styles as $handle => $value) {
