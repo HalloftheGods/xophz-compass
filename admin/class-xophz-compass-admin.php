@@ -62,7 +62,7 @@ class Xophz_Compass_Admin {
 
     wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
 
-    if( false !== strpos($_GET['page'],$this->plugin_name)  ){
+    if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
       // e.g. these styles will keep the admin bar styled
       $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu",  "query-monitor", "button-color");
 
@@ -116,7 +116,7 @@ class Xophz_Compass_Admin {
      * class.
      */
 
-    if( false !== strpos($_GET['page'],$this->plugin_name)  ){
+    if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
       if ( $this->isDevServer() ) {
         // Vite dev server uses ES modules - we need to add the script tag manually
         // because wp_enqueue_script doesn't support type="module"
@@ -168,16 +168,22 @@ class Xophz_Compass_Admin {
         0 
     );
 
+    if ( ! isset( $submenu[ $slug ] ) ) {
+        $submenu[ $slug ] = array();
+    }
+
     array_unshift($submenu[ $slug ] ,[
         __( 'Compass', 'xophz-compass' ),
         'manage_options',
         'admin.php?page=' . $slug . '#/', 
     ]);
-    if(!empty($submenu[$slug])){
-    }
   }
 
   public function activate_plugin(){
+    if ( ! isset( $_REQUEST['plugin'] ) ) {
+        $this->output_json( array( 'error' => 'Missing plugin parameter' ) );
+        return;
+    }
     $plugin = $_REQUEST['plugin'];
     $result = activate_plugins( "$plugin/$plugin.php" );
     if ( is_wp_error( $result ) ) {
@@ -187,6 +193,10 @@ class Xophz_Compass_Admin {
   }
 
   public function deactivate_plugin(){
+    if ( ! isset( $_REQUEST['plugin'] ) ) {
+        $this->output_json( array( 'error' => 'Missing plugin parameter' ) );
+        return;
+    }
     $plugin = $_REQUEST['plugin'];
     $result = deactivate_plugins( "$plugin/$plugin.php" );
     if ( is_wp_error( $result ) ) {
