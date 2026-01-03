@@ -102,6 +102,9 @@ class Xophz_Compass_Public {
 
   public function setPostViews() {
     global $wp_query;
+    if ( ! isset( $wp_query->post ) || ! is_object( $wp_query->post ) ) {
+      return;
+    }
     $postID = $wp_query->post->ID;
     $count_key = 'post_views_count';
     $count = get_post_meta($postID, $count_key, true);

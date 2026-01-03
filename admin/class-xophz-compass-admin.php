@@ -78,9 +78,9 @@ class Xophz_Compass_Admin {
       }
 
       if ( $this->isDevServer() ) {
-        wp_enqueue_style( $this->plugin_name . '_dev', "http://{$_SERVER['REMOTE_ADDR']}:8080/css/index.css", [], $this->version, 'all' );
+        // Vite injects CSS via JavaScript in dev mode, so no separate CSS files needed
       } else {
-        wp_enqueue_style( $this->plugin_name . '_vendors', plugin_dir_url( __FILE__ ) . 'dist/css/chunk-vendors.css', [], $this->version, 'all' );
+        // Production: Load bundled CSS
         wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
       }
 
@@ -117,27 +117,16 @@ class Xophz_Compass_Admin {
      */
 
     if( false !== strpos($_GET['page'],$this->plugin_name)  ){
-      // MAIN JS FILE
-      // wp_enqueue_script( $this->plugin_name.'-vendors',
-      //     plugin_dir_url( __FILE__ ) . 'dist/js/chunk-vendors.js', 
-      //     array(  ), 
-      //     $this->version, 
-      //     true 
-      // );
       if ( $this->isDevServer() ) {
-        wp_enqueue_script( $this->plugin_name.'_dev',
-          "http://{$_SERVER['REMOTE_ADDR']}:8080/js/index.js", 
-          [], 
-          $this->version, 
-          false 
-        );
+        // Vite dev server uses ES modules - we need to add the script tag manually
+        // because wp_enqueue_script doesn't support type="module"
+        add_action('admin_head', function() {
+          $devServerUrl = "http://localhost:8080";
+          echo '<script type="module" src="' . $devServerUrl . '/@vite/client"></script>';
+          echo '<script type="module" src="' . $devServerUrl . '/src/app.ts"></script>';
+        });
       } else {
-        wp_enqueue_script( $this->plugin_name.'-chunks',
-          plugin_dir_url( __FILE__ ) . 'dist/js/chunk-vendors.js', 
-          [], 
-          $this->version, 
-          false 
-        );
+        // Production: Load bundled assets
         wp_enqueue_script( $this->plugin_name.'-main-app',
           plugin_dir_url( __FILE__ ) . 'dist/js/index.js', 
           [], 
@@ -145,14 +134,17 @@ class Xophz_Compass_Admin {
           false 
         );
       }
-
-      // wp_enqueue_script( $this->plugin_name.'-admin-js',
-      //     plugin_dir_url( __FILE__ ) . 'js/xophz-compass-admin.js', 
-      //     array( 'jquery' ), 
-      //     $this->version, 
-      //     false 
-      // );
     }
+  }
+
+  /**
+   * Filter to add type="module" to our enqueued script
+   */
+  public function add_module_type($tag, $handle, $src) {
+    if ( $handle === $this->plugin_name . '-main-app' ) {
+      return '<script type="module" src="' . esc_url($src) . '"></script>';
+    }
+    return $tag;
   }
 
   /**
@@ -298,6 +290,6 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return DB_HOST == 'compass-mysql-service:3306'; 
+    return in_array(DB_HOST, ['mysql:3306']); 
   }
 }
