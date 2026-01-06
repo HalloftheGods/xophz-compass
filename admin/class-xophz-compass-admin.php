@@ -28,7 +28,7 @@ class Xophz_Compass_Admin {
    * @access   private
    * @var      string    $plugin_name    The ID of this plugin.
    */
-  private $xophz_compass;
+  private $plugin_name;
 
   /**
    * The version of this plugin.
