@@ -1,0 +1,1 @@
+import{d as e,_ as t,b as s,o as r,w as a,e as n,m as c}from"./index.js";import{V as p}from"./VIcon.js";import"./color.js";import"./tag.js";const m=e({name:"XIcon",setup(){return{}}});function f(o,i,d,l,u,_){return r(),s(p,c(o.$attrs,{class:"x-icon"}),{default:a(()=>[n(o.$slots,"default")]),_:3},16)}const k=t(m,[["render",f]]);export{k as default};

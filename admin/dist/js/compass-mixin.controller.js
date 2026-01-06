@@ -1,0 +1,1 @@
+import{be as e,u as s}from"./index.js";const a={name:"compass-mixin",computed:{...o(),...e(s)},methods:r()};function o(){return{stepper:{get(){return this.compassStore.stepper},set(t){this.compassStore.setStepper(t)}},loading:{get(){return this.compassStore.loading},set(t){this.compassStore.setLoading(t)}}}}function r(){return{}}export{a as c};

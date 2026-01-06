@@ -1,0 +1,1 @@
+import{q as n,D as o,ay as s}from"./index.js";const l=n({elevation:{type:[Number,String],validator(e){const t=parseInt(e);return!isNaN(t)&&t>=0&&t<=24}}},"elevation");function r(e){return{elevationClasses:o(()=>{const a=s(e)?e.value:e.elevation;return a==null?[]:[`elevation-${a}`]})}}export{l as m,r as u};

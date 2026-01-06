@@ -64,12 +64,12 @@ class Xophz_Compass_Admin {
 
     if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
       // e.g. these styles will keep the admin bar styled
-      $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu",  "query-monitor", "button-color");
+      $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu", "colors", "query-monitor", "button-color");
 
       $styles = wp_styles()->registered;
       foreach ($styles as $handle => $value) {
           // if we want to keep it, skip it
-          if ( in_array($handle, $styles_to_keep) ) continue;
+          if ( in_array($handle, $styles_to_keep) || strpos($handle, 'colors') === 0 ) continue;
 
           // otherwise remove it
           // wp_deregister_style($handle);
@@ -124,6 +124,7 @@ class Xophz_Compass_Admin {
           $devServerUrl = "http://localhost:8080";
           echo '<script type="module" src="' . $devServerUrl . '/@vite/client"></script>';
           echo '<script type="module" src="' . $devServerUrl . '/src/app.ts"></script>';
+          $this->output_theme_colors();
         });
       } else {
         // Production: Load bundled assets
@@ -133,8 +134,49 @@ class Xophz_Compass_Admin {
           $this->version, 
           false 
         );
+        add_action('admin_head', [$this, 'output_theme_colors']);
       }
     }
+  }
+
+  /**
+   * Outputs the current admin theme colors as CSS variables
+   */
+  public function output_theme_colors() {
+    global $_wp_admin_css_colors;
+    $color_scheme = get_user_option('admin_color');
+    
+    // Default palette (Fresh)
+    $colors = ['#1d2327', '#2c3338', '#2271b1', '#72aee6']; 
+    
+    if (isset($_wp_admin_css_colors[$color_scheme])) {
+      $colors = $_wp_admin_css_colors[$color_scheme]->colors;
+    }
+
+    $c0 = $colors[0] ?? '#1d2327';
+    $c1 = $colors[1] ?? '#2c3338';
+    $c2 = $colors[2] ?? '#2271b1';
+    $c3 = $colors[3] ?? '#72aee6';
+
+    // Handle theme-specific active color mapping
+    // Light uses the 2nd color (Index 1) for active menu
+    $active = $c2;
+    if ($color_scheme === 'light') {
+        $active = $c1;
+    }
+    
+    echo "<style>
+      :root { 
+        --wp-theme-base: {$c0}; 
+        --wp-theme-focus: {$c1}; 
+        --wp-theme-color: {$c2}; 
+        --wp-theme-secondary: {$c3}; 
+        --wp-theme-active: {$active};
+      }
+      body.toplevel_page_xophz-compass {
+        --wp-active-scheme: {$color_scheme};
+      }
+    </style>";
   }
 
   /**

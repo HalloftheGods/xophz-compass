@@ -1,0 +1,1 @@
+import{d as r,_ as o,b as s,o as t,m as a}from"./index.js";import{V as n}from"./VDivider.js";import"./color.js";const i=r({name:"XDivider",setup(){return{}}});function p(e,c,d,m,f,_){return t(),s(n,a(e.$attrs,{class:"x-divider"}),null,16)}const v=o(i,[["render",p]]);export{v as default};
