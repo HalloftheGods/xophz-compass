@@ -156,6 +156,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
     $this->loader->add_filter( 'script_loader_tag', $plugin_admin, 'add_module_type', 10, 3 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'sort_xophz_submenu_alphabetically', 999 ); 
 		$this->loader->add_action( 'wp_ajax_get_plugins', $plugin_admin, 'getPluginsByXoph'); 
 		$this->loader->add_action( 'wp_ajax_activate_plugin', $plugin_admin, 'activate_plugin'); 
 		$this->loader->add_action( 'wp_ajax_deactivate_plugin', $plugin_admin, 'deactivate_plugin'); 

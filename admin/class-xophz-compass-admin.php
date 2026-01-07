@@ -221,6 +221,28 @@ class Xophz_Compass_Admin {
     ]);
   }
 
+  /**
+   * Sort the Xophz Compass submenu items alphabetically.
+   *
+   * @since    1.0.0
+   */
+  public function sort_xophz_submenu_alphabetically() {
+      global $submenu;
+      $parent_slug = 'xophz-compass';
+
+      if ( isset( $submenu[ $parent_slug ] ) ) {
+          // Preserve the first item (Compass/Dashboard)
+          $first_item = array_shift( $submenu[ $parent_slug ] );
+          
+          usort( $submenu[ $parent_slug ], function( $a, $b ) {
+              return strcmp( $a[0], $b[0] );
+          } );
+
+          // Add the first item back to the beginning
+          array_unshift( $submenu[ $parent_slug ], $first_item );
+      }
+  }
+
   public function activate_plugin(){
     if ( ! isset( $_REQUEST['plugin'] ) ) {
         $this->output_json( array( 'error' => 'Missing plugin parameter' ) );
