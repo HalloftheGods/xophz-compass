@@ -123,7 +123,7 @@ class Xophz_Compass_Admin {
         add_action('admin_head', function() {
           $devServerUrl = "http://localhost:8080";
           echo '<script type="module" src="' . $devServerUrl . '/@vite/client"></script>';
-          echo '<script type="module" src="' . $devServerUrl . '/src/app.ts"></script>';
+          echo '<script type="module" src="' . $devServerUrl . '/src/mount-app.ts"></script>';
           $this->output_theme_colors();
         });
       } else {
