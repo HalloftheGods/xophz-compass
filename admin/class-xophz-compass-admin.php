@@ -283,7 +283,9 @@ class Xophz_Compass_Admin {
       $plugins[$p]['isActivated'] = is_plugin_active($p);
       $plugins[$p]['isInstalled'] = true;
       $plugins[$p]['Name'] = trim(str_replace('Xophz','', $plugin['Name'])) ;
-      $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg";
+      $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
+      $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
+      $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
     }
 
     $this->output_json($plugins);
