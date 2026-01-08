@@ -118,4 +118,8 @@ class Xophz_Compass_Public {
     }
   }
 
+  public function enable_rest_api() {
+    return true;
+  }
+
 }

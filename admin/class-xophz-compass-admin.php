@@ -117,11 +117,30 @@ class Xophz_Compass_Admin {
      */
 
     if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
+      wp_enqueue_script( 'wp-api' );
+      
+      // Prepare data for injection
+      global $_wp_admin_css_colors;
+      $current_user = wp_get_current_user();
+      
+      $settings = [
+          'adminColors' => $_wp_admin_css_colors,
+          'currentUser' => [
+              'ID' => $current_user->ID,
+              'admin_color' => get_user_option('admin_color', $current_user->ID),
+          ],
+          'nonce' => wp_create_nonce( 'wp_rest' ),
+          'restUrl' => get_rest_url()
+      ];
+
       if ( $this->isDevServer() ) {
-        // Vite dev server uses ES modules - we need to add the script tag manually
-        // because wp_enqueue_script doesn't support type="module"
-        add_action('admin_head', function() {
+        // Vite dev server uses ES modules
+        add_action('admin_head', function() use ($settings) {
           $devServerUrl = "http://localhost:8080";
+          
+          // Inject settings as a global variable
+          echo '<script>window.xophzCompassSettings = ' . json_encode($settings) . ';</script>';
+          
           echo '<script type="module" src="' . $devServerUrl . '/@vite/client"></script>';
           echo '<script type="module" src="' . $devServerUrl . '/src/mount-app.ts"></script>';
           $this->output_theme_colors();
@@ -134,6 +153,10 @@ class Xophz_Compass_Admin {
           $this->version, 
           false 
         );
+        
+        // Inject settings into the main app script
+        wp_localize_script( $this->plugin_name.'-main-app', 'xophzCompassSettings', $settings );
+        
         add_action('admin_head', [$this, 'output_theme_colors']);
       }
     }

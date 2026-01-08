@@ -191,6 +191,9 @@ class Xophz_Compass {
 		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
+    $this->loader->add_filter( 'rest_enabled', $plugin_public, 'enable_rest_api' );
+    $this->loader->add_filter( 'rest_jsonp_enabled', $plugin_public, 'enable_rest_api' );
+
 
 
 	}
