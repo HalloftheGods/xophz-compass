@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/silver-arrow.js","js/index.js","css/index.css","js/useSubAppNavigation.js","js/index4.js","js/VContainer.js","js/dimensions.js","js/tag.js","css/VGrid.css","css/x-footer.css"])))=>i.map(i=>d[i]);
-import{K as r}from"./index.js";const o=()=>r(()=>import("./silver-arrow.js"),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9])),t={path:"silver-arrow",name:"Silver Arrow",component:o};export{t as default};
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/silver-arrow.js","js/index.js","css/index.css","js/useSubAppNavigation.js","js/VContainer.js","css/VGrid.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
+import{_ as r}from"./index.js";const o=()=>r(()=>import("./silver-arrow.js"),__vite__mapDeps([0,1,2,3,4,5,6])),t={path:"silver-arrow",name:"Silver Arrow",component:o};export{t as default};

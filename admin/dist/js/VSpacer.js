@@ -1,1 +1,1 @@
-/* empty css     */import{c as r}from"./createSimpleFunctional.js";const e=r("v-spacer","div","VSpacer");export{e as V};
+/* empty css     */import{aj as a}from"./index.js";const p=a("v-spacer","div","VSpacer");export{p as V};

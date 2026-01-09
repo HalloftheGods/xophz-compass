@@ -1,1 +1,0 @@
-import{q as s,R as n,a}from"./index.js";const m=s({border:[Boolean,Number,String]},"border");function b(e){let t=arguments.length>1&&arguments[1]!==void 0?arguments[1]:n();return{borderClasses:a(()=>{const r=e.border;return r===!0||r===""?`${t}--border`:typeof r=="string"||r===0?String(r).split(" ").map(o=>`border-${o}`):[]})}}export{m,b as u};
