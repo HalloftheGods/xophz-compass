@@ -387,6 +387,51 @@ class Xophz_Compass_Admin {
     ]);
   }
 
+  /**
+   * Save the plugin grid order for the current user.
+   *
+   * @since    1.0.0
+   */
+  public function save_plugin_order() {
+    $user_id = get_current_user_id();
+    if (!$user_id) {
+      $this->output_json(['error' => 'Not authenticated']);
+      return;
+    }
+
+    $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : [];
+    if (is_string($order)) {
+      $order = json_decode(stripslashes($order), true);
+    }
+
+    if (!is_array($order)) {
+      $this->output_json(['error' => 'Invalid order format']);
+      return;
+    }
+
+    // Sanitize the order array - only allow valid text domain strings
+    $order = array_map('sanitize_text_field', $order);
+
+    update_user_meta($user_id, '_compass_plugin_order', $order);
+    $this->output_json(['success' => true]);
+  }
+
+  /**
+   * Get the saved plugin grid order for the current user.
+   *
+   * @since    1.0.0
+   */
+  public function get_plugin_order() {
+    $user_id = get_current_user_id();
+    if (!$user_id) {
+      $this->output_json([]);
+      return;
+    }
+
+    $order = get_user_meta($user_id, '_compass_plugin_order', true);
+    $this->output_json($order ?: []);
+  }
+
   private function isDevServer()
   {
     return in_array(DB_HOST, ['mysql:3306']); 

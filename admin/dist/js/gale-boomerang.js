@@ -1,1 +1,1633 @@
-import{d as j,u as A,an as M,v as P,a as F,r,c as O,o as G,w as s,e as l,bm as w,b as e,i as n,bn as L,O as I,aP as J,a4 as i,aG as v,c2 as V,l as U}from"./index.js";import{u as W}from"./useSubAppNavigation.js";import{V as q}from"./VContainer.js";import{V as k}from"./VRow.js";import{V as x}from"./VCol.js";import{V as R,a as y,b as E,c as T}from"./VTabs.js";/* empty css     */const Y=j({name:"GaleBoomerang",setup(){const m=A(),{isAppNavDrawerOpen:t}=W(),C="Visits",S="Based on a three months data",N=M("stats"),B=P(()=>m.activePlugin);return{page_title:C,page_description:S,plugin:B,toggleAppNavDrawer:()=>{t.value=!t.value},compassStore:m,activeTab:N}}}),H={id:"visits-chart",class:"chart visits-chart mb-4"},K={style:{width:"100%",height:"300px"}},Q={class:"d-flex align-center mb-1 text-medium-emphasis"},X={class:"text-h6 font-weight-bold"},Z={class:"d-flex align-center mb-1 text-medium-emphasis"},_={class:"text-h6 font-weight-bold"},h={class:"d-flex align-center mb-1 text-medium-emphasis"},c={class:"text-h6 font-weight-bold"},tt={class:"d-flex align-center mb-1 text-medium-emphasis"},st={class:"text-h6 font-weight-bold"},lt={class:"text-h6 font-weight-bold"},et={class:"pa-4 text-subtitle-1 font-weight-bold d-flex align-center"},nt={class:"pa-4 text-subtitle-1 font-weight-bold"},dt={class:"d-flex gap-2"},ot={class:"d-flex gap-2"},it={class:"pa-4 text-subtitle-1 font-weight-bold"},at={class:"mb-4"},ut={class:"mb-4"},rt={class:"d-flex justify-space-between mb-1"},mt={class:"text-caption font-weight-bold"};function ft(m,t,C,S,N,B){const d=r("x-icon"),u=r("x-btn"),g=r("x-card"),f=r("x-chip"),D=r("x-table"),a=r("x-avatar"),o=r("x-list-item"),p=r("x-divider"),b=r("x-list"),$=r("x-sub-app-layout");return G(),O($,{id:m.$options.name,class:U(m.$options.name)},{default:s(()=>[l(q,{fluid:"",class:"pa-6"},{default:s(()=>[l(k,null,{default:s(()=>[l(x,{cols:"12",lg:"8"},{default:s(()=>[l(g,{class:"mb-6"},{default:s(()=>[l(w,{class:"d-flex align-center justify-space-between"},{default:s(()=>[t[5]||(t[5]=e("div",null,[e("h4",{class:"text-h6 font-weight-bold mb-1"}," Visits "),e("div",{class:"text-caption text-medium-emphasis"}," Based on a three months data ")],-1)),e("div",null,[l(u,{icon:"",variant:"text",size:"small"},{default:s(()=>[l(d,null,{default:s(()=>[...t[2]||(t[2]=[n("mdi-cog",-1)])]),_:1})]),_:1}),l(u,{icon:"",variant:"text",size:"small"},{default:s(()=>[l(d,null,{default:s(()=>[...t[3]||(t[3]=[n("mdi-chevron-up",-1)])]),_:1})]),_:1}),l(u,{icon:"",variant:"text",size:"small"},{default:s(()=>[l(d,null,{default:s(()=>[...t[4]||(t[4]=[n("mdi-close",-1)])]),_:1})]),_:1})])]),_:1}),l(L,null,{default:s(()=>[e("div",H,[(G(),I("svg",K))]),l(J,{class:"pa-4 rounded bg-surface-variant"},{default:s(()=>[l(k,null,{default:s(()=>[l(x,{cols:"6",sm:"3"},{default:s(()=>[e("div",Q,[l(d,{size:"small",class:"mr-2"},{default:s(()=>[...t[6]||(t[6]=[n("mdi-account-group",-1)])]),_:1}),t[7]||(t[7]=e("span",{class:"text-caption"},"Total Traffic",-1))]),e("div",X,[t[9]||(t[9]=n(" 24,541 ",-1)),l(d,{color:"success",size:"small"},{default:s(()=>[...t[8]||(t[8]=[n("mdi-menu-up",-1)])]),_:1})])]),_:1}),l(x,{cols:"6",sm:"3"},{default:s(()=>[e("div",Z,[l(d,{size:"small",class:"mr-2"},{default:s(()=>[...t[10]||(t[10]=[n("mdi-flash",-1)])]),_:1}),t[11]||(t[11]=e("span",{class:"text-caption"},"Unique Visits",-1))]),e("div",_,[t[13]||(t[13]=n(" 14,778 ",-1)),l(d,{color:"error",size:"small"},{default:s(()=>[...t[12]||(t[12]=[n("mdi-menu-down",-1)])]),_:1})])]),_:1}),l(x,{cols:"6",sm:"3"},{default:s(()=>[e("div",h,[l(d,{size:"small",class:"mr-2"},{default:s(()=>[...t[14]||(t[14]=[n("mdi-plus-box",-1)])]),_:1}),t[15]||(t[15]=e("span",{class:"text-caption"},"Revenue",-1))]),e("div",c,[t[17]||(t[17]=n(" $3,583.18 ",-1)),l(d,{color:"success",size:"small"},{default:s(()=>[...t[16]||(t[16]=[n("mdi-menu-up",-1)])]),_:1})])]),_:1}),l(x,{cols:"6",sm:"3"},{default:s(()=>[e("div",tt,[l(d,{size:"small",class:"mr-2"},{default:s(()=>[...t[18]||(t[18]=[n("mdi-account",-1)])]),_:1}),t[19]||(t[19]=e("span",{class:"text-caption"},"Total Sales",-1))]),e("div",st,[t[21]||(t[21]=n(" $59,871.12 ",-1)),l(d,{color:"error",size:"small"},{default:s(()=>[...t[20]||(t[20]=[n("mdi-menu-down",-1)])]),_:1})])]),_:1})]),_:1})]),_:1})]),_:1})]),_:1}),l(g,{class:"mb-6"},{default:s(()=>[l(w,{class:"d-flex align-center justify-space-between"},{default:s(()=>[t[25]||(t[25]=e("div",null,[e("h4",{class:"text-h6 font-weight-bold mb-1"}," Traffic Sources "),e("div",{class:"text-caption text-medium-emphasis"}," One month tracking ")],-1)),e("div",null,[l(u,{icon:"",variant:"text",size:"small"},{default:s(()=>[l(d,null,{default:s(()=>[...t[22]||(t[22]=[n("mdi-plus",-1)])]),_:1})]),_:1}),l(u,{icon:"",variant:"text",size:"small"},{default:s(()=>[l(d,null,{default:s(()=>[...t[23]||(t[23]=[n("mdi-minus",-1)])]),_:1})]),_:1}),l(u,{icon:"",variant:"text",size:"small"},{default:s(()=>[l(d,null,{default:s(()=>[...t[24]||(t[24]=[n("mdi-close",-1)])]),_:1})]),_:1})])]),_:1}),l(D,null,{default:s(()=>[t[56]||(t[56]=e("thead",null,[e("tr",null,[e("th",{class:"text-left"},"Source"),e("th",{class:"text-left"},"Amount"),e("th",{class:"text-left"},"Change"),e("th",{class:"text-left hidden-sm-and-down"},"Percent"),e("th",{class:"text-left"},"Target"),e("th",{class:"text-left hidden-sm-and-down"},"Trend")])],-1)),e("tbody",null,[e("tr",null,[e("td",null,[l(f,{color:"info",label:"",size:"small"},{default:s(()=>[...t[26]||(t[26]=[n("Direct",-1)])]),_:1})]),t[27]||(t[27]=e("td",null,"713",-1)),t[28]||(t[28]=e("td",null,[e("span",{class:"text-success font-weight-bold"},"+53")],-1)),t[29]||(t[29]=e("td",{class:"hidden-sm-and-down"},"+12%",-1)),t[30]||(t[30]=e("td",null,"900",-1)),t[31]||(t[31]=e("td",{class:"hidden-sm-and-down"},[e("div",{id:"direct-trend"})],-1))]),e("tr",null,[e("td",null,[l(f,{color:"warning",label:"",size:"small"},{default:s(()=>[...t[32]||(t[32]=[n("Refer",-1)])]),_:1})]),t[33]||(t[33]=e("td",null,"562",-1)),t[34]||(t[34]=e("td",null,[e("span",{class:"font-weight-bold"},"+84")],-1)),t[35]||(t[35]=e("td",{class:"hidden-sm-and-down"},"+64%",-1)),t[36]||(t[36]=e("td",null,"500",-1)),t[37]||(t[37]=e("td",{class:"hidden-sm-and-down"},[e("div",{id:"refer-trend"})],-1))]),e("tr",null,[e("td",null,[l(f,{color:"success",label:"",size:"small"},{default:s(()=>[...t[38]||(t[38]=[n("Social",-1)])]),_:1})]),t[39]||(t[39]=e("td",null,"148",-1)),t[40]||(t[40]=e("td",null,[e("span",{class:"text-error font-weight-bold"},"-12")],-1)),t[41]||(t[41]=e("td",{class:"hidden-sm-and-down"},"+3%",-1)),t[42]||(t[42]=e("td",null,"180",-1)),t[43]||(t[43]=e("td",{class:"hidden-sm-and-down"},[e("div",{id:"social-trend"})],-1))]),e("tr",null,[e("td",null,[l(f,{color:"primary",label:"",size:"small"},{default:s(()=>[...t[44]||(t[44]=[n("Search",-1)])]),_:1})]),t[45]||(t[45]=e("td",null,"653",-1)),t[46]||(t[46]=e("td",null,[e("span",{class:"text-success font-weight-bold"},"+23")],-1)),t[47]||(t[47]=e("td",{class:"hidden-sm-and-down"},"+43%",-1)),t[48]||(t[48]=e("td",null,"876",-1)),t[49]||(t[49]=e("td",{class:"hidden-sm-and-down"},[e("div",{id:"search-trend"})],-1))]),e("tr",null,[e("td",null,[l(f,{color:"secondary",label:"",size:"small"},{default:s(()=>[...t[50]||(t[50]=[n("Internal",-1)])]),_:1})]),t[51]||(t[51]=e("td",null,"976",-1)),t[52]||(t[52]=e("td",null,[e("span",{class:"font-weight-bold"},"+101")],-1)),t[53]||(t[53]=e("td",{class:"hidden-sm-and-down"},"-7%",-1)),t[54]||(t[54]=e("td",null,"844",-1)),t[55]||(t[55]=e("td",{class:"hidden-sm-and-down"},[e("div",{id:"internal-trend"})],-1))])])]),_:1})]),_:1})]),_:1}),l(x,{cols:"12",lg:"4"},{default:s(()=>[l(g,{class:"mb-6"},{default:s(()=>[l(w,{class:"d-flex align-center justify-space-between"},{default:s(()=>[e("h4",lt,[t[58]||(t[58]=n(" Feed ",-1)),l(f,{color:"success",size:"small",class:"ml-2"},{default:s(()=>[...t[57]||(t[57]=[n("412",-1)])]),_:1})]),l(u,{variant:"text",size:"small","append-icon":"mdi-arrow-down"},{default:s(()=>[...t[59]||(t[59]=[n("Show All",-1)])]),_:1})]),_:1}),l(b,{lines:"two"},{default:s(()=>[l(o,null,{prepend:s(()=>[l(a,{color:"surface-variant",icon:"mdi-comment-outline"})]),append:s(()=>[...t[61]||(t[61]=[e("div",{class:"text-caption text-medium-emphasis"},"3 h",-1)])]),default:s(()=>[l(i,null,{default:s(()=>[...t[60]||(t[60]=[e("a",{href:"#",class:"text-decoration-none font-weight-bold"},"John Doe",-1),n(" commented on ",-1),e("a",{href:"#",class:"text-decoration-none"},"What Makes Good Code Good",-1),n(". ",-1)])]),_:1})]),_:1}),l(p,{inset:""}),l(o,null,{prepend:s(()=>[l(a,{color:"surface-variant"},{default:s(()=>[l(d,{color:"success"},{default:s(()=>[...t[62]||(t[62]=[n("mdi-check",-1)])]),_:1})]),_:1})]),append:s(()=>[...t[64]||(t[64]=[e("div",{class:"text-caption text-medium-emphasis"},"10 h",-1)])]),default:s(()=>[l(i,null,{default:s(()=>[...t[63]||(t[63]=[e("a",{href:"#",class:"text-decoration-none font-weight-bold"},"Merge request #42",-1),n(" has been approved by ",-1),e("a",{href:"#",class:"text-decoration-none"},"Jessica Lori",-1),n(". ",-1)])]),_:1})]),_:1}),l(p,{inset:""}),l(o,null,{prepend:s(()=>[l(a,{color:"surface-variant",icon:"mdi-account-plus"})]),append:s(()=>[...t[66]||(t[66]=[e("div",{class:"text-caption text-medium-emphasis"},"Today",-1)])]),default:s(()=>[l(i,null,{default:s(()=>[...t[65]||(t[65]=[n(" New user ",-1),e("a",{href:"#",class:"text-decoration-none font-weight-bold"},"Greg Wilson",-1),n(" registered. ",-1)])]),_:1})]),_:1}),l(p,{inset:""}),l(o,null,{prepend:s(()=>[l(a,{color:"surface-variant"},{default:s(()=>[l(d,{color:"warning"},{default:s(()=>[...t[67]||(t[67]=[n("mdi-flash",-1)])]),_:1})]),_:1})]),append:s(()=>[...t[69]||(t[69]=[e("div",{class:"text-caption text-medium-emphasis"},"Yesterday",-1)])]),default:s(()=>[l(i,null,{default:s(()=>[...t[68]||(t[68]=[n(" Server fail level raises above normal. ",-1),e("a",{href:"#",class:"text-decoration-none"},"See logs",-1),n(" for details. ",-1)])]),_:1})]),_:1}),l(p,{inset:""}),l(o,null,{prepend:s(()=>[l(a,{color:"surface-variant",icon:"mdi-database"})]),append:s(()=>[...t[71]||(t[71]=[e("div",{class:"text-caption text-medium-emphasis"},"Yesterday",-1)])]),default:s(()=>[l(i,null,{default:s(()=>[...t[70]||(t[70]=[e("a",{href:"#",class:"text-decoration-none"},"Database usage report",-1),n(" is ready. ",-1)])]),_:1})]),_:1}),l(p,{inset:""}),l(o,null,{prepend:s(()=>[l(a,{color:"surface-variant",icon:"mdi-cart"})]),append:s(()=>[...t[73]||(t[73]=[e("div",{class:"text-caption text-medium-emphasis"},"Wednesday",-1)])]),default:s(()=>[l(i,null,{default:s(()=>[...t[72]||(t[72]=[e("a",{href:"#",class:"text-decoration-none"},"Order #233985",-1),n(" needs additional processing. ",-1)])]),_:1})]),_:1}),l(p,{inset:""}),l(o,null,{default:s(()=>[l(i,{class:"text-center"},{default:s(()=>[...t[74]||(t[74]=[e("a",{href:"#",class:"text-decoration-none"},"Load more...",-1)])]),_:1})]),_:1})]),_:1})]),_:1}),l(g,{class:"mb-6"},{default:s(()=>[l(R,{modelValue:m.activeTab,"onUpdate:modelValue":t[0]||(t[0]=z=>m.activeTab=z),grow:""},{default:s(()=>[l(y,{value:"stats"},{default:s(()=>[...t[75]||(t[75]=[n("Users",-1)])]),_:1}),l(y,{value:"report"},{default:s(()=>[...t[76]||(t[76]=[n("Favorites",-1)])]),_:1}),l(y,{value:"dropdown1"},{default:s(()=>[...t[77]||(t[77]=[n("Commenters",-1)])]),_:1})]),_:1},8,["modelValue"]),l(E,{modelValue:m.activeTab,"onUpdate:modelValue":t[1]||(t[1]=z=>m.activeTab=z)},{default:s(()=>[l(T,{value:"stats"},{default:s(()=>[e("div",et,[l(f,{color:"primary",class:"mr-2",label:"",size:"small"},{default:s(()=>[l(d,{size:"small"},{default:s(()=>[...t[78]||(t[78]=[n("mdi-facebook",-1)])]),_:1})]),_:1}),t[79]||(t[79]=n(" Last logged-in users ",-1))]),l(b,{lines:"two"},{default:s(()=>[l(o,{href:"#"},{prepend:s(()=>[l(a,{image:"/img/1.png",size:"40"})]),append:s(()=>[...t[82]||(t[82]=[e("div",{class:"text-caption text-medium-emphasis"},"Mar 20, 18:46",-1)])]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[80]||(t[80]=[n("Finees Lund",-1)])]),_:1}),l(v,null,{default:s(()=>[...t[81]||(t[81]=[n("Product Designer",-1)])]),_:1})]),_:1}),l(o,{href:"#"},{prepend:s(()=>[l(a,{image:"/img/3.png",size:"40"})]),append:s(()=>[...t[85]||(t[85]=[e("div",{class:"text-caption text-medium-emphasis"},"Mar 23, 9:02",-1)])]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[83]||(t[83]=[n("Erebus Novak",-1)])]),_:1}),l(v,null,{default:s(()=>[...t[84]||(t[84]=[n("Software Engineer",-1)])]),_:1})]),_:1}),l(o,{href:"#"},{prepend:s(()=>[l(a,{image:"/img/2.png",size:"40"})]),append:s(()=>[...t[88]||(t[88]=[e("div",{class:"text-caption text-medium-emphasis"},"Jun 6, 15:34",-1)])]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[86]||(t[86]=[n("Leopoldo Reier",-1)])]),_:1}),l(v,null,{default:s(()=>[...t[87]||(t[87]=[n("Chief Officer",-1)])]),_:1})]),_:1})]),_:1})]),_:1}),l(T,{value:"report"},{default:s(()=>[e("div",nt,[l(d,{class:"mr-2",size:"small"},{default:s(()=>[...t[89]||(t[89]=[n("mdi-star",-1)])]),_:1}),t[90]||(t[90]=n(" Popular contacts ",-1))]),l(b,{lines:"two"},{default:s(()=>[l(o,null,{prepend:s(()=>[l(a,{image:"/img/14.png",size:"40"})]),append:s(()=>[e("div",dt,[l(u,{size:"x-small",color:"success",class:"mr-1",icon:"mdi-phone"}),l(u,{size:"x-small",color:"warning",icon:"mdi-email-outline"})])]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[91]||(t[91]=[n("Jessica Johnsson",-1)])]),_:1})]),_:1}),l(o,null,{prepend:s(()=>[l(a,{image:"/img/13.png",size:"40"})]),append:s(()=>[e("div",ot,[l(u,{size:"x-small",color:"success",class:"mr-1",icon:"mdi-phone"}),l(u,{size:"x-small",color:"warning",icon:"mdi-email-outline"})])]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[92]||(t[92]=[n("Frans Garey",-1)])]),_:1})]),_:1})]),_:1})]),_:1}),l(T,{value:"dropdown1"},{default:s(()=>[e("div",it,[l(d,{class:"mr-2",size:"small"},{default:s(()=>[...t[93]||(t[93]=[n("mdi-comment-multiple",-1)])]),_:1}),t[94]||(t[94]=n(" Top Commenters ",-1))]),l(b,{lines:"three"},{default:s(()=>[l(o,null,{prepend:s(()=>[l(a,{image:"/img/13.png",size:"40"})]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[95]||(t[95]=[n("Frans Garey",-1)])]),_:1}),l(v,null,{default:s(()=>[...t[96]||(t[96]=[n("Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia",-1)])]),_:1})]),_:1}),l(o,null,{prepend:s(()=>[l(a,{image:"/img/1.png",size:"40"})]),default:s(()=>[l(i,{class:"font-weight-bold"},{default:s(()=>[...t[97]||(t[97]=[n("Finees Lund",-1)])]),_:1}),l(v,null,{default:s(()=>[...t[98]||(t[98]=[n("Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat.",-1)])]),_:1})]),_:1})]),_:1})]),_:1})]),_:1},8,["modelValue"])]),_:1}),l(g,null,{default:s(()=>[l(w,{class:"d-flex align-center justify-space-between"},{default:s(()=>[...t[99]||(t[99]=[e("h4",{class:"text-h6 font-weight-bold"}," Server Overview ",-1),e("div",{class:"text-caption text-medium-emphasis"}," 2 days ago ",-1)])]),_:1}),l(L,null,{default:s(()=>[e("div",at,[t[100]||(t[100]=e("div",{class:"d-flex justify-space-between mb-1"},[e("span",{class:"text-caption"},"CPU"),e("span",{class:"text-caption font-weight-bold"},"60% / 37°C / 3.3 Ghz")],-1)),l(V,{"model-value":"60",color:"error",height:"6",rounded:""})]),e("div",ut,[t[101]||(t[101]=e("div",{class:"d-flex justify-space-between mb-1"},[e("span",{class:"text-caption"},"Mem"),e("span",{class:"text-caption font-weight-bold"},"29% / 4GB (16 GB)")],-1)),l(V,{"model-value":"29",color:"primary",height:"6",rounded:""})]),e("div",null,[e("div",rt,[t[106]||(t[106]=e("span",{class:"text-caption"},"LAN",-1)),e("span",mt,[t[104]||(t[104]=n(" 6 Mb/s ",-1)),l(d,{size:"x-small"},{default:s(()=>[...t[102]||(t[102]=[n("mdi-menu-down",-1)])]),_:1}),t[105]||(t[105]=n(" 3 Mb/s ",-1)),l(d,{size:"x-small"},{default:s(()=>[...t[103]||(t[103]=[n("mdi-menu-up",-1)])]),_:1})])]),l(V,{"model-value":"48",color:"secondary",height:"6",rounded:""})])]),_:1})]),_:1})]),_:1})]),_:1})]),_:1})]),_:1},8,["id","class"])}const Vt=F(Y,[["render",ft],["__scopeId","data-v-cc2dbdf3"]]);export{Vt as default};
+import {
+  d as j,
+  u as A,
+  an as M,
+  v as P,
+  a as F,
+  r,
+  c as O,
+  o as G,
+  w as s,
+  e as l,
+  bm as w,
+  b as e,
+  i as n,
+  bn as L,
+  O as I,
+  aP as J,
+  a4 as i,
+  aG as v,
+  c2 as V,
+  l as U
+} from "./index.js";
+import { u as W } from "./useSubAppNavigation.js";
+import { V as q } from "./VContainer.js";
+import { V as k } from "./VRow.js";
+import { V as x } from "./VCol.js";
+import { V as R, a as y, b as E, c as T } from "./VTabs.js";
+/* empty css     */ const Y = j({
+    name: "GaleBoomerang",
+    setup() {
+      const m = A(),
+        { isAppNavDrawerOpen: t } = W(),
+        C = "Visits",
+        S = "Based on a three months data",
+        N = M("stats"),
+        B = P(() => m.activePlugin);
+      return {
+        page_title: C,
+        page_description: S,
+        plugin: B,
+        toggleAppNavDrawer: () => {
+          t.value = !t.value;
+        },
+        compassStore: m,
+        activeTab: N
+      };
+    }
+  }),
+  H = { id: "visits-chart", class: "chart visits-chart mb-4" },
+  K = { style: { width: "100%", height: "300px" } },
+  Q = { class: "d-flex align-center mb-1 text-medium-emphasis" },
+  X = { class: "text-h6 font-weight-bold" },
+  Z = { class: "d-flex align-center mb-1 text-medium-emphasis" },
+  _ = { class: "text-h6 font-weight-bold" },
+  h = { class: "d-flex align-center mb-1 text-medium-emphasis" },
+  c = { class: "text-h6 font-weight-bold" },
+  tt = { class: "d-flex align-center mb-1 text-medium-emphasis" },
+  st = { class: "text-h6 font-weight-bold" },
+  lt = { class: "text-h6 font-weight-bold" },
+  et = { class: "pa-4 text-subtitle-1 font-weight-bold d-flex align-center" },
+  nt = { class: "pa-4 text-subtitle-1 font-weight-bold" },
+  dt = { class: "d-flex ga-2" },
+  ot = { class: "d-flex ga-2" },
+  it = { class: "pa-4 text-subtitle-1 font-weight-bold" },
+  at = { class: "mb-4" },
+  ut = { class: "mb-4" },
+  rt = { class: "d-flex justify-space-between mb-1" },
+  mt = { class: "text-caption font-weight-bold" };
+function ft(m, t, C, S, N, B) {
+  const d = r("x-icon"),
+    u = r("x-btn"),
+    g = r("x-card"),
+    f = r("x-chip"),
+    D = r("x-table"),
+    a = r("x-avatar"),
+    o = r("x-list-item"),
+    p = r("x-divider"),
+    b = r("x-list"),
+    $ = r("x-sub-app-layout");
+  return (
+    G(),
+    O(
+      $,
+      { id: m.$options.name, class: U(m.$options.name) },
+      {
+        default: s(() => [
+          l(
+            q,
+            { fluid: "", class: "pa-6" },
+            {
+              default: s(() => [
+                l(k, null, {
+                  default: s(() => [
+                    l(
+                      x,
+                      { cols: "12", lg: "8" },
+                      {
+                        default: s(() => [
+                          l(
+                            g,
+                            { class: "mb-6" },
+                            {
+                              default: s(() => [
+                                l(
+                                  w,
+                                  { class: "d-flex align-center justify-space-between" },
+                                  {
+                                    default: s(() => [
+                                      t[5] ||
+                                        (t[5] = e(
+                                          "div",
+                                          null,
+                                          [
+                                            e(
+                                              "h4",
+                                              { class: "text-h6 font-weight-bold mb-1" },
+                                              " Visits "
+                                            ),
+                                            e(
+                                              "div",
+                                              { class: "text-caption text-medium-emphasis" },
+                                              " Based on a three months data "
+                                            )
+                                          ],
+                                          -1
+                                        )),
+                                      e("div", null, [
+                                        l(
+                                          u,
+                                          { icon: "", variant: "text", size: "small" },
+                                          {
+                                            default: s(() => [
+                                              l(d, null, {
+                                                default: s(() => [
+                                                  ...(t[2] || (t[2] = [n("mdi-cog", -1)]))
+                                                ]),
+                                                _: 1
+                                              })
+                                            ]),
+                                            _: 1
+                                          }
+                                        ),
+                                        l(
+                                          u,
+                                          { icon: "", variant: "text", size: "small" },
+                                          {
+                                            default: s(() => [
+                                              l(d, null, {
+                                                default: s(() => [
+                                                  ...(t[3] || (t[3] = [n("mdi-chevron-up", -1)]))
+                                                ]),
+                                                _: 1
+                                              })
+                                            ]),
+                                            _: 1
+                                          }
+                                        ),
+                                        l(
+                                          u,
+                                          { icon: "", variant: "text", size: "small" },
+                                          {
+                                            default: s(() => [
+                                              l(d, null, {
+                                                default: s(() => [
+                                                  ...(t[4] || (t[4] = [n("mdi-close", -1)]))
+                                                ]),
+                                                _: 1
+                                              })
+                                            ]),
+                                            _: 1
+                                          }
+                                        )
+                                      ])
+                                    ]),
+                                    _: 1
+                                  }
+                                ),
+                                l(L, null, {
+                                  default: s(() => [
+                                    e("div", H, [(G(), I("svg", K))]),
+                                    l(
+                                      J,
+                                      { class: "pa-4 rounded bg-surface-variant" },
+                                      {
+                                        default: s(() => [
+                                          l(k, null, {
+                                            default: s(() => [
+                                              l(
+                                                x,
+                                                { cols: "6", sm: "3" },
+                                                {
+                                                  default: s(() => [
+                                                    e("div", Q, [
+                                                      l(
+                                                        d,
+                                                        { size: "small", class: "mr-2" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[6] ||
+                                                              (t[6] = [n("mdi-account-group", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      ),
+                                                      t[7] ||
+                                                        (t[7] = e(
+                                                          "span",
+                                                          { class: "text-caption" },
+                                                          "Total Traffic",
+                                                          -1
+                                                        ))
+                                                    ]),
+                                                    e("div", X, [
+                                                      t[9] || (t[9] = n(" 24,541 ", -1)),
+                                                      l(
+                                                        d,
+                                                        { color: "success", size: "small" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[8] ||
+                                                              (t[8] = [n("mdi-menu-up", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      )
+                                                    ])
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              ),
+                                              l(
+                                                x,
+                                                { cols: "6", sm: "3" },
+                                                {
+                                                  default: s(() => [
+                                                    e("div", Z, [
+                                                      l(
+                                                        d,
+                                                        { size: "small", class: "mr-2" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[10] ||
+                                                              (t[10] = [n("mdi-flash", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      ),
+                                                      t[11] ||
+                                                        (t[11] = e(
+                                                          "span",
+                                                          { class: "text-caption" },
+                                                          "Unique Visits",
+                                                          -1
+                                                        ))
+                                                    ]),
+                                                    e("div", _, [
+                                                      t[13] || (t[13] = n(" 14,778 ", -1)),
+                                                      l(
+                                                        d,
+                                                        { color: "error", size: "small" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[12] ||
+                                                              (t[12] = [n("mdi-menu-down", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      )
+                                                    ])
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              ),
+                                              l(
+                                                x,
+                                                { cols: "6", sm: "3" },
+                                                {
+                                                  default: s(() => [
+                                                    e("div", h, [
+                                                      l(
+                                                        d,
+                                                        { size: "small", class: "mr-2" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[14] ||
+                                                              (t[14] = [n("mdi-plus-box", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      ),
+                                                      t[15] ||
+                                                        (t[15] = e(
+                                                          "span",
+                                                          { class: "text-caption" },
+                                                          "Revenue",
+                                                          -1
+                                                        ))
+                                                    ]),
+                                                    e("div", c, [
+                                                      t[17] || (t[17] = n(" $3,583.18 ", -1)),
+                                                      l(
+                                                        d,
+                                                        { color: "success", size: "small" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[16] ||
+                                                              (t[16] = [n("mdi-menu-up", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      )
+                                                    ])
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              ),
+                                              l(
+                                                x,
+                                                { cols: "6", sm: "3" },
+                                                {
+                                                  default: s(() => [
+                                                    e("div", tt, [
+                                                      l(
+                                                        d,
+                                                        { size: "small", class: "mr-2" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[18] ||
+                                                              (t[18] = [n("mdi-account", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      ),
+                                                      t[19] ||
+                                                        (t[19] = e(
+                                                          "span",
+                                                          { class: "text-caption" },
+                                                          "Total Sales",
+                                                          -1
+                                                        ))
+                                                    ]),
+                                                    e("div", st, [
+                                                      t[21] || (t[21] = n(" $59,871.12 ", -1)),
+                                                      l(
+                                                        d,
+                                                        { color: "error", size: "small" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[20] ||
+                                                              (t[20] = [n("mdi-menu-down", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      )
+                                                    ])
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              )
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }
+                                    )
+                                  ]),
+                                  _: 1
+                                })
+                              ]),
+                              _: 1
+                            }
+                          ),
+                          l(
+                            g,
+                            { class: "mb-6" },
+                            {
+                              default: s(() => [
+                                l(
+                                  w,
+                                  { class: "d-flex align-center justify-space-between" },
+                                  {
+                                    default: s(() => [
+                                      t[25] ||
+                                        (t[25] = e(
+                                          "div",
+                                          null,
+                                          [
+                                            e(
+                                              "h4",
+                                              { class: "text-h6 font-weight-bold mb-1" },
+                                              " Traffic Sources "
+                                            ),
+                                            e(
+                                              "div",
+                                              { class: "text-caption text-medium-emphasis" },
+                                              " One month tracking "
+                                            )
+                                          ],
+                                          -1
+                                        )),
+                                      e("div", null, [
+                                        l(
+                                          u,
+                                          { icon: "", variant: "text", size: "small" },
+                                          {
+                                            default: s(() => [
+                                              l(d, null, {
+                                                default: s(() => [
+                                                  ...(t[22] || (t[22] = [n("mdi-plus", -1)]))
+                                                ]),
+                                                _: 1
+                                              })
+                                            ]),
+                                            _: 1
+                                          }
+                                        ),
+                                        l(
+                                          u,
+                                          { icon: "", variant: "text", size: "small" },
+                                          {
+                                            default: s(() => [
+                                              l(d, null, {
+                                                default: s(() => [
+                                                  ...(t[23] || (t[23] = [n("mdi-minus", -1)]))
+                                                ]),
+                                                _: 1
+                                              })
+                                            ]),
+                                            _: 1
+                                          }
+                                        ),
+                                        l(
+                                          u,
+                                          { icon: "", variant: "text", size: "small" },
+                                          {
+                                            default: s(() => [
+                                              l(d, null, {
+                                                default: s(() => [
+                                                  ...(t[24] || (t[24] = [n("mdi-close", -1)]))
+                                                ]),
+                                                _: 1
+                                              })
+                                            ]),
+                                            _: 1
+                                          }
+                                        )
+                                      ])
+                                    ]),
+                                    _: 1
+                                  }
+                                ),
+                                l(D, null, {
+                                  default: s(() => [
+                                    t[56] ||
+                                      (t[56] = e(
+                                        "thead",
+                                        null,
+                                        [
+                                          e("tr", null, [
+                                            e("th", { class: "text-left" }, "Source"),
+                                            e("th", { class: "text-left" }, "Amount"),
+                                            e("th", { class: "text-left" }, "Change"),
+                                            e(
+                                              "th",
+                                              { class: "text-left hidden-sm-and-down" },
+                                              "Percent"
+                                            ),
+                                            e("th", { class: "text-left" }, "Target"),
+                                            e(
+                                              "th",
+                                              { class: "text-left hidden-sm-and-down" },
+                                              "Trend"
+                                            )
+                                          ])
+                                        ],
+                                        -1
+                                      )),
+                                    e("tbody", null, [
+                                      e("tr", null, [
+                                        e("td", null, [
+                                          l(
+                                            f,
+                                            { color: "info", label: "", size: "small" },
+                                            {
+                                              default: s(() => [
+                                                ...(t[26] || (t[26] = [n("Direct", -1)]))
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        t[27] || (t[27] = e("td", null, "713", -1)),
+                                        t[28] ||
+                                          (t[28] = e(
+                                            "td",
+                                            null,
+                                            [
+                                              e(
+                                                "span",
+                                                { class: "text-success font-weight-bold" },
+                                                "+53"
+                                              )
+                                            ],
+                                            -1
+                                          )),
+                                        t[29] ||
+                                          (t[29] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            "+12%",
+                                            -1
+                                          )),
+                                        t[30] || (t[30] = e("td", null, "900", -1)),
+                                        t[31] ||
+                                          (t[31] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            [e("div", { id: "direct-trend" })],
+                                            -1
+                                          ))
+                                      ]),
+                                      e("tr", null, [
+                                        e("td", null, [
+                                          l(
+                                            f,
+                                            { color: "warning", label: "", size: "small" },
+                                            {
+                                              default: s(() => [
+                                                ...(t[32] || (t[32] = [n("Refer", -1)]))
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        t[33] || (t[33] = e("td", null, "562", -1)),
+                                        t[34] ||
+                                          (t[34] = e(
+                                            "td",
+                                            null,
+                                            [e("span", { class: "font-weight-bold" }, "+84")],
+                                            -1
+                                          )),
+                                        t[35] ||
+                                          (t[35] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            "+64%",
+                                            -1
+                                          )),
+                                        t[36] || (t[36] = e("td", null, "500", -1)),
+                                        t[37] ||
+                                          (t[37] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            [e("div", { id: "refer-trend" })],
+                                            -1
+                                          ))
+                                      ]),
+                                      e("tr", null, [
+                                        e("td", null, [
+                                          l(
+                                            f,
+                                            { color: "success", label: "", size: "small" },
+                                            {
+                                              default: s(() => [
+                                                ...(t[38] || (t[38] = [n("Social", -1)]))
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        t[39] || (t[39] = e("td", null, "148", -1)),
+                                        t[40] ||
+                                          (t[40] = e(
+                                            "td",
+                                            null,
+                                            [
+                                              e(
+                                                "span",
+                                                { class: "text-error font-weight-bold" },
+                                                "-12"
+                                              )
+                                            ],
+                                            -1
+                                          )),
+                                        t[41] ||
+                                          (t[41] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            "+3%",
+                                            -1
+                                          )),
+                                        t[42] || (t[42] = e("td", null, "180", -1)),
+                                        t[43] ||
+                                          (t[43] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            [e("div", { id: "social-trend" })],
+                                            -1
+                                          ))
+                                      ]),
+                                      e("tr", null, [
+                                        e("td", null, [
+                                          l(
+                                            f,
+                                            { color: "primary", label: "", size: "small" },
+                                            {
+                                              default: s(() => [
+                                                ...(t[44] || (t[44] = [n("Search", -1)]))
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        t[45] || (t[45] = e("td", null, "653", -1)),
+                                        t[46] ||
+                                          (t[46] = e(
+                                            "td",
+                                            null,
+                                            [
+                                              e(
+                                                "span",
+                                                { class: "text-success font-weight-bold" },
+                                                "+23"
+                                              )
+                                            ],
+                                            -1
+                                          )),
+                                        t[47] ||
+                                          (t[47] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            "+43%",
+                                            -1
+                                          )),
+                                        t[48] || (t[48] = e("td", null, "876", -1)),
+                                        t[49] ||
+                                          (t[49] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            [e("div", { id: "search-trend" })],
+                                            -1
+                                          ))
+                                      ]),
+                                      e("tr", null, [
+                                        e("td", null, [
+                                          l(
+                                            f,
+                                            { color: "secondary", label: "", size: "small" },
+                                            {
+                                              default: s(() => [
+                                                ...(t[50] || (t[50] = [n("Internal", -1)]))
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        t[51] || (t[51] = e("td", null, "976", -1)),
+                                        t[52] ||
+                                          (t[52] = e(
+                                            "td",
+                                            null,
+                                            [e("span", { class: "font-weight-bold" }, "+101")],
+                                            -1
+                                          )),
+                                        t[53] ||
+                                          (t[53] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            "-7%",
+                                            -1
+                                          )),
+                                        t[54] || (t[54] = e("td", null, "844", -1)),
+                                        t[55] ||
+                                          (t[55] = e(
+                                            "td",
+                                            { class: "hidden-sm-and-down" },
+                                            [e("div", { id: "internal-trend" })],
+                                            -1
+                                          ))
+                                      ])
+                                    ])
+                                  ]),
+                                  _: 1
+                                })
+                              ]),
+                              _: 1
+                            }
+                          )
+                        ]),
+                        _: 1
+                      }
+                    ),
+                    l(
+                      x,
+                      { cols: "12", lg: "4" },
+                      {
+                        default: s(() => [
+                          l(
+                            g,
+                            { class: "mb-6" },
+                            {
+                              default: s(() => [
+                                l(
+                                  w,
+                                  { class: "d-flex align-center justify-space-between" },
+                                  {
+                                    default: s(() => [
+                                      e("h4", lt, [
+                                        t[58] || (t[58] = n(" Feed ", -1)),
+                                        l(
+                                          f,
+                                          { color: "success", size: "small", class: "ml-2" },
+                                          {
+                                            default: s(() => [
+                                              ...(t[57] || (t[57] = [n("412", -1)]))
+                                            ]),
+                                            _: 1
+                                          }
+                                        )
+                                      ]),
+                                      l(
+                                        u,
+                                        {
+                                          variant: "text",
+                                          size: "small",
+                                          "append-icon": "mdi-arrow-down"
+                                        },
+                                        {
+                                          default: s(() => [
+                                            ...(t[59] || (t[59] = [n("Show All", -1)]))
+                                          ]),
+                                          _: 1
+                                        }
+                                      )
+                                    ]),
+                                    _: 1
+                                  }
+                                ),
+                                l(
+                                  b,
+                                  { lines: "two" },
+                                  {
+                                    default: s(() => [
+                                      l(o, null, {
+                                        prepend: s(() => [
+                                          l(a, {
+                                            color: "surface-variant",
+                                            icon: "mdi-comment-outline"
+                                          })
+                                        ]),
+                                        append: s(() => [
+                                          ...(t[61] ||
+                                            (t[61] = [
+                                              e(
+                                                "div",
+                                                { class: "text-caption text-medium-emphasis" },
+                                                "3 h",
+                                                -1
+                                              )
+                                            ]))
+                                        ]),
+                                        default: s(() => [
+                                          l(i, null, {
+                                            default: s(() => [
+                                              ...(t[60] ||
+                                                (t[60] = [
+                                                  e(
+                                                    "a",
+                                                    {
+                                                      href: "#",
+                                                      class: "text-decoration-none font-weight-bold"
+                                                    },
+                                                    "John Doe",
+                                                    -1
+                                                  ),
+                                                  n(" commented on ", -1),
+                                                  e(
+                                                    "a",
+                                                    { href: "#", class: "text-decoration-none" },
+                                                    "What Makes Good Code Good",
+                                                    -1
+                                                  ),
+                                                  n(". ", -1)
+                                                ]))
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }),
+                                      l(p, { inset: "" }),
+                                      l(o, null, {
+                                        prepend: s(() => [
+                                          l(
+                                            a,
+                                            { color: "surface-variant" },
+                                            {
+                                              default: s(() => [
+                                                l(
+                                                  d,
+                                                  { color: "success" },
+                                                  {
+                                                    default: s(() => [
+                                                      ...(t[62] || (t[62] = [n("mdi-check", -1)]))
+                                                    ]),
+                                                    _: 1
+                                                  }
+                                                )
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        append: s(() => [
+                                          ...(t[64] ||
+                                            (t[64] = [
+                                              e(
+                                                "div",
+                                                { class: "text-caption text-medium-emphasis" },
+                                                "10 h",
+                                                -1
+                                              )
+                                            ]))
+                                        ]),
+                                        default: s(() => [
+                                          l(i, null, {
+                                            default: s(() => [
+                                              ...(t[63] ||
+                                                (t[63] = [
+                                                  e(
+                                                    "a",
+                                                    {
+                                                      href: "#",
+                                                      class: "text-decoration-none font-weight-bold"
+                                                    },
+                                                    "Merge request #42",
+                                                    -1
+                                                  ),
+                                                  n(" has been approved by ", -1),
+                                                  e(
+                                                    "a",
+                                                    { href: "#", class: "text-decoration-none" },
+                                                    "Jessica Lori",
+                                                    -1
+                                                  ),
+                                                  n(". ", -1)
+                                                ]))
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }),
+                                      l(p, { inset: "" }),
+                                      l(o, null, {
+                                        prepend: s(() => [
+                                          l(a, {
+                                            color: "surface-variant",
+                                            icon: "mdi-account-plus"
+                                          })
+                                        ]),
+                                        append: s(() => [
+                                          ...(t[66] ||
+                                            (t[66] = [
+                                              e(
+                                                "div",
+                                                { class: "text-caption text-medium-emphasis" },
+                                                "Today",
+                                                -1
+                                              )
+                                            ]))
+                                        ]),
+                                        default: s(() => [
+                                          l(i, null, {
+                                            default: s(() => [
+                                              ...(t[65] ||
+                                                (t[65] = [
+                                                  n(" New user ", -1),
+                                                  e(
+                                                    "a",
+                                                    {
+                                                      href: "#",
+                                                      class: "text-decoration-none font-weight-bold"
+                                                    },
+                                                    "Greg Wilson",
+                                                    -1
+                                                  ),
+                                                  n(" registered. ", -1)
+                                                ]))
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }),
+                                      l(p, { inset: "" }),
+                                      l(o, null, {
+                                        prepend: s(() => [
+                                          l(
+                                            a,
+                                            { color: "surface-variant" },
+                                            {
+                                              default: s(() => [
+                                                l(
+                                                  d,
+                                                  { color: "warning" },
+                                                  {
+                                                    default: s(() => [
+                                                      ...(t[67] || (t[67] = [n("mdi-flash", -1)]))
+                                                    ]),
+                                                    _: 1
+                                                  }
+                                                )
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        append: s(() => [
+                                          ...(t[69] ||
+                                            (t[69] = [
+                                              e(
+                                                "div",
+                                                { class: "text-caption text-medium-emphasis" },
+                                                "Yesterday",
+                                                -1
+                                              )
+                                            ]))
+                                        ]),
+                                        default: s(() => [
+                                          l(i, null, {
+                                            default: s(() => [
+                                              ...(t[68] ||
+                                                (t[68] = [
+                                                  n(" Server fail level raises above normal. ", -1),
+                                                  e(
+                                                    "a",
+                                                    { href: "#", class: "text-decoration-none" },
+                                                    "See logs",
+                                                    -1
+                                                  ),
+                                                  n(" for details. ", -1)
+                                                ]))
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }),
+                                      l(p, { inset: "" }),
+                                      l(o, null, {
+                                        prepend: s(() => [
+                                          l(a, { color: "surface-variant", icon: "mdi-database" })
+                                        ]),
+                                        append: s(() => [
+                                          ...(t[71] ||
+                                            (t[71] = [
+                                              e(
+                                                "div",
+                                                { class: "text-caption text-medium-emphasis" },
+                                                "Yesterday",
+                                                -1
+                                              )
+                                            ]))
+                                        ]),
+                                        default: s(() => [
+                                          l(i, null, {
+                                            default: s(() => [
+                                              ...(t[70] ||
+                                                (t[70] = [
+                                                  e(
+                                                    "a",
+                                                    { href: "#", class: "text-decoration-none" },
+                                                    "Database usage report",
+                                                    -1
+                                                  ),
+                                                  n(" is ready. ", -1)
+                                                ]))
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }),
+                                      l(p, { inset: "" }),
+                                      l(o, null, {
+                                        prepend: s(() => [
+                                          l(a, { color: "surface-variant", icon: "mdi-cart" })
+                                        ]),
+                                        append: s(() => [
+                                          ...(t[73] ||
+                                            (t[73] = [
+                                              e(
+                                                "div",
+                                                { class: "text-caption text-medium-emphasis" },
+                                                "Wednesday",
+                                                -1
+                                              )
+                                            ]))
+                                        ]),
+                                        default: s(() => [
+                                          l(i, null, {
+                                            default: s(() => [
+                                              ...(t[72] ||
+                                                (t[72] = [
+                                                  e(
+                                                    "a",
+                                                    { href: "#", class: "text-decoration-none" },
+                                                    "Order #233985",
+                                                    -1
+                                                  ),
+                                                  n(" needs additional processing. ", -1)
+                                                ]))
+                                            ]),
+                                            _: 1
+                                          })
+                                        ]),
+                                        _: 1
+                                      }),
+                                      l(p, { inset: "" }),
+                                      l(o, null, {
+                                        default: s(() => [
+                                          l(
+                                            i,
+                                            { class: "text-center" },
+                                            {
+                                              default: s(() => [
+                                                ...(t[74] ||
+                                                  (t[74] = [
+                                                    e(
+                                                      "a",
+                                                      { href: "#", class: "text-decoration-none" },
+                                                      "Load more...",
+                                                      -1
+                                                    )
+                                                  ]))
+                                              ]),
+                                              _: 1
+                                            }
+                                          )
+                                        ]),
+                                        _: 1
+                                      })
+                                    ]),
+                                    _: 1
+                                  }
+                                )
+                              ]),
+                              _: 1
+                            }
+                          ),
+                          l(
+                            g,
+                            { class: "mb-6" },
+                            {
+                              default: s(() => [
+                                l(
+                                  R,
+                                  {
+                                    modelValue: m.activeTab,
+                                    "onUpdate:modelValue":
+                                      t[0] || (t[0] = (z) => (m.activeTab = z)),
+                                    grow: ""
+                                  },
+                                  {
+                                    default: s(() => [
+                                      l(
+                                        y,
+                                        { value: "stats" },
+                                        {
+                                          default: s(() => [
+                                            ...(t[75] || (t[75] = [n("Users", -1)]))
+                                          ]),
+                                          _: 1
+                                        }
+                                      ),
+                                      l(
+                                        y,
+                                        { value: "report" },
+                                        {
+                                          default: s(() => [
+                                            ...(t[76] || (t[76] = [n("Favorites", -1)]))
+                                          ]),
+                                          _: 1
+                                        }
+                                      ),
+                                      l(
+                                        y,
+                                        { value: "dropdown1" },
+                                        {
+                                          default: s(() => [
+                                            ...(t[77] || (t[77] = [n("Commenters", -1)]))
+                                          ]),
+                                          _: 1
+                                        }
+                                      )
+                                    ]),
+                                    _: 1
+                                  },
+                                  8,
+                                  ["modelValue"]
+                                ),
+                                l(
+                                  E,
+                                  {
+                                    modelValue: m.activeTab,
+                                    "onUpdate:modelValue": t[1] || (t[1] = (z) => (m.activeTab = z))
+                                  },
+                                  {
+                                    default: s(() => [
+                                      l(
+                                        T,
+                                        { value: "stats" },
+                                        {
+                                          default: s(() => [
+                                            e("div", et, [
+                                              l(
+                                                f,
+                                                {
+                                                  color: "primary",
+                                                  class: "mr-2",
+                                                  label: "",
+                                                  size: "small"
+                                                },
+                                                {
+                                                  default: s(() => [
+                                                    l(
+                                                      d,
+                                                      { size: "small" },
+                                                      {
+                                                        default: s(() => [
+                                                          ...(t[78] ||
+                                                            (t[78] = [n("mdi-facebook", -1)]))
+                                                        ]),
+                                                        _: 1
+                                                      }
+                                                    )
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              ),
+                                              t[79] || (t[79] = n(" Last logged-in users ", -1))
+                                            ]),
+                                            l(
+                                              b,
+                                              { lines: "two" },
+                                              {
+                                                default: s(() => [
+                                                  l(
+                                                    o,
+                                                    { href: "#" },
+                                                    {
+                                                      prepend: s(() => [
+                                                        l(a, { image: "/img/1.png", size: "40" })
+                                                      ]),
+                                                      append: s(() => [
+                                                        ...(t[82] ||
+                                                          (t[82] = [
+                                                            e(
+                                                              "div",
+                                                              {
+                                                                class:
+                                                                  "text-caption text-medium-emphasis"
+                                                              },
+                                                              "Mar 20, 18:46",
+                                                              -1
+                                                            )
+                                                          ]))
+                                                      ]),
+                                                      default: s(() => [
+                                                        l(
+                                                          i,
+                                                          { class: "font-weight-bold" },
+                                                          {
+                                                            default: s(() => [
+                                                              ...(t[80] ||
+                                                                (t[80] = [n("Finees Lund", -1)]))
+                                                            ]),
+                                                            _: 1
+                                                          }
+                                                        ),
+                                                        l(v, null, {
+                                                          default: s(() => [
+                                                            ...(t[81] ||
+                                                              (t[81] = [n("Product Designer", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        })
+                                                      ]),
+                                                      _: 1
+                                                    }
+                                                  ),
+                                                  l(
+                                                    o,
+                                                    { href: "#" },
+                                                    {
+                                                      prepend: s(() => [
+                                                        l(a, { image: "/img/3.png", size: "40" })
+                                                      ]),
+                                                      append: s(() => [
+                                                        ...(t[85] ||
+                                                          (t[85] = [
+                                                            e(
+                                                              "div",
+                                                              {
+                                                                class:
+                                                                  "text-caption text-medium-emphasis"
+                                                              },
+                                                              "Mar 23, 9:02",
+                                                              -1
+                                                            )
+                                                          ]))
+                                                      ]),
+                                                      default: s(() => [
+                                                        l(
+                                                          i,
+                                                          { class: "font-weight-bold" },
+                                                          {
+                                                            default: s(() => [
+                                                              ...(t[83] ||
+                                                                (t[83] = [n("Erebus Novak", -1)]))
+                                                            ]),
+                                                            _: 1
+                                                          }
+                                                        ),
+                                                        l(v, null, {
+                                                          default: s(() => [
+                                                            ...(t[84] ||
+                                                              (t[84] = [
+                                                                n("Software Engineer", -1)
+                                                              ]))
+                                                          ]),
+                                                          _: 1
+                                                        })
+                                                      ]),
+                                                      _: 1
+                                                    }
+                                                  ),
+                                                  l(
+                                                    o,
+                                                    { href: "#" },
+                                                    {
+                                                      prepend: s(() => [
+                                                        l(a, { image: "/img/2.png", size: "40" })
+                                                      ]),
+                                                      append: s(() => [
+                                                        ...(t[88] ||
+                                                          (t[88] = [
+                                                            e(
+                                                              "div",
+                                                              {
+                                                                class:
+                                                                  "text-caption text-medium-emphasis"
+                                                              },
+                                                              "Jun 6, 15:34",
+                                                              -1
+                                                            )
+                                                          ]))
+                                                      ]),
+                                                      default: s(() => [
+                                                        l(
+                                                          i,
+                                                          { class: "font-weight-bold" },
+                                                          {
+                                                            default: s(() => [
+                                                              ...(t[86] ||
+                                                                (t[86] = [n("Leopoldo Reier", -1)]))
+                                                            ]),
+                                                            _: 1
+                                                          }
+                                                        ),
+                                                        l(v, null, {
+                                                          default: s(() => [
+                                                            ...(t[87] ||
+                                                              (t[87] = [n("Chief Officer", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        })
+                                                      ]),
+                                                      _: 1
+                                                    }
+                                                  )
+                                                ]),
+                                                _: 1
+                                              }
+                                            )
+                                          ]),
+                                          _: 1
+                                        }
+                                      ),
+                                      l(
+                                        T,
+                                        { value: "report" },
+                                        {
+                                          default: s(() => [
+                                            e("div", nt, [
+                                              l(
+                                                d,
+                                                { class: "mr-2", size: "small" },
+                                                {
+                                                  default: s(() => [
+                                                    ...(t[89] || (t[89] = [n("mdi-star", -1)]))
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              ),
+                                              t[90] || (t[90] = n(" Popular contacts ", -1))
+                                            ]),
+                                            l(
+                                              b,
+                                              { lines: "two" },
+                                              {
+                                                default: s(() => [
+                                                  l(o, null, {
+                                                    prepend: s(() => [
+                                                      l(a, { image: "/img/14.png", size: "40" })
+                                                    ]),
+                                                    append: s(() => [
+                                                      e("div", dt, [
+                                                        l(u, {
+                                                          size: "x-small",
+                                                          color: "success",
+                                                          class: "mr-1",
+                                                          icon: "mdi-phone"
+                                                        }),
+                                                        l(u, {
+                                                          size: "x-small",
+                                                          color: "warning",
+                                                          icon: "mdi-email-outline"
+                                                        })
+                                                      ])
+                                                    ]),
+                                                    default: s(() => [
+                                                      l(
+                                                        i,
+                                                        { class: "font-weight-bold" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[91] ||
+                                                              (t[91] = [n("Jessica Johnsson", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      )
+                                                    ]),
+                                                    _: 1
+                                                  }),
+                                                  l(o, null, {
+                                                    prepend: s(() => [
+                                                      l(a, { image: "/img/13.png", size: "40" })
+                                                    ]),
+                                                    append: s(() => [
+                                                      e("div", ot, [
+                                                        l(u, {
+                                                          size: "x-small",
+                                                          color: "success",
+                                                          class: "mr-1",
+                                                          icon: "mdi-phone"
+                                                        }),
+                                                        l(u, {
+                                                          size: "x-small",
+                                                          color: "warning",
+                                                          icon: "mdi-email-outline"
+                                                        })
+                                                      ])
+                                                    ]),
+                                                    default: s(() => [
+                                                      l(
+                                                        i,
+                                                        { class: "font-weight-bold" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[92] ||
+                                                              (t[92] = [n("Frans Garey", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      )
+                                                    ]),
+                                                    _: 1
+                                                  })
+                                                ]),
+                                                _: 1
+                                              }
+                                            )
+                                          ]),
+                                          _: 1
+                                        }
+                                      ),
+                                      l(
+                                        T,
+                                        { value: "dropdown1" },
+                                        {
+                                          default: s(() => [
+                                            e("div", it, [
+                                              l(
+                                                d,
+                                                { class: "mr-2", size: "small" },
+                                                {
+                                                  default: s(() => [
+                                                    ...(t[93] ||
+                                                      (t[93] = [n("mdi-comment-multiple", -1)]))
+                                                  ]),
+                                                  _: 1
+                                                }
+                                              ),
+                                              t[94] || (t[94] = n(" Top Commenters ", -1))
+                                            ]),
+                                            l(
+                                              b,
+                                              { lines: "three" },
+                                              {
+                                                default: s(() => [
+                                                  l(o, null, {
+                                                    prepend: s(() => [
+                                                      l(a, { image: "/img/13.png", size: "40" })
+                                                    ]),
+                                                    default: s(() => [
+                                                      l(
+                                                        i,
+                                                        { class: "font-weight-bold" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[95] ||
+                                                              (t[95] = [n("Frans Garey", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      ),
+                                                      l(v, null, {
+                                                        default: s(() => [
+                                                          ...(t[96] ||
+                                                            (t[96] = [
+                                                              n(
+                                                                "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia",
+                                                                -1
+                                                              )
+                                                            ]))
+                                                        ]),
+                                                        _: 1
+                                                      })
+                                                    ]),
+                                                    _: 1
+                                                  }),
+                                                  l(o, null, {
+                                                    prepend: s(() => [
+                                                      l(a, { image: "/img/1.png", size: "40" })
+                                                    ]),
+                                                    default: s(() => [
+                                                      l(
+                                                        i,
+                                                        { class: "font-weight-bold" },
+                                                        {
+                                                          default: s(() => [
+                                                            ...(t[97] ||
+                                                              (t[97] = [n("Finees Lund", -1)]))
+                                                          ]),
+                                                          _: 1
+                                                        }
+                                                      ),
+                                                      l(v, null, {
+                                                        default: s(() => [
+                                                          ...(t[98] ||
+                                                            (t[98] = [
+                                                              n(
+                                                                "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat.",
+                                                                -1
+                                                              )
+                                                            ]))
+                                                        ]),
+                                                        _: 1
+                                                      })
+                                                    ]),
+                                                    _: 1
+                                                  })
+                                                ]),
+                                                _: 1
+                                              }
+                                            )
+                                          ]),
+                                          _: 1
+                                        }
+                                      )
+                                    ]),
+                                    _: 1
+                                  },
+                                  8,
+                                  ["modelValue"]
+                                )
+                              ]),
+                              _: 1
+                            }
+                          ),
+                          l(g, null, {
+                            default: s(() => [
+                              l(
+                                w,
+                                { class: "d-flex align-center justify-space-between" },
+                                {
+                                  default: s(() => [
+                                    ...(t[99] ||
+                                      (t[99] = [
+                                        e(
+                                          "h4",
+                                          { class: "text-h6 font-weight-bold" },
+                                          " Server Overview ",
+                                          -1
+                                        ),
+                                        e(
+                                          "div",
+                                          { class: "text-caption text-medium-emphasis" },
+                                          " 2 days ago ",
+                                          -1
+                                        )
+                                      ]))
+                                  ]),
+                                  _: 1
+                                }
+                              ),
+                              l(L, null, {
+                                default: s(() => [
+                                  e("div", at, [
+                                    t[100] ||
+                                      (t[100] = e(
+                                        "div",
+                                        { class: "d-flex justify-space-between mb-1" },
+                                        [
+                                          e("span", { class: "text-caption" }, "CPU"),
+                                          e(
+                                            "span",
+                                            { class: "text-caption font-weight-bold" },
+                                            "60% / 37°C / 3.3 Ghz"
+                                          )
+                                        ],
+                                        -1
+                                      )),
+                                    l(V, {
+                                      "model-value": "60",
+                                      color: "error",
+                                      height: "6",
+                                      rounded: ""
+                                    })
+                                  ]),
+                                  e("div", ut, [
+                                    t[101] ||
+                                      (t[101] = e(
+                                        "div",
+                                        { class: "d-flex justify-space-between mb-1" },
+                                        [
+                                          e("span", { class: "text-caption" }, "Mem"),
+                                          e(
+                                            "span",
+                                            { class: "text-caption font-weight-bold" },
+                                            "29% / 4GB (16 GB)"
+                                          )
+                                        ],
+                                        -1
+                                      )),
+                                    l(V, {
+                                      "model-value": "29",
+                                      color: "primary",
+                                      height: "6",
+                                      rounded: ""
+                                    })
+                                  ]),
+                                  e("div", null, [
+                                    e("div", rt, [
+                                      t[106] ||
+                                        (t[106] = e("span", { class: "text-caption" }, "LAN", -1)),
+                                      e("span", mt, [
+                                        t[104] || (t[104] = n(" 6 Mb/s ", -1)),
+                                        l(
+                                          d,
+                                          { size: "x-small" },
+                                          {
+                                            default: s(() => [
+                                              ...(t[102] || (t[102] = [n("mdi-menu-down", -1)]))
+                                            ]),
+                                            _: 1
+                                          }
+                                        ),
+                                        t[105] || (t[105] = n(" 3 Mb/s ", -1)),
+                                        l(
+                                          d,
+                                          { size: "x-small" },
+                                          {
+                                            default: s(() => [
+                                              ...(t[103] || (t[103] = [n("mdi-menu-up", -1)]))
+                                            ]),
+                                            _: 1
+                                          }
+                                        )
+                                      ])
+                                    ]),
+                                    l(V, {
+                                      "model-value": "48",
+                                      color: "secondary",
+                                      height: "6",
+                                      rounded: ""
+                                    })
+                                  ])
+                                ]),
+                                _: 1
+                              })
+                            ]),
+                            _: 1
+                          })
+                        ]),
+                        _: 1
+                      }
+                    )
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }
+          )
+        ]),
+        _: 1
+      },
+      8,
+      ["id", "class"]
+    )
+  );
+}
+const Vt = F(Y, [
+  ["render", ft],
+  ["__scopeId", "data-v-cc2dbdf3"]
+]);
+export { Vt as default };

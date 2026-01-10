@@ -162,6 +162,8 @@ class Xophz_Compass {
 		$this->loader->add_action( 'wp_ajax_deactivate_plugin', $plugin_admin, 'deactivate_plugin'); 
     $this->loader->add_action( 'wp_ajax_get_current_user', $plugin_admin, 'getCurrentUser' );
 		$this->loader->add_action( 'wp_ajax_deactivate_plugin', $plugin_admin, 'deactivate_plugin'); 
+    $this->loader->add_action( 'wp_ajax_save_plugin_order', $plugin_admin, 'save_plugin_order' );
+    $this->loader->add_action( 'wp_ajax_get_plugin_order', $plugin_admin, 'get_plugin_order' ); 
 
     $this->loader->add_filter( 'manage_posts_columns', $plugin_admin, 'posts_column_views');
     
@@ -194,6 +196,8 @@ class Xophz_Compass {
     $this->loader->add_filter( 'rest_enabled', $plugin_public, 'enable_rest_api' );
     $this->loader->add_filter( 'rest_jsonp_enabled', $plugin_public, 'enable_rest_api' );
 
+    // Register admin_color as a REST API field for users
+    $this->loader->add_action( 'rest_api_init', $this, 'register_admin_color_rest_field' );
 
 
 	}
@@ -236,6 +240,58 @@ class Xophz_Compass {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+
+	/**
+	 * Register admin_color as a REST API field for users.
+	 * This allows the color scheme picker to save via REST API.
+	 *
+	 * @since     1.0.0
+	 */
+	public function register_admin_color_rest_field() {
+		register_rest_field('user', 'admin_color', [
+			'get_callback' => function($user) {
+				return get_user_option('admin_color', $user['id']);
+			},
+			'update_callback' => function($value, $user) {
+				// Ensure admin color schemes are registered
+				// (they may not be available in REST context by default)
+				if (function_exists('wp_admin_css_color')) {
+					// Trigger loading of color schemes if not already loaded
+					global $_wp_admin_css_colors;
+					if (empty($_wp_admin_css_colors)) {
+						// Register the default schemes
+						require_once(ABSPATH . 'wp-admin/includes/misc.php');
+						if (function_exists('register_admin_color_schemes')) {
+							register_admin_color_schemes();
+						}
+					}
+				}
+				
+				// Validate the color scheme - use a simple allowlist if global not available
+				global $_wp_admin_css_colors;
+				$valid_schemes = !empty($_wp_admin_css_colors) 
+					? array_keys($_wp_admin_css_colors)
+					: ['fresh', 'light', 'modern', 'blue', 'coffee', 'ectoplasm', 'midnight', 'ocean', 'sunrise'];
+				
+				if (!in_array($value, $valid_schemes, true)) {
+					return new WP_Error(
+						'invalid_admin_color',
+						'Invalid admin color scheme: ' . $value,
+						['status' => 400]
+					);
+				}
+				
+				// Update the user option
+				update_user_option($user->ID, 'admin_color', sanitize_text_field($value));
+				return true;
+			},
+			'schema' => [
+				'description' => 'Admin color scheme for the user.',
+				'type' => 'string',
+				'context' => ['view', 'edit'],
+			]
+		]);
 	}
 
   public static function add_submenu($plugin, $args=[]){

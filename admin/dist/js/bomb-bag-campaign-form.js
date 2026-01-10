@@ -1,1 +1,404 @@
-import{d as L,a6 as R,ae as $,ce as q,an as c,v as B,a8 as h,a7 as I,a as D,r as p,c as w,o as y,w as l,e as a,b,g as N,i as r,t as k,U as M,h as Y,aD as A,aE as C,a4 as V}from"./index.js";import{u as J}from"./bomb-bag.store.js";import{V as v}from"./VRow.js";import{V as d}from"./VCol.js";import{V as K}from"./VForm.js";import{V as z}from"./VContainer.js";/* empty css     */const G=L({name:"BombBagCampaignForm",setup(){const o=R(),e=$(),m=J(),{lists:g,currentCampaign:_,currentCampaignLoading:E}=q(m),n=c(),i=c(!1),u=c({name:"",subject:"",from_name:"",from_email:"",list_id:null}),f={required:t=>!!t||"This field is required"},s=B(()=>!!e.params.id),S=B(()=>g.value.map(t=>({id:t.id,name:`${t.name} (${t.subscriber_count} subscribers)`})));h(async()=>{await m.fetchLists(),e.params.id&&await m.fetchCampaign(Number(e.params.id))}),I(_,t=>{t&&(u.value={name:t.name,subject:t.subject,from_name:t.from_name||"",from_email:t.from_email||"",list_id:t.list_id})});async function j(){const{valid:t}=await n.value.validate();if(t){i.value=!0;try{if(s.value)await m.updateCampaign(Number(e.params.id),u.value);else{const U=await m.createCampaign(u.value);o.push({name:"Bomb Bag Composer",params:{id:U.id}});return}o.push({name:"Bomb Bag Campaigns"})}finally{i.value=!1}}}function F(){o.push({name:"Bomb Bag Campaigns"})}function T(){o.push({name:"Bomb Bag Composer",params:{id:e.params.id}})}return{formRef:n,form:u,rules:f,saving:i,isEdit:s,lists:g,listsForSelect:S,saveCampaign:j,goBack:F,goToComposer:T}}}),H={class:"d-flex align-center"},O={class:"ms-2"},P={class:"d-flex gap-2 mt-6"};function Q(o,e,m,g,_,E){const n=p("x-btn"),i=p("x-text-field"),u=p("x-select"),f=p("x-glass-card");return y(),w(z,{fluid:"",class:"bomb-bag-campaign-form pa-6"},{default:l(()=>[a(v,{class:"mb-6"},{default:l(()=>[a(d,null,{default:l(()=>[b("div",H,[a(n,{icon:"",variant:"text",onClick:o.goBack},{default:l(()=>[a(N,null,{default:l(()=>[...e[5]||(e[5]=[r("mdi-arrow-left",-1)])]),_:1})]),_:1},8,["onClick"]),b("h2",O,k(o.isEdit?"Edit Campaign":"New Campaign"),1)])]),_:1})]),_:1}),a(v,null,{default:l(()=>[a(d,{cols:"12",md:"8"},{default:l(()=>[a(f,{class:"pa-6"},{default:l(()=>[a(K,{ref:"formRef",onSubmit:M(o.saveCampaign,["prevent"])},{default:l(()=>[a(i,{modelValue:o.form.name,"onUpdate:modelValue":e[0]||(e[0]=s=>o.form.name=s),variant:"outlined",label:"Campaign Name",placeholder:"e.g., January Newsletter",rules:[o.rules.required],class:"mb-4"},null,8,["modelValue","rules"]),a(i,{modelValue:o.form.subject,"onUpdate:modelValue":e[1]||(e[1]=s=>o.form.subject=s),variant:"outlined",label:"Email Subject",placeholder:"e.g., Your monthly update is here!",rules:[o.rules.required],class:"mb-4"},null,8,["modelValue","rules"]),a(v,null,{default:l(()=>[a(d,{cols:"12",md:"6"},{default:l(()=>[a(i,{modelValue:o.form.from_name,"onUpdate:modelValue":e[2]||(e[2]=s=>o.form.from_name=s),variant:"outlined",label:"From Name",placeholder:"Your Company"},null,8,["modelValue"])]),_:1}),a(d,{cols:"12",md:"6"},{default:l(()=>[a(i,{modelValue:o.form.from_email,"onUpdate:modelValue":e[3]||(e[3]=s=>o.form.from_email=s),variant:"outlined",label:"From Email",placeholder:"hello@example.com",type:"email"},null,8,["modelValue"])]),_:1})]),_:1}),a(u,{modelValue:o.form.list_id,"onUpdate:modelValue":e[4]||(e[4]=s=>o.form.list_id=s),variant:"outlined",items:o.listsForSelect,"item-title":"name","item-value":"id",label:"Subscriber List",rules:[o.rules.required],class:"mb-4"},null,8,["modelValue","items","rules"]),b("div",P,[a(n,{type:"submit",color:"primary",loading:o.saving},{default:l(()=>[r(k(o.isEdit?"Update":"Create")+" Campaign ",1)]),_:1},8,["loading"]),o.isEdit?(y(),w(n,{key:0,variant:"outlined",onClick:o.goToComposer},{default:l(()=>[a(N,{start:""},{default:l(()=>[...e[6]||(e[6]=[r("mdi-email-edit",-1)])]),_:1}),e[7]||(e[7]=r(" Edit Content ",-1))]),_:1},8,["onClick"])):Y("",!0)])]),_:1},8,["onSubmit"])]),_:1})]),_:1}),a(d,{cols:"12",md:"4"},{default:l(()=>[a(f,{class:"pa-4"},{default:l(()=>[e[11]||(e[11]=b("h4",{class:"mb-4"},"Campaign Tips",-1)),a(A,{"bg-color":"transparent",density:"compact"},{default:l(()=>[a(C,{"prepend-icon":"mdi-lightbulb"},{default:l(()=>[a(V,null,{default:l(()=>[...e[8]||(e[8]=[r("Keep subjects under 50 characters",-1)])]),_:1})]),_:1}),a(C,{"prepend-icon":"mdi-account-group"},{default:l(()=>[a(V,null,{default:l(()=>[...e[9]||(e[9]=[r("Select the right audience list",-1)])]),_:1})]),_:1}),a(C,{"prepend-icon":"mdi-test-tube"},{default:l(()=>[a(V,null,{default:l(()=>[...e[10]||(e[10]=[r("Always send a test email first",-1)])]),_:1})]),_:1})]),_:1})]),_:1})]),_:1})]),_:1})]),_:1})}const le=D(G,[["render",Q],["__scopeId","data-v-709cd55d"]]);export{le as default};
+import {
+  d as L,
+  a6 as R,
+  ae as $,
+  ce as q,
+  an as c,
+  v as B,
+  a8 as h,
+  a7 as I,
+  a as D,
+  r as p,
+  c as w,
+  o as y,
+  w as l,
+  e as a,
+  b,
+  g as N,
+  i as r,
+  t as k,
+  U as M,
+  h as Y,
+  aD as A,
+  aE as C,
+  a4 as V
+} from "./index.js";
+import { u as J } from "./bomb-bag.store.js";
+import { V as v } from "./VRow.js";
+import { V as d } from "./VCol.js";
+import { V as K } from "./VForm.js";
+import { V as z } from "./VContainer.js";
+/* empty css     */ const G = L({
+    name: "BombBagCampaignForm",
+    setup() {
+      const o = R(),
+        e = $(),
+        m = J(),
+        { lists: g, currentCampaign: _, currentCampaignLoading: E } = q(m),
+        n = c(),
+        i = c(!1),
+        u = c({ name: "", subject: "", from_name: "", from_email: "", list_id: null }),
+        f = { required: (t) => !!t || "This field is required" },
+        s = B(() => !!e.params.id),
+        S = B(() =>
+          g.value.map((t) => ({ id: t.id, name: `${t.name} (${t.subscriber_count} subscribers)` }))
+        );
+      h(async () => {
+        await m.fetchLists(), e.params.id && (await m.fetchCampaign(Number(e.params.id)));
+      }),
+        I(_, (t) => {
+          t &&
+            (u.value = {
+              name: t.name,
+              subject: t.subject,
+              from_name: t.from_name || "",
+              from_email: t.from_email || "",
+              list_id: t.list_id
+            });
+        });
+      async function j() {
+        const { valid: t } = await n.value.validate();
+        if (t) {
+          i.value = !0;
+          try {
+            if (s.value) await m.updateCampaign(Number(e.params.id), u.value);
+            else {
+              const U = await m.createCampaign(u.value);
+              o.push({ name: "Bomb Bag Composer", params: { id: U.id } });
+              return;
+            }
+            o.push({ name: "Bomb Bag Campaigns" });
+          } finally {
+            i.value = !1;
+          }
+        }
+      }
+      function F() {
+        o.push({ name: "Bomb Bag Campaigns" });
+      }
+      function T() {
+        o.push({ name: "Bomb Bag Composer", params: { id: e.params.id } });
+      }
+      return {
+        formRef: n,
+        form: u,
+        rules: f,
+        saving: i,
+        isEdit: s,
+        lists: g,
+        listsForSelect: S,
+        saveCampaign: j,
+        goBack: F,
+        goToComposer: T
+      };
+    }
+  }),
+  H = { class: "d-flex align-center" },
+  O = { class: "ms-2" },
+  P = { class: "d-flex ga-2 mt-6" };
+function Q(o, e, m, g, _, E) {
+  const n = p("x-btn"),
+    i = p("x-text-field"),
+    u = p("x-select"),
+    f = p("x-glass-card");
+  return (
+    y(),
+    w(
+      z,
+      { fluid: "", class: "bomb-bag-campaign-form pa-6" },
+      {
+        default: l(() => [
+          a(
+            v,
+            { class: "mb-6" },
+            {
+              default: l(() => [
+                a(d, null, {
+                  default: l(() => [
+                    b("div", H, [
+                      a(
+                        n,
+                        { icon: "", variant: "text", onClick: o.goBack },
+                        {
+                          default: l(() => [
+                            a(N, null, {
+                              default: l(() => [...(e[5] || (e[5] = [r("mdi-arrow-left", -1)]))]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        },
+                        8,
+                        ["onClick"]
+                      ),
+                      b("h2", O, k(o.isEdit ? "Edit Campaign" : "New Campaign"), 1)
+                    ])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }
+          ),
+          a(v, null, {
+            default: l(() => [
+              a(
+                d,
+                { cols: "12", md: "8" },
+                {
+                  default: l(() => [
+                    a(
+                      f,
+                      { class: "pa-6" },
+                      {
+                        default: l(() => [
+                          a(
+                            K,
+                            { ref: "formRef", onSubmit: M(o.saveCampaign, ["prevent"]) },
+                            {
+                              default: l(() => [
+                                a(
+                                  i,
+                                  {
+                                    modelValue: o.form.name,
+                                    "onUpdate:modelValue":
+                                      e[0] || (e[0] = (s) => (o.form.name = s)),
+                                    variant: "outlined",
+                                    label: "Campaign Name",
+                                    placeholder: "e.g., January Newsletter",
+                                    rules: [o.rules.required],
+                                    class: "mb-4"
+                                  },
+                                  null,
+                                  8,
+                                  ["modelValue", "rules"]
+                                ),
+                                a(
+                                  i,
+                                  {
+                                    modelValue: o.form.subject,
+                                    "onUpdate:modelValue":
+                                      e[1] || (e[1] = (s) => (o.form.subject = s)),
+                                    variant: "outlined",
+                                    label: "Email Subject",
+                                    placeholder: "e.g., Your monthly update is here!",
+                                    rules: [o.rules.required],
+                                    class: "mb-4"
+                                  },
+                                  null,
+                                  8,
+                                  ["modelValue", "rules"]
+                                ),
+                                a(v, null, {
+                                  default: l(() => [
+                                    a(
+                                      d,
+                                      { cols: "12", md: "6" },
+                                      {
+                                        default: l(() => [
+                                          a(
+                                            i,
+                                            {
+                                              modelValue: o.form.from_name,
+                                              "onUpdate:modelValue":
+                                                e[2] || (e[2] = (s) => (o.form.from_name = s)),
+                                              variant: "outlined",
+                                              label: "From Name",
+                                              placeholder: "Your Company"
+                                            },
+                                            null,
+                                            8,
+                                            ["modelValue"]
+                                          )
+                                        ]),
+                                        _: 1
+                                      }
+                                    ),
+                                    a(
+                                      d,
+                                      { cols: "12", md: "6" },
+                                      {
+                                        default: l(() => [
+                                          a(
+                                            i,
+                                            {
+                                              modelValue: o.form.from_email,
+                                              "onUpdate:modelValue":
+                                                e[3] || (e[3] = (s) => (o.form.from_email = s)),
+                                              variant: "outlined",
+                                              label: "From Email",
+                                              placeholder: "hello@example.com",
+                                              type: "email"
+                                            },
+                                            null,
+                                            8,
+                                            ["modelValue"]
+                                          )
+                                        ]),
+                                        _: 1
+                                      }
+                                    )
+                                  ]),
+                                  _: 1
+                                }),
+                                a(
+                                  u,
+                                  {
+                                    modelValue: o.form.list_id,
+                                    "onUpdate:modelValue":
+                                      e[4] || (e[4] = (s) => (o.form.list_id = s)),
+                                    variant: "outlined",
+                                    items: o.listsForSelect,
+                                    "item-title": "name",
+                                    "item-value": "id",
+                                    label: "Subscriber List",
+                                    rules: [o.rules.required],
+                                    class: "mb-4"
+                                  },
+                                  null,
+                                  8,
+                                  ["modelValue", "items", "rules"]
+                                ),
+                                b("div", P, [
+                                  a(
+                                    n,
+                                    { type: "submit", color: "primary", loading: o.saving },
+                                    {
+                                      default: l(() => [
+                                        r(k(o.isEdit ? "Update" : "Create") + " Campaign ", 1)
+                                      ]),
+                                      _: 1
+                                    },
+                                    8,
+                                    ["loading"]
+                                  ),
+                                  o.isEdit
+                                    ? (y(),
+                                      w(
+                                        n,
+                                        { key: 0, variant: "outlined", onClick: o.goToComposer },
+                                        {
+                                          default: l(() => [
+                                            a(
+                                              N,
+                                              { start: "" },
+                                              {
+                                                default: l(() => [
+                                                  ...(e[6] || (e[6] = [r("mdi-email-edit", -1)]))
+                                                ]),
+                                                _: 1
+                                              }
+                                            ),
+                                            e[7] || (e[7] = r(" Edit Content ", -1))
+                                          ]),
+                                          _: 1
+                                        },
+                                        8,
+                                        ["onClick"]
+                                      ))
+                                    : Y("", !0)
+                                ])
+                              ]),
+                              _: 1
+                            },
+                            8,
+                            ["onSubmit"]
+                          )
+                        ]),
+                        _: 1
+                      }
+                    )
+                  ]),
+                  _: 1
+                }
+              ),
+              a(
+                d,
+                { cols: "12", md: "4" },
+                {
+                  default: l(() => [
+                    a(
+                      f,
+                      { class: "pa-4" },
+                      {
+                        default: l(() => [
+                          e[11] || (e[11] = b("h4", { class: "mb-4" }, "Campaign Tips", -1)),
+                          a(
+                            A,
+                            { "bg-color": "transparent", density: "compact" },
+                            {
+                              default: l(() => [
+                                a(
+                                  C,
+                                  { "prepend-icon": "mdi-lightbulb" },
+                                  {
+                                    default: l(() => [
+                                      a(V, null, {
+                                        default: l(() => [
+                                          ...(e[8] ||
+                                            (e[8] = [r("Keep subjects under 50 characters", -1)]))
+                                        ]),
+                                        _: 1
+                                      })
+                                    ]),
+                                    _: 1
+                                  }
+                                ),
+                                a(
+                                  C,
+                                  { "prepend-icon": "mdi-account-group" },
+                                  {
+                                    default: l(() => [
+                                      a(V, null, {
+                                        default: l(() => [
+                                          ...(e[9] ||
+                                            (e[9] = [r("Select the right audience list", -1)]))
+                                        ]),
+                                        _: 1
+                                      })
+                                    ]),
+                                    _: 1
+                                  }
+                                ),
+                                a(
+                                  C,
+                                  { "prepend-icon": "mdi-test-tube" },
+                                  {
+                                    default: l(() => [
+                                      a(V, null, {
+                                        default: l(() => [
+                                          ...(e[10] ||
+                                            (e[10] = [r("Always send a test email first", -1)]))
+                                        ]),
+                                        _: 1
+                                      })
+                                    ]),
+                                    _: 1
+                                  }
+                                )
+                              ]),
+                              _: 1
+                            }
+                          )
+                        ]),
+                        _: 1
+                      }
+                    )
+                  ]),
+                  _: 1
+                }
+              )
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }
+    )
+  );
+}
+const le = D(G, [
+  ["render", Q],
+  ["__scopeId", "data-v-709cd55d"]
+]);
+export { le as default };
