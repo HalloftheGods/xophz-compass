@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/quests.js","js/sub-app-navigation-drawer.js","js/useSubAppNavigation.js","js/index.js","css/index.css","js/sub-app-navigation-list.js","css/sub-app-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/quests.js","js/sub-app-navigation-drawer.js","js/sub-app-navigation-list.js","js/index.js","css/index.css","js/useSubAppNavigation.js","css/sub-app-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
 import{_ as t}from"./index.js";const s=()=>t(()=>import("./quests.js"),__vite__mapDeps([0,1,2,3,4,5,6,7])),o={path:"/quests",name:"Quests CRM",component:s};export{o as default};

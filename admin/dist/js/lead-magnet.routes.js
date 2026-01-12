@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/lead-magnet.js","js/sub-app-navigation-drawer.js","js/useSubAppNavigation.js","js/index.js","css/index.css","js/sub-app-navigation-list.js","css/sub-app-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/lead-magnet.js","js/sub-app-navigation-drawer.js","js/sub-app-navigation-list.js","js/index.js","css/index.css","js/useSubAppNavigation.js","css/sub-app-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
 import{_ as e}from"./index.js";const t=()=>e(()=>import("./lead-magnet.js"),__vite__mapDeps([0,1,2,3,4,5,6,7])),o={path:"/lead-magnet",name:"Lead Magnet",component:t};export{o as default};
