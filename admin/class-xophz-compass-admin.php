@@ -222,14 +222,18 @@ class Xophz_Compass_Admin {
 
     $capability = 'read';
     $slug       = 'xophz-compass';
+    
+    // Use branding helper for customizable menu title and icon
+    $menu_title = Xophz_Compass_Branding::get_menu_title();
+    $menu_icon  = Xophz_Compass_Branding::get_menu_icon();
 
     $hook = add_menu_page( 
-        __( 'Xophz Compass', 'xophz-compass' ), 
-        __( 'Xophz Compass', 'xophz-compass' ), 
+        __( $menu_title, 'xophz-compass' ), 
+        __( $menu_title, 'xophz-compass' ), 
         $capability,
         $slug, 
         [ $this, 'admin_area' ],
-        'dashicons-editor-customchar',
+        $menu_icon,
         0 
     );
 
@@ -237,8 +241,10 @@ class Xophz_Compass_Admin {
         $submenu[ $slug ] = array();
     }
 
+    // Use platform name for first menu item
+    $platform_name = Xophz_Compass_Branding::get('platform_name', 'Compass');
     array_unshift($submenu[ $slug ] ,[
-        __( 'Compass', 'xophz-compass' ),
+        __( $platform_name, 'xophz-compass' ),
         'manage_options',
         'admin.php?page=' . $slug . '#/', 
     ]);
@@ -294,6 +300,7 @@ class Xophz_Compass_Admin {
 
   public function getPluginsByXoph(){
     $plugins = get_plugins();
+    $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
 
     foreach($plugins as $p => $plugin){
       if(false === strpos($plugin['TextDomain'],'xophz-compass')){
@@ -303,9 +310,19 @@ class Xophz_Compass_Admin {
       }
       $plugin_dir = str_replace($_SERVER["DOCUMENT_ROOT"],"", plugins_url($plugin['TextDomain']));
 
+      // Extract slug from text domain (e.g., 'xophz-compass-bomb-bag' -> 'bomb-bag')
+      $slug = str_replace('xophz-compass-', '', $plugin['TextDomain']);
+      if ($slug === 'xophz-compass') {
+        $slug = 'compass'; // Main plugin
+      }
+
       $plugins[$p]['isActivated'] = is_plugin_active($p);
       $plugins[$p]['isInstalled'] = true;
-      $plugins[$p]['Name'] = trim(str_replace('Xophz','', $plugin['Name'])) ;
+      
+      // Use branding helper for customizable plugin names
+      $plugins[$p]['Name'] = Xophz_Compass_Branding::get_plugin_name($slug);
+      $plugins[$p]['Description'] = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
+      
       $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
       $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
       $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
@@ -435,5 +452,127 @@ class Xophz_Compass_Admin {
   private function isDevServer()
   {
     return in_array(DB_HOST, ['mysql:3306']); 
+  }
+
+  /**
+   * Register REST API endpoints for branding configuration.
+   *
+   * @since    1.0.0
+   */
+  public function register_branding_endpoints() {
+    register_rest_route('xophz-compass/v1', '/branding', [
+      [
+        'methods'  => 'GET',
+        'callback' => [$this, 'get_branding'],
+        'permission_callback' => function() {
+          return current_user_can('manage_options');
+        }
+      ],
+      [
+        'methods'  => 'PUT',
+        'callback' => [$this, 'update_branding'],
+        'permission_callback' => function() {
+          // Only Wizards can update branding
+          return current_user_can('manage_options') && Xophz_Compass_Branding::is_wizard();
+        }
+      ]
+    ]);
+
+    register_rest_route('xophz-compass/v1', '/wizard-status', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_wizard_status'],
+      'permission_callback' => function() {
+        return current_user_can('manage_options');
+      }
+    ]);
+
+    register_rest_route('xophz-compass/v1', '/plugins', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_available_plugins'],
+      'permission_callback' => function() {
+        return current_user_can('manage_options');
+      }
+    ]);
+  }
+
+  /**
+   * Get branding configuration via REST API.
+   *
+   * @since    1.0.0
+   * @return   WP_REST_Response
+   */
+  public function get_branding() {
+    return new WP_REST_Response([
+      'config'   => Xophz_Compass_Branding::get_config(),
+      'defaults' => Xophz_Compass_Branding::get_defaults(),
+      'isWizard' => Xophz_Compass_Branding::is_wizard()
+    ], 200);
+  }
+
+  /**
+   * Update branding configuration via REST API.
+   *
+   * @since    1.0.0
+   * @param    WP_REST_Request    $request    The REST request.
+   * @return   WP_REST_Response
+   */
+  public function update_branding(WP_REST_Request $request) {
+    $config = $request->get_json_params();
+    
+    if (empty($config)) {
+      return new WP_REST_Response(['error' => 'No configuration provided'], 400);
+    }
+
+    $success = Xophz_Compass_Branding::update_config($config);
+
+    if ($success) {
+      return new WP_REST_Response([
+        'success' => true,
+        'config'  => Xophz_Compass_Branding::get_config()
+      ], 200);
+    }
+
+    return new WP_REST_Response(['error' => 'Failed to update configuration'], 500);
+  }
+
+  /**
+   * Get Wizard status via REST API.
+   *
+   * @since    1.0.0
+   * @return   WP_REST_Response
+   */
+  public function get_wizard_status() {
+    return new WP_REST_Response([
+      'isWizard' => Xophz_Compass_Branding::is_wizard()
+    ], 200);
+  }
+
+  /**
+   * Get list of all available COMPASS plugins for branding.
+   *
+   * @since    1.0.0
+   * @return   WP_REST_Response
+   */
+  public function get_available_plugins() {
+    $plugins = get_plugins();
+    $available = [];
+
+    foreach($plugins as $p => $plugin){
+      if(false === strpos($plugin['TextDomain'],'xophz-compass')){
+        continue;
+      }
+      
+      $slug = str_replace('xophz-compass-', '', $plugin['TextDomain']);
+      if ($slug === 'xophz-compass') {
+        $slug = 'compass';
+      }
+
+      $available[] = [
+        'slug' => $slug,
+        'defaultName' => trim(str_replace('Xophz', '', $plugin['Name']))
+      ];
+    }
+
+    return new WP_REST_Response($available, 200);
   }
 }

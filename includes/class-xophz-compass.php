@@ -110,6 +110,11 @@ class Xophz_Compass {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-i18n.php';
 
 		/**
+		 * The class responsible for centralized branding configuration.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-branding.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-xophz-compass-admin.php';
@@ -175,6 +180,9 @@ class Xophz_Compass {
 
     $this->loader->add_action( 'admin_footer_text', $plugin_admin,'change_admin_footer',9999);
     $this->loader->add_action( 'update_footer', $plugin_admin,'change_footer',9999);
+
+    // Register branding REST API endpoints
+    $this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_branding_endpoints' );
 	}
 
 	/**
@@ -198,6 +206,9 @@ class Xophz_Compass {
 
     // Register admin_color as a REST API field for users
     $this->loader->add_action( 'rest_api_init', $this, 'register_admin_color_rest_field' );
+    
+    // Register views field
+    $this->loader->add_action( 'rest_api_init', $this, 'register_post_views_rest_field' );
 
 
 	}
@@ -294,6 +305,24 @@ class Xophz_Compass {
 		]);
 	}
 
+	/**
+	 * Register post_views_count as a REST API field for posts.
+	 *
+	 * @since     1.0.0
+	 */
+	public function register_post_views_rest_field() {
+		register_rest_field(['post'], 'post_views_count', [
+			'get_callback' => function($post) {
+				return (int) get_post_meta($post['id'], 'post_views_count', true);
+			},
+			'schema' => [
+				'description' => 'Number of times the post has been viewed.',
+				'type' => 'integer',
+				'context' => ['view', 'edit'],
+			]
+		]);
+	}
+
   public static function add_submenu($plugin, $args=[]){
       global $submenu;
 
@@ -305,8 +334,11 @@ class Xophz_Compass {
       $compass = substr($plugin['TextDomain'], 0, 13);
       $page  = substr($plugin['TextDomain'], 14);
 
+      // Use branding helper for customizable plugin name
+      $plugin_name = Xophz_Compass_Branding::get_plugin_name($page);
+
       $submenu[ $compass ][] = [
-          __( str_replace("Xophz ","", $plugin['Name']), $compass ),
+          __( $plugin_name, $compass ),
           $cap,
           "admin.php?page={$compass}#/{$page}"
       ];
