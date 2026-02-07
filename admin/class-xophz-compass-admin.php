@@ -63,19 +63,31 @@ class Xophz_Compass_Admin {
     wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
 
     if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
-      // e.g. these styles will keep the admin bar styled
-      $styles_to_keep = array("wp-admin", "admin-bar", "dashicons", "open-sans", "admin-menu", "colors", "query-monitor", "button-color");
+      // TARGETED STYLE DEQUEUING
+      // Keep WordPress admin chrome functional, but prevent form styling conflicts
+      $styles_to_keep = array(
+        "dashicons",     // Required: Icons throughout WordPress admin
+        "admin-bar",     // Required: Top WordPress admin bar
+        "admin-menu",    // Required: Left sidebar menu styling
+        "common",        // Required: WordPress admin base styles
+        "colors",        // Required: WordPress color schemes  
+        "open-sans",     // WordPress admin font
+        "button-color",  // Custom: COMPASS admin menu icon color
+        "query-monitor"  // Dev tool: Query Monitor plugin styles
+      );
 
       $styles = wp_styles()->registered;
       foreach ($styles as $handle => $value) {
-          // if we want to keep it, skip it
+          // Keep explicitly allowed styles and color scheme variations
           if ( in_array($handle, $styles_to_keep) || strpos($handle, 'colors') === 0 ) continue;
 
-          // otherwise remove it
-          // wp_deregister_style($handle);
-          // if($handle != 'admin-menu')
-            wp_dequeue_style($handle);
+          // Dequeue everything else
+          wp_dequeue_style($handle);
       }
+
+      // Note: We don't deregister WordPress stylesheets anymore
+      // Our consolidated _wp-form-reset.scss handles overriding WordPress form styles
+      // This prevents dependency warnings and maintains WordPress admin functionality
 
       if ( $this->isDevServer() ) {
         // Vite injects CSS via JavaScript in dev mode, so no separate CSS files needed
@@ -84,16 +96,10 @@ class Xophz_Compass_Admin {
         wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
       }
 
+      // Re-enqueue kept styles to ensure they load after deregistration
       foreach ($styles_to_keep as $style) {
         wp_enqueue_style( $style );
       }
-      // wp_enqueue_style(
-      //   $this->plugin_name.'admin-css',
-      //   plugins_url( 'css/xophz-compass-admin.css', __FILE__ ),
-      //   array(),
-      //   $this->version,
-      //   'all'
-      // );
     }
 
   }

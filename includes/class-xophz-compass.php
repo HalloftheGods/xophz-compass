@@ -381,10 +381,11 @@ class Xophz_Compass {
           $id, $k, $payload
         );
       }
+      return;
     }
 
-    $value = $payload[$key];
-    if( $value  ){
+    if( isset($payload[$key]) ){
+      $value = $payload[$key];
       update_post_meta(
         $id,
         $key,
