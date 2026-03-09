@@ -186,6 +186,19 @@ class Xophz_Compass_Branding {
     }
 
     /**
+     * Delete the branding configuration entirely, reverting to defaults.
+     *
+     * @since    1.0.0
+     * @return   bool    True on success, false on failure.
+     */
+    public static function delete_config(): bool {
+        // Clear cache
+        self::$cache = null;
+
+        return delete_option(self::OPTION_KEY);
+    }
+
+    /**
      * Sanitize branding configuration values.
      *
      * @since    1.0.0

@@ -481,6 +481,14 @@ class Xophz_Compass_Admin {
           // Only Wizards can update branding
           return current_user_can('manage_options') && Xophz_Compass_Branding::is_wizard();
         }
+      ],
+      [
+        'methods'  => 'DELETE',
+        'callback' => [$this, 'delete_branding'],
+        'permission_callback' => function() {
+          // Only Wizards can delete/reset branding
+          return current_user_can('manage_options') && Xophz_Compass_Branding::is_wizard();
+        }
       ]
     ]);
 
@@ -539,6 +547,25 @@ class Xophz_Compass_Admin {
     }
 
     return new WP_REST_Response(['error' => 'Failed to update configuration'], 500);
+  }
+
+  /**
+   * Delete branding configuration via REST API, reverting to defaults.
+   *
+   * @since    1.0.0
+   * @return   WP_REST_Response
+   */
+  public function delete_branding() {
+    $success = Xophz_Compass_Branding::delete_config();
+
+    if ($success || !get_option(Xophz_Compass_Branding::OPTION_KEY)) {
+      return new WP_REST_Response([
+        'success' => true,
+        'config'  => Xophz_Compass_Branding::get_config() // Returns defaults
+      ], 200);
+    }
+
+    return new WP_REST_Response(['error' => 'Failed to reset configuration'], 500);
   }
 
   /**
