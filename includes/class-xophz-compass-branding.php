@@ -100,19 +100,17 @@ class Xophz_Compass_Branding {
         return $config[$key] ?? $default;
     }
 
-    /**
-     * Get a plugin's display name with branding applied.
-     *
-     * @since    1.0.0
-     * @param    string    $slug    The plugin slug (e.g., 'bomb-bag').
-     * @return   string             The branded display name.
-     */
-    public static function get_plugin_name(string $slug): string {
+    public static function get_plugin_name(string $slug, string $default_name = ''): string {
         $config = self::get_config();
         
         // Check for custom name override
         if (isset($config['plugins'][$slug]['name']) && !empty($config['plugins'][$slug]['name'])) {
             return $config['plugins'][$slug]['name'];
+        }
+
+        // Return header name stripped of Xophz
+        if (!empty($default_name)) {
+            return $default_name;
         }
 
         // Fallback: humanize the slug

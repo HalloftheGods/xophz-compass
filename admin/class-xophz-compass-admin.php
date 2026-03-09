@@ -326,7 +326,8 @@ class Xophz_Compass_Admin {
       $plugins[$p]['isInstalled'] = true;
       
       // Use branding helper for customizable plugin names
-      $plugins[$p]['Name'] = Xophz_Compass_Branding::get_plugin_name($slug);
+      $default_name = trim(str_replace('Xophz', '', $plugin['Name']));
+      $plugins[$p]['Name'] = Xophz_Compass_Branding::get_plugin_name($slug, $default_name);
       $plugins[$p]['Description'] = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
       
       $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
@@ -599,6 +600,12 @@ class Xophz_Compass_Admin {
       if ($slug === 'xophz-compass') {
         $slug = 'compass';
       }
+
+      $route_map = [
+          'quests' => 'questbook',
+          'post-digger' => 'newsroom'
+      ];
+      $slug = isset($route_map[$slug]) ? $route_map[$slug] : $slug;
 
       $available[] = [
         'slug' => $slug,

@@ -334,13 +334,21 @@ class Xophz_Compass {
       $compass = substr($plugin['TextDomain'], 0, 13);
       $page  = substr($plugin['TextDomain'], 14);
 
+      // Route mapping for renamed plugins
+      $route_map = [
+          'quests' => 'questbook',
+          'post-digger' => 'newsroom'
+      ];
+      $route_slug = isset($route_map[$page]) ? $route_map[$page] : $page;
+
       // Use branding helper for customizable plugin name
-      $plugin_name = Xophz_Compass_Branding::get_plugin_name($page);
+      $default_name = trim(str_replace('Xophz', '', $plugin['Name']));
+      $plugin_name = Xophz_Compass_Branding::get_plugin_name($page, $default_name);
 
       $submenu[ $compass ][] = [
           __( $plugin_name, $compass ),
           $cap,
-          "admin.php?page={$compass}#/{$page}"
+          "admin.php?page={$compass}#/{$route_slug}"
       ];
   }
 
