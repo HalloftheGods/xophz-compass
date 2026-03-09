@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/thors-hammer.js","js/index.js","css/index.css","js/VContainer.js","css/VGrid.css","js/VRow.js","js/VCol.js","js/VTextarea.js","css/VTextarea.css","js/VDataTable.js","js/VPagination.js","css/VPagination.css","js/filter2.js","css/VDataTable.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
-import{_ as o}from"./index.js";const r=()=>o(()=>import("./thors-hammer.js"),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])),t={path:"/thors-hammer",name:"Thor's Hammer",component:r};export{t as default};
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/thors-hammer.js","js/index.js","css/index.css","js/VRow.js","js/VCol.js","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
+import{_ as o}from"./index.js";const r=()=>o(()=>import("./thors-hammer.js"),__vite__mapDeps([0,1,2,3,4,5])),t={path:"/thors-hammer",name:"Thor's Hammer",component:r};export{t as default};

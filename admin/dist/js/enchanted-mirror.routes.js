@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/enchanted-mirror.js","js/routes-navigation-drawer.js","js/index.js","css/index.css","js/useSubAppNavigation.js","css/routes-navigation-drawer.css"])))=>i.map(i=>d[i]);
-import{_ as r}from"./index.js";const o=()=>r(()=>import("./enchanted-mirror.js"),__vite__mapDeps([0,1,2,3,4,5])),e={path:"/enchanted-mirror",name:"Enchanted Mirror",component:o};export{e as default};
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/enchanted-mirror.js","js/routes-navigation-drawer.js","js/index.js","css/index.css","js/window.store.js","js/useSubAppNavigation.js","css/routes-navigation-drawer.css"])))=>i.map(i=>d[i]);
+import{_ as r}from"./index.js";const o=()=>r(()=>import("./enchanted-mirror.js"),__vite__mapDeps([0,1,2,3,4,5,6])),e={path:"/enchanted-mirror",name:"Enchanted Mirror",component:o};export{e as default};

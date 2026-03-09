@@ -1,0 +1,1 @@
+import{a,o as e,q as t,a4 as o}from"./index.js";const r={},n={class:"u-glass-card glass-route-transition"};function c(s,d){return e(),t("div",n,[o(s.$slots,"default",{},void 0,!0)])}const _=a(r,[["render",c],["__scopeId","data-v-aa2143f9"]]);export{_ as default};

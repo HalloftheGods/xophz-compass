@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/magic-wand.js","js/routes-navigation-drawer.js","js/index.js","css/index.css","js/useSubAppNavigation.js","css/routes-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
-import{_ as a}from"./index.js";const o=()=>a(()=>import("./magic-wand.js"),__vite__mapDeps([0,1,2,3,4,5,6])),n={path:"/magic-wand",name:"Magic Wand",component:o};export{n as default};
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/magic-wand.js","js/routes-navigation-drawer.js","js/index.js","css/index.css","js/window.store.js","js/useSubAppNavigation.js","css/routes-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
+import{_ as a}from"./index.js";const o=()=>a(()=>import("./magic-wand.js"),__vite__mapDeps([0,1,2,3,4,5,6,7])),n={path:"/magic-wand",name:"Magic Wand",component:o};export{n as default};
