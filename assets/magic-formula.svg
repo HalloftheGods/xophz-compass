@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-44 -44 600 600" style="enable-background:new 0 0 512 512;">
+  
+  <!-- Foundation Dark Circle (0 to 512 bounding box) -->
+  <g id="Background">
+    <circle style="fill:#1D1135;" cx="256" cy="256" r="256"/>
+    <!-- Slight inner glow for depth -->
+    <circle style="fill:none; stroke:#FF00AA; stroke-width:4; opacity:0.15;" cx="256" cy="256" r="240"/>
+  </g>
+
+  <!-- Elements Intentionally Bleeding OUTSIDE the 512x512 Circle -->
+  <g id="Bleeding-Magic-Effects">
+    
+    <!-- Top Left Burst (Shoots out beyond X=0, Y=0) -->
+    <path style="fill:#00E5FF; opacity:0.9;" d="M -15,40 L 15,65 L -10,95 L 25,85 L 50,115 L 45,75 L 80,50 L 35,45 L 25,-5 Z"/>
+    <circle style="fill:#00E5FF;" cx="-20" cy="110" r="6"/>
+    <circle style="fill:#00E5FF;" cx="10" cy="-15" r="8"/>
+    
+    <!-- Top Right Sparkle Cluster (Shoots out beyond X=512, Y=0) -->
+    <circle style="fill:#FF00AA; opacity:0.8;" cx="525" cy="45" r="16"/>
+    <circle style="fill:#FF00AA; opacity:0.6;" cx="560" cy="95" r="10"/>
+    <circle style="fill:#FFD700; opacity:0.9;" cx="505" cy="125" r="22"/>
+    <path style="fill:#FFD700;" d="M 520,-25 L 525,15 L 565,20 L 525,25 L 520,65 L 515,25 L 475,20 L 515,15 Z"/>
+    
+    <!-- Bottom Right Liquid Spurt (Shoots out beyond X=512, Y=512) -->
+    <path style="fill:#00E5FF; opacity:0.8;" d="M 450,440 Q 560,420 575,490 Q 520,530 430,480 Z"/>
+    <circle style="fill:#00E5FF; opacity:0.8;" cx="560" cy="520" r="12"/>
+    <circle style="fill:#00E5FF; opacity:0.6;" cx="585" cy="460" r="8"/>
+    
+    <!-- Bottom Left Star (Shoots out beyond X=0, Y=512) -->
+    <path style="fill:#FFD700; opacity:0.9;" d="M -20,460 L 10,485 L -5,520 L 35,505 L 60,540 L 55,495 L 90,480 L 45,465 L 40,420 Z"/>
+    <circle style="fill:#FFD700;" cx="-15" cy="420" r="5"/>
+  </g>
+
+  <!-- The Flask - Neck Bleeds Top (Y < 0) -->
+  <g id="Magic-Flask">
+    <!-- Back Glow -->
+    <path d="M 186,-20 L 326,-20 L 326,200 L 416,350 A 160 160 0 0 1 96,350 L 186,200 Z" style="fill:#00E5FF; opacity: 0.1; filter: drop-shadow(0px 0px 20px #FF00AA);"/>
+    
+    <!-- Glass Base Outline -->
+    <path style="fill:#E2F7FB; opacity:0.6;" d="M 196,-20 L 316,-20 L 316,210 L 416,360 A 160 160 0 0 1 96,360 L 196,210 Z"/>
+    
+    <!-- Primary Pink Fluid -->
+    <path style="fill:#FF00AA; opacity:0.9;" d="M 112,330 C 160,300 240,360 400,330 A 150 150 0 0 1 112,330 Z"/>
+    
+    <!-- Secondary Cyan Fluid Layer -->
+    <path style="fill:#00E5FF; opacity:0.85;" d="M 130,370 C 200,350 280,390 382,370 A 130 130 0 0 1 130,370 Z"/>
+
+    <!-- Bottom Flask Curve Highlight -->
+    <path style="fill:#FFD700; opacity:0.7;" d="M 160,460 A 100 100 0 0 0 352,460 A 140 140 0 0 1 160,460 Z"/>
+
+    <!-- Left Glass Reflection Highlight -->
+    <rect x="216" y="20" width="12" height="150" fill="#FFFFFF" opacity="0.5" rx="6"/>
+    <path fill="#FFFFFF" opacity="0.4" d="M 113,380 A 130 130 0 0 0 170,470 L 150,460 A 120 120 0 0 1 123,370 Z"/>
+    
+    <!-- Flask Lip (Bleeds Top edge) -->
+    <rect x="180" y="-35" width="152" height="26" rx="10" fill="#71DFF1" opacity="0.9"/>
+    <rect x="186" y="-30" width="140" height="8" rx="4" fill="#FFFFFF" opacity="0.8"/>
+  </g>
+
+  <!-- Bubbles Floating and Bleeding Out The Top -->
+  <g id="Glowing-Bubbles">
+    <!-- Inside Liquid -->
+    <circle style="fill:#FFFFFF; opacity:0.9;" cx="230" cy="420" r="18"/>
+    <circle style="fill:#FFFFFF; opacity:0.7;" cx="280" cy="380" r="24"/>
+    <circle style="fill:#FFFFFF; opacity:0.6;" cx="200" cy="350" r="10"/>
+    
+    <!-- Up the Neck -->
+    <circle style="fill:#FFFFFF; opacity:0.8;" cx="245" cy="320" r="14"/>
+    <circle style="fill:#FF00AA; opacity:0.9;" cx="220" cy="250" r="20"/>
+    <circle style="fill:#00E5FF; opacity:0.8;" cx="280" cy="190" r="22"/>
+    <circle style="fill:#FFD700; opacity:0.9;" cx="240" cy="130" r="14"/>
+    <circle style="fill:#00E5FF; opacity:0.9;" cx="270" cy="70" r="18"/>
+    
+    <!-- Bleeding Out The Top Of The Flask -->
+    <circle style="fill:#FF00AA; opacity:0.9;" cx="230" cy="10" r="22"/>
+    <circle style="fill:#FFD700; opacity:0.9;" cx="275" cy="-25" r="26"/>
+    <circle style="fill:#00E5FF; opacity:0.9;" cx="205" cy="-55" r="18"/>
+    <circle style="fill:#FF00AA; opacity:0.7;" cx="240" cy="-80" r="12"/>
+  </g>
+
+</svg>

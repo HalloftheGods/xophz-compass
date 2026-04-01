@@ -60,9 +60,9 @@ class Xophz_Compass_Branding {
      */
     public static function get_defaults(): array {
         return [
-            'platform_name' => 'COMPASS',
+            'platform_name' => 'My Compass Suite',
             'vendor_prefix' => 'Xophz ',
-            'menu_title'    => 'Xophz COMPASS',
+            'menu_title'    => 'My Compass',
             'menu_icon'     => 'dashicons-editor-customchar',
             'plugins'       => []
         ];

@@ -1,0 +1,1 @@
+import{d as a,o as s,c as o,w as r,a4 as t,g as p,c0 as c,a as n}from"./index.js";const i=a({name:"USparkView",__name:"u-spark-view",setup(_){return(e,l)=>(s(),o(c,p(e.$attrs,{class:"u-spark-view fill-height overflow-y-auto"}),{default:r(()=>[t(e.$slots,"default",{},void 0,!0)]),_:3},16))}}),u=n(i,[["__scopeId","data-v-c704e647"]]);export{u as U};

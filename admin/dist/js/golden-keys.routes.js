@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/golden-keys.js","js/routes-navigation-drawer.js","js/index.js","css/index.css","js/window.store.js","js/useSubAppNavigation.js","css/routes-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
-import{_ as e}from"./index.js";const o=()=>e(()=>import("./golden-keys.js"),__vite__mapDeps([0,1,2,3,4,5,6,7])),n={path:"/golden-keys",name:"Golden Keys",component:o};export{n as default};
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/golden-keys.js","js/index.js","css/index.css","js/routes-navigation-drawer.js","js/window.store.js","js/useSubAppNavigation.js","css/routes-navigation-drawer.css","js/VRow.js","js/VCol.js","css/golden-keys.css"])))=>i.map(i=>d[i]);
+import{_ as e}from"./index.js";const o=()=>e(()=>import("./golden-keys.js"),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9])),n={path:"/golden-keys",name:"Golden Keys",component:o};export{n as default};

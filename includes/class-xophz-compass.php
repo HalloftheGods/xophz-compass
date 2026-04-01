@@ -125,6 +125,11 @@ class Xophz_Compass {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-xophz-compass-public.php';
 
+		/**
+		 * The class responsible for handling Constellations relationship mappings.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-constellations-api.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 
 	}
@@ -169,6 +174,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'wp_ajax_deactivate_plugin', $plugin_admin, 'deactivate_plugin'); 
     $this->loader->add_action( 'wp_ajax_save_plugin_order', $plugin_admin, 'save_plugin_order' );
     $this->loader->add_action( 'wp_ajax_get_plugin_order', $plugin_admin, 'get_plugin_order' ); 
+    $this->loader->add_action( 'wp_ajax_get_forminator_modules', $plugin_admin, 'get_forminator_modules' );
 
     $this->loader->add_filter( 'manage_posts_columns', $plugin_admin, 'posts_column_views');
     
@@ -183,6 +189,28 @@ class Xophz_Compass {
 
     // Register branding REST API endpoints
     $this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_branding_endpoints' );
+
+    // Register Constellations API & Cleanup Hooks
+    $plugin_constellations = new Xophz_Compass_Constellations_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_constellations, 'register_routes' );
+    $this->loader->add_action( 'before_delete_post', $plugin_constellations, 'cleanup_orphaned_post' );
+    $this->loader->add_action( 'deleted_user', $plugin_constellations, 'cleanup_orphaned_user' );
+
+    // Check DB Schema
+    $this->loader->add_action( 'admin_init', $this, 'check_db_schema' );
+	}
+
+	/**
+	 * Checks if the database schema is up to date, and if not, runs activation.
+	 *
+	 * @since    1.0.0
+	 */
+	public function check_db_schema() {
+		if ( get_option( 'xophz_compass_db_version' ) !== $this->version ) {
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-activator.php';
+			Xophz_Compass_Activator::activate();
+			update_option( 'xophz_compass_db_version', $this->version );
+		}
 	}
 
 	/**
@@ -326,30 +354,48 @@ class Xophz_Compass {
   public static function add_submenu($plugin, $args=[]){
       global $submenu;
 
-      $cap = (isset($args['cap']) && !empty($args['cap'])) 
-        ? $args['cap'] : "manage_options";
+      $register_submenu = function() use ($plugin, $args, &$submenu) {
+          if ( ! function_exists( 'get_plugin_data' ) ) {
+              require_once ABSPATH . 'wp-admin/includes/plugin.php';
+          }
+          
+          $cap = (isset($args['cap']) && !empty($args['cap'])) 
+            ? $args['cap'] : "manage_options";
 
+          $plugin_file = WP_PLUGIN_DIR . "/{$plugin}/{$plugin}.php";
+          if ( ! file_exists( $plugin_file ) ) return;
 
-      $plugin = get_plugins()["{$plugin}/{$plugin}.php"];
-      $compass = substr($plugin['TextDomain'], 0, 13);
-      $page  = substr($plugin['TextDomain'], 14);
+          // Disable markup and translation to prevent early textdomain loading (WP 6.7)
+          $plugin_data = get_plugin_data( $plugin_file, false, false );
+          
+          if (!$plugin_data || empty($plugin_data['TextDomain'])) return;
 
-      // Route mapping for renamed plugins
-      $route_map = [
-          'quests' => 'questbook',
-          'post-digger' => 'newsroom'
-      ];
-      $route_slug = isset($route_map[$page]) ? $route_map[$page] : $page;
+          $compass = substr($plugin_data['TextDomain'], 0, 13);
+          $page  = substr($plugin_data['TextDomain'], 14);
 
-      // Use branding helper for customizable plugin name
-      $default_name = trim(str_replace('Xophz', '', $plugin['Name']));
-      $plugin_name = Xophz_Compass_Branding::get_plugin_name($page, $default_name);
+          // Route mapping for renamed plugins
+          $route_map = [
+              'quests' => 'questbook',
+              'post-digger' => 'newsroom'
+          ];
+          $route_slug = isset($route_map[$page]) ? $route_map[$page] : $page;
 
-      $submenu[ $compass ][] = [
-          __( $plugin_name, $compass ),
-          $cap,
-          "admin.php?page={$compass}#/{$route_slug}"
-      ];
+          // Use branding helper for customizable plugin name
+          $default_name = trim(str_replace('Xophz', '', $plugin_data['Name']));
+          $plugin_name = Xophz_Compass_Branding::get_plugin_name($page, $default_name);
+
+          $submenu[ $compass ][] = [
+              __( $plugin_name, $compass ),
+              $cap,
+              "admin.php?page={$compass}#/{$route_slug}"
+          ];
+      };
+
+      if (did_action('admin_menu')) {
+          $register_submenu();
+      } else {
+          add_action('admin_menu', $register_submenu, 11);
+      }
   }
 
 	/**

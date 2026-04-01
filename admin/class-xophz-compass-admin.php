@@ -306,6 +306,21 @@ class Xophz_Compass_Admin {
 
   public function getPluginsByXoph(){
     $plugins = get_plugins();
+    
+    // Inject Magic Formula since it's now bundled natively in compass but needs to appear as a plugin in UI
+    $plugins['xophz-compass-magic-formula/xophz-compass-magic-formula.php'] = [
+      'Name' => 'Xophz Magic Formula',
+      'PluginURI' => 'http://www.mycompassconsulting.com/',
+      'Version' => '1.0.0',
+      'Description' => 'The ultimate form, poll, and quiz builder.',
+      'Author' => 'Xoph',
+      'TextDomain' => 'xophz-compass-magic-formula',
+      'DomainPath' => '/languages',
+      'Network' => false,
+      'Title' => 'Xophz Magic Formula',
+      'AuthorName' => 'Xoph'
+    ];
+
     $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
 
     foreach($plugins as $p => $plugin){
@@ -322,7 +337,7 @@ class Xophz_Compass_Admin {
         $slug = 'compass'; // Main plugin
       }
 
-      $plugins[$p]['isActivated'] = is_plugin_active($p);
+      $plugins[$p]['isActivated'] = ($slug === 'magic-formula') || is_plugin_active($p);
       $plugins[$p]['isInstalled'] = true;
       
       // Use branding helper for customizable plugin names
@@ -330,9 +345,14 @@ class Xophz_Compass_Admin {
       $plugins[$p]['Name'] = Xophz_Compass_Branding::get_plugin_name($slug, $default_name);
       $plugins[$p]['Description'] = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
       
-      $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
-      $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
-      $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
+      if ($slug === 'magic-formula') {
+        $icon_version = time();
+        $plugins[$p]['icon'] = plugins_url('xophz-compass/assets/magic-formula.svg') . "?v={$icon_version}";
+      } else {
+        $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
+        $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
+        $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
+      }
     }
 
     $this->output_json($plugins);
@@ -614,5 +634,46 @@ class Xophz_Compass_Admin {
     }
 
     return new WP_REST_Response($available, 200);
+  }
+
+  /**
+   * Retrieve Forminator modules (Forms, Polls, Quizzes) for the Vue frontend.
+   */
+  public function get_forminator_modules() {
+    if ( ! class_exists( 'Forminator_API' ) ) {
+      wp_send_json_error( array( 'message' => 'Forminator plugin is not active' ) );
+      return;
+    }
+
+    $forms = Forminator_API::get_forms(null, 1, 999, 'any');
+    $polls = Forminator_API::get_polls(null, 1, 999, 'any');
+    $quizzes = Forminator_API::get_quizzes(null, 1, 999, 'any');
+
+    $format_modules = function($modules) {
+      $res = array();
+      if (is_array($modules) || is_object($modules)) {
+        foreach($modules as $m) {
+          $name = isset($m->settings['formName']) ? $m->settings['formName'] : (isset($m->settings['pollName']) ? $m->settings['pollName'] : (isset($m->settings['quizName']) ? $m->settings['quizName'] : ''));
+          if (empty($name) && isset($m->name)) {
+            $name = $m->name;
+          }
+          
+          $res[] = array(
+            'id' => isset($m->id) ? $m->id : '',
+            'name' => $name,
+            'status' => isset($m->status) && $m->status === 'publish' ? 1 : 0,
+          );
+        }
+      }
+      return $res;
+    };
+
+    $response = array(
+      'forms' => $format_modules($forms),
+      'polls' => $format_modules($polls),
+      'quizzes' => $format_modules($quizzes)
+    );
+
+    wp_send_json_success( $response );
   }
 }

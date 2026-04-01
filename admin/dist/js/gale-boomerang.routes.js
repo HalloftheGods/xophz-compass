@@ -1,2 +1,2 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/gale-boomerang.js","js/index.js","css/index.css","js/useSubAppNavigation.js","js/VRow.js","js/VCol.js","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/gale-boomerang.js","js/index.js","css/index.css","js/useSubAppNavigation.js","js/VRow.js","js/VCol.js","css/gale-boomerang.css"])))=>i.map(i=>d[i]);
 import{_ as o}from"./index.js";const e=()=>o(()=>import("./gale-boomerang.js"),__vite__mapDeps([0,1,2,3,4,5,6])),r={path:"/gale-boomerang",name:"Gale Boomerang",component:e,children:[]};export{r as default};
