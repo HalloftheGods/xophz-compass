@@ -134,6 +134,7 @@ class Xophz_Compass_Admin {
           'currentUser' => [
               'ID' => $current_user->ID,
               'admin_color' => get_user_option('admin_color', $current_user->ID),
+              'roles' => $current_user->roles,
           ],
           'nonce' => wp_create_nonce( 'wp_rest' ),
           'restUrl' => get_rest_url()
@@ -142,7 +143,8 @@ class Xophz_Compass_Admin {
       if ( $this->isDevServer() ) {
         // Vite dev server uses ES modules
         add_action('admin_head', function() use ($settings) {
-          $devServerUrl = "http://localhost:8080";
+          $host = isset($_SERVER['HTTP_HOST']) ? explode(':', $_SERVER['HTTP_HOST'])[0] : 'localhost';
+          $devServerUrl = "http://" . $host . ":8080";
           
           // Inject settings as a global variable
           echo '<script>window.xophzCompassSettings = ' . json_encode($settings) . ';</script>';

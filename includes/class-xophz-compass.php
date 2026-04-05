@@ -130,6 +130,11 @@ class Xophz_Compass {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-constellations-api.php';
 
+		/**
+		 * The class responsible for handling external Sparks from plugins.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-sparks-api.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 
 	}
@@ -195,6 +200,10 @@ class Xophz_Compass {
     $this->loader->add_action( 'rest_api_init', $plugin_constellations, 'register_routes' );
     $this->loader->add_action( 'before_delete_post', $plugin_constellations, 'cleanup_orphaned_post' );
     $this->loader->add_action( 'deleted_user', $plugin_constellations, 'cleanup_orphaned_user' );
+
+    // Register Sparks API
+    $plugin_sparks = new Xophz_Compass_Sparks_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_sparks, 'register_routes' );
 
     // Check DB Schema
     $this->loader->add_action( 'admin_init', $this, 'check_db_schema' );
