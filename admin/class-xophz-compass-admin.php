@@ -362,6 +362,17 @@ class Xophz_Compass_Admin {
         $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
       }
       
+      // Fallback approach if WP's native plugins caching hides Category
+      if (empty($plugin['Category'])) {
+        $plugin_file = WP_PLUGIN_DIR . '/' . $p;
+        if (file_exists($plugin_file)) {
+          $plugin_data = get_file_data($plugin_file, ['Category' => 'Category']);
+          if (!empty($plugin_data['Category'])) {
+            $plugin['Category'] = $plugin_data['Category'];
+          }
+        }
+      }
+      
       // Ensure category has a fallback
       $plugins[$p]['Category'] = !empty($plugin['Category']) ? trim($plugin['Category']) : 'Uncategorized';
     }
@@ -441,7 +452,8 @@ class Xophz_Compass_Admin {
       'url' => get_bloginfo('url'),
       'wpurl' => get_bloginfo('wpurl'),
       'version' => get_bloginfo('version'),
-      'logouturl' => htmlspecialchars_decode(wp_logout_url())
+      'logouturl' => htmlspecialchars_decode(wp_logout_url()),
+      'front_page_title' => get_option('show_on_front') === 'page' ? get_the_title(get_option('page_on_front')) : 'Latest Posts'
     ];
 
     Xophz_Compass::output_json([
