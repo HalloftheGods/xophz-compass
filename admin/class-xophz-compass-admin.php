@@ -322,7 +322,7 @@ class Xophz_Compass_Admin {
       'Network' => false,
       'Title' => 'Xophz Magic Formula',
       'AuthorName' => 'Xoph',
-      'Category' => 'Marketing'
+      'Category' => 'Trajectory'
     ];
 
     $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
