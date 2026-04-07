@@ -339,7 +339,11 @@ class Xophz_Compass_Admin {
         $slug = 'compass'; // Main plugin
       }
 
-      $plugins[$p]['isActivated'] = ($slug === 'magic-formula') || is_plugin_active($p);
+      $active_plugins = (array) get_option( 'active_plugins', array() );
+      if ( is_multisite() ) {
+        $active_plugins = array_merge( $active_plugins, array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) );
+      }
+      $plugins[$p]['isActivated'] = ( $slug === 'magic-formula' ) || in_array( $p, $active_plugins );
       $plugins[$p]['isInstalled'] = true;
       
       // Use branding helper for customizable plugin names

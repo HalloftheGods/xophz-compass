@@ -74,24 +74,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-xophz-compass.php';
  * @since    1.0.0
  */
 function run_xophz_compass() {
-
-  if ( !class_exists('Xophz_Compass') ) {
-    add_action( 'admin_init', 'shutoff_xophz_compass' );
-    add_action( 'admin_notices', 'admin_notice_xophz_compass' );
-
-    function shutoff_xophz_compass() {
-      deactivate_plugins( plugin_basename( __FILE__ ) );
-    }
-
-    function admin_notice_xophz_compass() {
-      echo '<div class="error"><h2><strong>Plugin_Name</strong> requires Compass to run. It has self <strong>deactivated</strong>.</h2></div>';
-      if ( isset( $_GET['activate'] ) )
-        unset( $_GET['activate'] );
-    }
-  } else {
-    $plugin = new Xophz_Compass();
-    $plugin->run();
-  }
-  
+  $plugin = new Xophz_Compass();
+  $plugin->run();
 }
-run_xophz_compass();
+add_action( 'plugins_loaded', 'run_xophz_compass' );
