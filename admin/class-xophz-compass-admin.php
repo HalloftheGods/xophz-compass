@@ -137,7 +137,8 @@ class Xophz_Compass_Admin {
               'roles' => $current_user->roles,
           ],
           'nonce' => wp_create_nonce( 'wp_rest' ),
-          'restUrl' => get_rest_url()
+          'restUrl' => get_rest_url(),
+          'siteName' => get_bloginfo('name')
       ];
 
       if ( $this->isDevServer() ) {
@@ -320,7 +321,8 @@ class Xophz_Compass_Admin {
       'DomainPath' => '/languages',
       'Network' => false,
       'Title' => 'Xophz Magic Formula',
-      'AuthorName' => 'Xoph'
+      'AuthorName' => 'Xoph',
+      'Category' => 'Marketing'
     ];
 
     $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
@@ -359,6 +361,9 @@ class Xophz_Compass_Admin {
         $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
         $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
       }
+      
+      // Ensure category has a fallback
+      $plugins[$p]['Category'] = !empty($plugin['Category']) ? trim($plugin['Category']) : 'Uncategorized';
     }
 
     $this->output_json($plugins);
@@ -367,6 +372,14 @@ class Xophz_Compass_Admin {
   public function output_json($json){
       echo json_encode($json);
       wp_die();
+  }
+
+  /**
+   * Adds the 'Category' header to the list of plugin headers parsed by WordPress.
+   */
+  public function add_category_header($headers) {
+      $headers['Category'] = 'Category';
+      return $headers;
   }
 
   public function admin_area(){
@@ -534,6 +547,14 @@ class Xophz_Compass_Admin {
         return current_user_can('manage_options');
       }
     ]);
+
+    register_rest_route('xophz-compass/v1', '/menus', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_wp_menus'],
+      'permission_callback' => function() {
+        return current_user_can('manage_options');
+      }
+    ]);
   }
 
   /**
@@ -640,6 +661,58 @@ class Xophz_Compass_Admin {
     }
 
     return new WP_REST_Response($available, 200);
+  }
+
+  /**
+   * Get all WordPress menus and their nested structure.
+   *
+   * @since    1.0.0
+   * @return   WP_REST_Response
+   */
+  public function get_wp_menus() {
+    $menus = wp_get_nav_menus();
+    $result = [];
+
+    foreach ($menus as $menu) {
+      $menu_items = wp_get_nav_menu_items($menu->term_id);
+      
+      $items = [];
+      if ($menu_items) {
+        foreach ($menu_items as $item) {
+          $items[$item->ID] = [
+            'id' => $item->ID,
+            'title' => $item->title,
+            'url' => $item->url,
+            'parent' => $item->menu_item_parent,
+            'children' => []
+          ];
+        }
+
+        // Build tree
+        $tree = [];
+        foreach ($items as $id => &$node) {
+          if ($node['parent'] == 0) {
+            $tree[] = &$node;
+          } else {
+            if (isset($items[$node['parent']])) {
+              $items[$node['parent']]['children'][] = &$node;
+            }
+          }
+        }
+        $menu_items_tree = $tree;
+      } else {
+        $menu_items_tree = [];
+      }
+
+      $result[] = [
+        'id' => $menu->term_id,
+        'name' => $menu->name,
+        'slug' => $menu->slug,
+        'items' => $menu_items_tree
+      ];
+    }
+
+    return new WP_REST_Response($result, 200);
   }
 
   /**
