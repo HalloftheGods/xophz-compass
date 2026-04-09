@@ -17,7 +17,7 @@
  * Plugin URI:        http://mycompassconsulting.com/getcompass/
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
  * Version:           1.0.0
- * Author:            Xopher
+ * Author:            Hall of the Gods, Inc.er
  * Author URI:        http://mycompassconsulting.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
