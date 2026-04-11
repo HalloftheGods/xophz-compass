@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/titans-mitt.js","js/index.js","css/index.css","js/useSnackbar.js","js/routes-navigation-drawer.js","js/window.store.js","js/useSubAppNavigation.js","css/routes-navigation-drawer.css","js/VRow.js","css/VRow.css","js/VCol.js","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
-import{_ as t}from"./index.js";const i=()=>t(()=>import("./titans-mitt.js"),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11])),a={path:"/titans-mitt",name:"Titan's Mitt",component:i};export{a as default};

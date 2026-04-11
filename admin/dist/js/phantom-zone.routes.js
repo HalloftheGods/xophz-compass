@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["js/phantom-zone.js","js/routes-navigation-drawer.js","js/index.js","css/index.css","js/window.store.js","js/useSubAppNavigation.js","css/routes-navigation-drawer.css","css/billboard-navigation-drawer.css"])))=>i.map(i=>d[i]);
-import{_ as o}from"./index.js";const t=()=>o(()=>import("./phantom-zone.js"),__vite__mapDeps([0,1,2,3,4,5,6,7])),e={path:"/phantom-zone",name:"Phantom Zone",component:t};export{e as default};

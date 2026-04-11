@@ -1,1 +1,0 @@
-import{z as n,C as o,M as t,D as c,E as r,c as s,a3 as a}from"./index.js";const i=n({name:"XpMyAccessoriesIndex"});function p(d,e,l,u,f,x){return t(),c(a,null,{default:r(()=>[...e[0]||(e[0]=[s("h1",null,"Accessories Index",-1),s("p",null,"This section is under construction.",-1)])]),_:1})}const m=o(i,[["render",p]]);export{m as default};

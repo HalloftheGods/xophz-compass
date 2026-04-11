@@ -1,1 +1,0 @@
-import{z as t,C as s,M as i,D as o,E as a,c as n,a3 as r}from"./index.js";const c=t({name:"XpMyAbilitiesIndex"});function l(p,e,d,u,f,x){return i(),o(r,null,{default:a(()=>[...e[0]||(e[0]=[n("h1",null,"Abilities Index",-1),n("p",null,"This section is under construction.",-1)])]),_:1})}const m=s(c,[["render",l]]);export{m as default};

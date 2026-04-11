@@ -92,8 +92,23 @@ class Xophz_Compass_Admin {
       if ( $this->isDevServer() ) {
         // Vite injects CSS via JavaScript in dev mode, so no separate CSS files needed
       } else {
-        // Production: Load bundled CSS
-        wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
+        // Production: Load bundled CSS from manifest
+        $manifest_path = plugin_dir_path( __FILE__ ) . 'dist/.vite/manifest.json';
+        $manifest = file_exists($manifest_path) ? json_decode(file_get_contents($manifest_path), true) : null;
+        
+        if (isset($manifest['index.html']['css'])) {
+          foreach ($manifest['index.html']['css'] as $css_file) {
+            wp_enqueue_style( $this->plugin_name . '-' . md5($css_file),
+              plugin_dir_url( __FILE__ ) . 'dist/' . $css_file,
+              [],
+              $this->version,
+              'all'
+            );
+          }
+        } else {
+          // Fallback if manifest is missing or entry not found
+          wp_enqueue_style( $this->plugin_name . '_style', plugin_dir_url( __FILE__ ) . 'dist/css/index.css', [], $this->version, 'all' );
+        }
       }
 
       // Re-enqueue kept styles to ensure they load after deregistration
@@ -155,9 +170,14 @@ class Xophz_Compass_Admin {
           $this->output_theme_colors();
         });
       } else {
-        // Production: Load bundled assets
+        // Production: Load bundled assets from manifest
+        $manifest_path = plugin_dir_path( __FILE__ ) . 'dist/.vite/manifest.json';
+        $manifest = file_exists($manifest_path) ? json_decode(file_get_contents($manifest_path), true) : null;
+        
+        $entry_js = isset($manifest['index.html']) ? 'dist/' . $manifest['index.html']['file'] : 'dist/js/index.js';
+        
         wp_enqueue_script( $this->plugin_name.'-main-app',
-          plugin_dir_url( __FILE__ ) . 'dist/js/index.js', 
+          plugin_dir_url( __FILE__ ) . $entry_js, 
           [], 
           $this->version, 
           false 
@@ -509,9 +529,8 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return in_array(DB_HOST, ['mysql:3306']); 
+    return ( defined( 'WP_ENV' ) && WP_ENV === 'development' ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG );
   }
-
   /**
    * Register REST API endpoints for branding configuration.
    *
