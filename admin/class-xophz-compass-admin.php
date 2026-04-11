@@ -446,14 +446,12 @@ class Xophz_Compass_Admin {
     echo "";
   }
   public function change_footer(){
-    // echo '<span id="footer-note">From your friends at <a href="http://www.mycompassconsulting.com/" target="_blank">My Compass Consulting</a>.</span>';
-    $plugin = ucwords(str_replace('-',' ',$this->plugin_name));
-    $version = $this->version;
+    $plugin = 'My Compass';
+    $version_string = 'v' . $this->version;
     $year = date("Y");
     $copy = "&copy;";
-    $footer = "{$plugin} {$version} {$copy} {$year}"; 
+    $footer = "{$plugin} {$version_string} {$year} {$copy} Hall of the Gods, Inc."; 
     echo $footer;
- 
   }
 
   public function getCurrentUser(){
