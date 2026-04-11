@@ -424,7 +424,21 @@ class Xophz_Compass {
 	 * @return    string    HTTP Method.
 	 */
   public static function get_input_json(){
-    return json_decode(file_get_contents('php://input'));
+    $input = file_get_contents('php://input');
+    $json = json_decode($input);
+    if ($json !== null) {
+      return $json;
+    }
+
+    // Fallback for form-encoded PUT/POST requests
+    if (!empty($input)) {
+        parse_str($input, $parsed_args);
+        if (!empty($parsed_args)) {
+            return (object) array_merge(wp_unslash($_REQUEST), wp_unslash($parsed_args));
+        }
+    }
+
+    return (object) wp_unslash($_REQUEST);
   }
 
 	/**
