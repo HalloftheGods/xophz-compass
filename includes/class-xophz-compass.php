@@ -135,6 +135,11 @@ class Xophz_Compass {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-sparks-api.php';
 
+		/**
+		 * The class responsible for handling the Modules Ecosystem API.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-modules-api.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 
 	}
@@ -205,6 +210,10 @@ class Xophz_Compass {
     // Register Sparks API
     $plugin_sparks = new Xophz_Compass_Sparks_API();
     $this->loader->add_action( 'rest_api_init', $plugin_sparks, 'register_routes' );
+
+    // Register Modules Ecosystem API
+    $plugin_modules = new Xophz_Compass_Modules_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_modules, 'register_routes' );
 
     // Check DB Schema
     $this->loader->add_action( 'admin_init', $this, 'check_db_schema' );

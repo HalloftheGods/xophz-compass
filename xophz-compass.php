@@ -23,6 +23,7 @@
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       xophz-compass
  * Domain Path:       /languages
+ * Category:          Command Deck
  */
 
 // If this file is called directly, abort.
