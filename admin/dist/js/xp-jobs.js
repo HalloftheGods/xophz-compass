@@ -1,1 +1,1 @@
-import{a as e,o as c,q as n}from"./index.js";const o={},s={class:"xp-index"};function t(a,r){return c(),n("div",s," I am an index ")}const d=e(o,[["render",t]]);export{d as default};
+import{C as e,M as c,R as n}from"./index.js";const s={},o={class:"xp-index"};function t(a,r){return c(),n("div",o," I am an index ")}const d=e(s,[["render",t]]);export{d as default};

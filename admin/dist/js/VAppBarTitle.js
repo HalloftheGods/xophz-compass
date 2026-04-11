@@ -1,1 +1,1 @@
-import{x as s,y as o,e as t,g as p,a3 as l,bb as i}from"./index.js";const m=s()({name:"VAppBarTitle",props:i(),setup(e,a){let{slots:r}=a;return o(()=>t(l,p(e,{class:"v-app-bar-title"}),r)),{}}});export{m as V};
+import{g as s,u as o,e as t,f as p,a4 as l,bc as i}from"./index.js";const m=s()({name:"VAppBarTitle",props:i(),setup(e,a){let{slots:r}=a;return o(()=>t(l,p(e,{class:"v-app-bar-title"}),r)),{}}});export{m as V};

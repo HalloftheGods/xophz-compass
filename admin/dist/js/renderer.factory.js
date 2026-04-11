@@ -1,1 +1,0 @@
-const r="youmeos_renderer_preference";function t(){return typeof localStorage>"u"?"webgl":localStorage.getItem(r)==="webgpu"?"webgpu":"webgl"}function n(e){typeof localStorage>"u"||localStorage.setItem(r,e)}async function a(){if(typeof navigator>"u"||!("gpu"in navigator))return!1;try{return await navigator.gpu.requestAdapter()!==null}catch{return!1}}export{t as g,a as i,n as s};
