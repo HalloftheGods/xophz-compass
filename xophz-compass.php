@@ -13,7 +13,7 @@
  * @package           Xophz_COMPASS
  *
  * @wordpress-plugin
- * Plugin Name:       Xophz COMPASS
+ * Plugin Name:       My Compass 
  * Plugin URI:        http://mycompassconsulting.com/getcompass/
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
  * Version:           26.4.11
