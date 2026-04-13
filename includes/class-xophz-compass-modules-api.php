@@ -51,169 +51,66 @@ class Xophz_Compass_Modules_API {
 	 * @return array The list of registered modules.
 	 */
 	public static function get_module_registry() {
-		$modules = array(
-			'xophz-compass-xp' => array(
-				'slug'         => 'xophz-compass-xp',
-				'name'         => 'XP',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-xp/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-bazaar' => array(
-				'slug'         => 'xophz-compass-bazaar',
-				'name'         => 'Bazaar',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bazaar/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-event-horizon' => array(
-				'slug'         => 'xophz-compass-event-horizon',
-				'name'         => 'Event Horizon',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-event-horizon/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-bomb-bag' => array(
-				'slug'         => 'xophz-compass-bomb-bag',
-				'name'         => 'Bomb Bag',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bomb-bag/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-enchanted-mirror' => array(
-				'slug'         => 'xophz-compass-enchanted-mirror',
-				'name'         => 'Enchanted Mirror',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-enchanted-mirror/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-bugnet' => array(
-				'slug'         => 'xophz-compass-bugnet',
-				'name'         => 'Bugnet',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bugnet/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-enchiridion' => array(
-				'slug'         => 'xophz-compass-enchiridion',
-				'name'         => 'Enchiridion',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-enchiridion/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-gale-boomerang' => array(
-				'slug'         => 'xophz-compass-gale-boomerang',
-				'name'         => 'Gale Boomerang',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-gale-boomerang/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-golden-keys' => array(
-				'slug'         => 'xophz-compass-golden-keys',
-				'name'         => 'Golden Keys',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-golden-keys/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-lead-magnet' => array(
-				'slug'         => 'xophz-compass-lead-magnet',
-				'name'         => 'Lead Magnet',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-lead-magnet/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-lit-lamp' => array(
-				'slug'         => 'xophz-compass-lit-lamp',
-				'name'         => 'Lit Lamp',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-lit-lamp/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-magic-cloak' => array(
-				'slug'         => 'xophz-compass-magic-cloak',
-				'name'         => 'Magic Cloak',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-magic-cloak/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-magic-wand' => array(
-				'slug'         => 'xophz-compass-magic-wand',
-				'name'         => 'Magic Wand',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-magic-wand/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-midnight-nerd' => array(
-				'slug'         => 'xophz-compass-midnight-nerd',
-				'name'         => 'Midnight Nerd',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-midnight-nerd/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-mirror-shield' => array(
-				'slug'         => 'xophz-compass-mirror-shield',
-				'name'         => 'Mirror Shield',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-mirror-shield/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-moving-castle' => array(
-				'slug'         => 'xophz-compass-moving-castle',
-				'name'         => 'Moving Castle',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-moving-castle/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-pegasus-boots' => array(
-				'slug'         => 'xophz-compass-pegasus-boots',
-				'name'         => 'Pegasus Boots',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-pegasus-boots/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-phantom-zone' => array(
-				'slug'         => 'xophz-compass-phantom-zone',
-				'name'         => 'Phantom Zone',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-phantom-zone/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-pixie-dust' => array(
-				'slug'         => 'xophz-compass-pixie-dust',
-				'name'         => 'Pixie Dust',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-pixie-dust/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-post-digger' => array(
-				'slug'         => 'xophz-compass-post-digger',
-				'name'         => 'Post Digger',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-post-digger/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-quests' => array(
-				'slug'         => 'xophz-compass-quests',
-				'name'         => 'Quests',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-quests/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-silver-arrow' => array(
-				'slug'         => 'xophz-compass-silver-arrow',
-				'name'         => 'Silver Arrow',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-silver-arrow/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-thors-hammer' => array(
-				'slug'         => 'xophz-compass-thors-hammer',
-				'name'         => 'Thors Hammer',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-thors-hammer/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-titans-mitt' => array(
-				'slug'         => 'xophz-compass-titans-mitt',
-				'name'         => 'Titans Mitt',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-titans-mitt/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-treasure-map' => array(
-				'slug'         => 'xophz-compass-treasure-map',
-				'name'         => 'Treasure Map',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-treasure-map/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-treasure-trove' => array(
-				'slug'         => 'xophz-compass-treasure-trove',
-				'name'         => 'Treasure Trove',
-				'description'  => 'Compass Ecosystem Module',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-treasure-trove/archive/refs/heads/main.zip',
-			),
-			'xophz-compass-magic-formula' => array(
-				'slug'         => 'xophz-compass-magic-formula',
-				'name'         => 'Magic Formula',
-				'description'  => 'The ultimate form, poll, and quiz builder.',
-				'download_url' => '', // Bundled natively, does not download via GitHub
-			),
+		$modules = array();
+		
+		// 1. Dynamic generation by reading `.gitmodules` natively in PHP
+		// Use dirname(ABSPATH) for Bedrock compat, falling back to ABSPATH
+		$gitmodules_path = ABSPATH . '.gitmodules';
+		if ( ! file_exists( $gitmodules_path ) && file_exists( dirname( ABSPATH ) . '/.gitmodules' ) ) {
+			$gitmodules_path = dirname( ABSPATH ) . '/.gitmodules';
+		}
+		
+		if ( file_exists( $gitmodules_path ) ) {
+			$content = file_get_contents( $gitmodules_path );
+			if ( preg_match_all('/\[submodule "(.*?)"\].*?url = (.*?)\s/sm', $content, $matches, PREG_SET_ORDER) ) {
+				foreach ($matches as $match) {
+					$path = $match[1];
+					$git_url = $match[2];
+					
+					if ( strpos($path, 'wp-content/plugins/xophz-compass-') === 0 ) {
+						$slug = str_replace('wp-content/plugins/', '', $path);
+						
+						// Create friendly name
+						$name_parts = explode('-', str_replace('xophz-compass-', '', $slug));
+						$name_parts = array_map('ucfirst', $name_parts);
+						$name = implode(' ', $name_parts);
+
+						// Convert git url to github archive zip
+						$zip_url = str_replace('git@github.com:', 'https://github.com/', $git_url);
+						$zip_url = str_replace('.git', '', $zip_url);
+						$zip_url .= '/archive/refs/heads/main.zip';
+
+						$modules[$slug] = array(
+							'slug'         => $slug,
+							'name'         => $name,
+							'description'  => 'Compass Ecosystem Module',
+							'download_url' => $zip_url,
+						);
+					}
+				}
+			}
+		}
+		
+		// Fallback for production where .gitmodules might not exist
+		if ( empty( $modules ) ) {
+			$modules = array(
+				'xophz-compass-xp' => array(
+					'slug'         => 'xophz-compass-xp',
+					'name'         => 'XP',
+					'description'  => 'Compass Ecosystem Module',
+					'download_url' => 'https://github.com/HalloftheGods/xophz-compass-xp/archive/refs/heads/main.zip',
+				),
+				// For brevity in fallback, just ensuring the main ones exist 
+				// We can rely on the frontend passing the URL directly!
+			);
+		}
+
+		// Bundled natively, does not download via GitHub
+		$modules['xophz-compass-magic-formula'] = array(
+			'slug'         => 'xophz-compass-magic-formula',
+			'name'         => 'Magic Formula',
+			'description'  => 'The ultimate form, poll, and quiz builder.',
+			'download_url' => '', 
 		);
 
 		return apply_filters( 'xophz_compass_modules_registry', $modules );

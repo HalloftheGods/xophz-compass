@@ -8,17 +8,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              http://mycompassconsulting.com/getcompass/
+ * @link              https://youmeos.com
  * @since             0.0.1
  * @package           Xophz_COMPASS
  *
  * @wordpress-plugin
  * Plugin Name:       My Compass 
- * Plugin URI:        http://mycompassconsulting.com/getcompass/
+ * Plugin URI:        https://youmeos.com
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
  * Version:           26.4.13.392
- * Author:            Hall of the Gods, Inc.er
- * Author URI:        http://mycompassconsulting.com/
+ * Author:            Hall of the Gods, Inc.
+ * Author URI:        https://www.hallofthegods.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       xophz-compass
