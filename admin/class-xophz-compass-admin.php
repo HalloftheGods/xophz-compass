@@ -599,7 +599,8 @@ class Xophz_Compass_Admin {
 
   private function isDevServer()
   {
-    return ( defined( 'WP_ENV' ) && WP_ENV === 'development' ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG );
+    $hotFilePath = plugin_dir_path( __FILE__ ) . 'hot';
+    return file_exists( $hotFilePath );
   }
   /**
    * Register REST API endpoints for branding configuration.
