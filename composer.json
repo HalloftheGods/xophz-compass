@@ -1,0 +1,21 @@
+{
+  "name": "hallofthegods/xophz-compass",
+  "description": "It's dangerous to go alone! Explore your site with COMPASS.",
+  "version": "26.4.13",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Hall of the Gods, Inc.",
+      "homepage": "https://mycompassconsulting.com"
+    }
+  ],
+  "require": {
+    "composer/installers": "^1.0 || ^2.0"
+  },
+  "autoload": {
+    "files": [
+      "xophz-compass.php"
+    ]
+  }
+}

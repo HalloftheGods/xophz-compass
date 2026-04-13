@@ -2,27 +2,27 @@
     color: rgb(217, 190, 111) !important; 
 }
 
-#adminmenuwrap {
+.toplevel_page_xophz-compass #adminmenuwrap {
 	max-height: calc(100vh - 32px) !important;
 	overflow-y: auto !important;
 }
 
 /* Sexy scrollbar for adminmenuwrap */
-#adminmenuwrap::-webkit-scrollbar {
+.toplevel_page_xophz-compass #adminmenuwrap::-webkit-scrollbar {
 	width: 6px !important;
 	background: transparent !important;
 }
 
-#adminmenuwrap::-webkit-scrollbar-track {
+.toplevel_page_xophz-compass #adminmenuwrap::-webkit-scrollbar-track {
 	background: rgba(0, 0, 0, 0.1) !important;
 	border-radius: 8px !important;
 }
 
-#adminmenuwrap::-webkit-scrollbar-thumb {
+.toplevel_page_xophz-compass #adminmenuwrap::-webkit-scrollbar-thumb {
 	background: var(--gold, rgb(217, 190, 111)) !important;
 	border-radius: 8px !important;
 }
 
-#adminmenuwrap::-webkit-scrollbar-thumb:hover {
+.toplevel_page_xophz-compass #adminmenuwrap::-webkit-scrollbar-thumb:hover {
 	background: rgba(217, 190, 111, 0.8) !important;
 }
