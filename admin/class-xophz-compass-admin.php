@@ -60,7 +60,9 @@ class Xophz_Compass_Admin {
   public function enqueue_styles() {
     global $wp_styles;
 
-    wp_enqueue_style( 'button-color', plugins_url( 'css/color-my-icon.css', __FILE__ ) );
+    $css_file = plugin_dir_path( __FILE__ ) . 'css/compass-admin-global.css';
+    $version  = file_exists($css_file) ? filemtime($css_file) : $this->version;
+    wp_enqueue_style( 'compass-admin-global', plugins_url( 'css/compass-admin-global.css', __FILE__ ), array(), $version );
 
     if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
       // TARGETED STYLE DEQUEUING
@@ -72,7 +74,7 @@ class Xophz_Compass_Admin {
         "common",        // Required: WordPress admin base styles
         "colors",        // Required: WordPress color schemes  
         "open-sans",     // WordPress admin font
-        "button-color",  // Custom: COMPASS admin menu icon color
+        "compass-admin-global",  // Custom: COMPASS admin global styles (icon color, scrollbars)
         "query-monitor"  // Dev tool: Query Monitor plugin styles
       );
 
@@ -239,6 +241,76 @@ class Xophz_Compass_Admin {
       return '<script type="module" src="' . esc_url($src) . '"></script>';
     }
     return $tag;
+  }
+
+  /**
+   * Add My Compass button to the admin bar with the Gold Omega icon.
+   * Uses the same dashicon + color as the sidebar menu item.
+   *
+   * @param WP_Admin_Bar $wp_admin_bar The admin bar instance.
+   */
+  public function add_compass_admin_bar_button( $wp_admin_bar ) {
+    $omega_html = '<span class="ab-icon dashicons dashicons-editor-customchar compass-ab-omega"></span>';
+
+    $menu_title = class_exists( 'Xophz_Compass_Branding' )
+      ? Xophz_Compass_Branding::get_menu_title()
+      : 'My Compass';
+
+    $wp_admin_bar->add_node( array(
+      'id'    => 'compass-menu',
+      'title' => $omega_html . '<span class="compass-ab-label">' . esc_html( $menu_title ) . '</span>',
+      'href'  => admin_url( 'admin.php?page=xophz-compass' ),
+      'meta'  => array(
+        'class' => 'compass-admin-bar-btn',
+        'title' => $menu_title,
+      ),
+    ) );
+
+    // ── Group 1: Dashboard links ──
+    $wp_admin_bar->add_node( array(
+      'parent' => 'compass-menu',
+      'id'     => 'compass-dashboard',
+      'title'  => 'Dashboard',
+      'href'   => admin_url( 'admin.php?page=xophz-compass#/' ),
+    ) );
+
+    $wp_admin_bar->add_node( array(
+      'parent' => 'compass-menu',
+      'id'     => 'compass-settings',
+      'title'  => 'Settings',
+      'href'   => admin_url( 'admin.php?page=xophz-compass#/settings' ),
+    ) );
+
+    // ── Group 2: External links ──
+    $wp_admin_bar->add_group( array(
+      'parent' => 'compass-menu',
+      'id'     => 'compass-external',
+      'meta'   => array( 'class' => 'ab-sub-secondary' ),
+    ) );
+
+    $wp_admin_bar->add_node( array(
+      'parent' => 'compass-external',
+      'id'     => 'compass-website',
+      'title'  => 'MyCompassConsulting.com',
+      'href'   => 'https://mycompassconsulting.com',
+      'meta'   => array( 'target' => '_blank' ),
+    ) );
+
+    $wp_admin_bar->add_node( array(
+      'parent' => 'compass-external',
+      'id'     => 'compass-docs',
+      'title'  => 'Documentation',
+      'href'   => 'https://mycompassconsulting.com/docs',
+      'meta'   => array( 'target' => '_blank' ),
+    ) );
+
+    $wp_admin_bar->add_node( array(
+      'parent' => 'compass-external',
+      'id'     => 'compass-support',
+      'title'  => 'Support',
+      'href'   => 'https://mycompassconsulting.com/support',
+      'meta'   => array( 'target' => '_blank' ),
+    ) );
   }
 
   /**
