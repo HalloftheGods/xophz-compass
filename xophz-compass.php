@@ -16,13 +16,14 @@
  * Plugin Name:       My Compass 
  * Plugin URI:        https://youmeos.com
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
- * Version:           26.4.14.1307
+ * Version:           26.4.14.1311
  * Author:            Hall of the Gods, Inc.
  * Author URI:        https://www.hallofthegods.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       xophz-compass
  * Domain Path:       /languages
+ * Update URI:        https://github.com/HalloftheGods/xophz-compass
  * Category:          Command Deck
  */
 
@@ -36,7 +37,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'XOPHZ_COMPASS_VERSION', '26.4.14.1307' );
+define( 'XOPHZ_COMPASS_VERSION', '26.4.14.1311' );
 
 /**
  * The code that runs during plugin activation.
