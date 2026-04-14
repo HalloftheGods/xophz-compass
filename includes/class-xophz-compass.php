@@ -140,6 +140,12 @@ class Xophz_Compass {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-modules-api.php';
 
+		/**
+		 * The telescope backend handling
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-cpt.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-api.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 
 	}
@@ -215,6 +221,11 @@ class Xophz_Compass {
     // Register Modules Ecosystem API
     $plugin_modules = new Xophz_Compass_Modules_API();
     $this->loader->add_action( 'rest_api_init', $plugin_modules, 'register_routes' );
+
+    // Register Telescope API & CPT
+    $this->loader->add_action( 'init', 'Xophz_Compass_Telescope_CPT', 'register_post_type' );
+    $plugin_telescope_api = new Xophz_Compass_Telescope_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_telescope_api, 'register_routes' );
 
     // Check DB Schema
     $this->loader->add_action( 'admin_init', $this, 'check_db_schema' );
