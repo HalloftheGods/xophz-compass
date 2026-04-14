@@ -146,6 +146,8 @@ class Xophz_Compass {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-cpt.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-api.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 
 	}
@@ -229,6 +231,9 @@ class Xophz_Compass {
 
     // Check DB Schema
     $this->loader->add_action( 'admin_init', $this, 'check_db_schema' );
+
+    // GitHub Plugin Updater (auto-discovers all xophz-compass-* plugins)
+    Xophz_Compass_Updater::init();
 	}
 
 	/**
