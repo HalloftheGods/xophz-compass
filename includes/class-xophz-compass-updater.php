@@ -17,6 +17,7 @@ class Xophz_Compass_Updater {
 		self::discover_plugins();
 
 		add_filter( 'pre_set_site_transient_update_plugins', [ __CLASS__, 'check_for_updates' ] );
+		add_filter( 'update_plugins_github.com', [ __CLASS__, 'github_update_provider' ], 10, 3 );
 		add_filter( 'plugins_api', [ __CLASS__, 'plugin_info' ], 20, 3 );
 		add_filter( 'plugin_row_meta', [ __CLASS__, 'plugin_row_meta' ], 10, 2 );
 	}
@@ -74,6 +75,37 @@ class Xophz_Compass_Updater {
 		}
 
 		return $transient;
+	}
+
+	public static function github_update_provider( $update, $plugin_data, $plugin_file ) {
+		if ( ! isset( self::$registry[ $plugin_file ] ) ) {
+			return $update;
+		}
+
+		$plugin = self::$registry[ $plugin_file ];
+		$release = self::fetch_release( $plugin['repo'] );
+		if ( ! $release ) return $update;
+
+		$remote_version = ltrim( $release->tag_name ?? '', 'v' );
+		$has_update = version_compare( $remote_version, $plugin['version'], '>' );
+
+		if ( ! $has_update ) return $update;
+
+		$download_url = self::get_download_url( $release );
+		if ( ! $download_url ) return $update;
+
+		$icons = self::get_icon_urls( $plugin['repo'] );
+
+		return (object) [
+			'slug'        => $plugin['slug'],
+			'plugin'      => $plugin_file,
+			'new_version' => $remote_version,
+			'url'         => "https://github.com/{$plugin['repo']}",
+			'package'     => $download_url,
+			'icons'       => $icons,
+			'tested'      => '',
+			'requires'    => '',
+		];
 	}
 
 	public static function plugin_info( $result, $action, $args ) {
