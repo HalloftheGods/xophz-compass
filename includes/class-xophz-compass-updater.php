@@ -164,8 +164,14 @@ class Xophz_Compass_Updater {
 	}
 
 	private static function fetch_release( $repo ) {
-		$cache_key = 'xophz_gh_rel_' . md5( $repo );
-		$cached    = get_transient( $cache_key );
+		$cache_key    = 'xophz_gh_rel_' . md5( $repo );
+		$force_check  = isset( $_GET['xophz_force_update'] ) && current_user_can( 'manage_options' );
+
+		if ( $force_check ) {
+			delete_transient( $cache_key );
+		}
+
+		$cached = get_transient( $cache_key );
 
 		if ( $cached !== false ) return $cached;
 
