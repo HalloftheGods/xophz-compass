@@ -528,12 +528,23 @@ class Xophz_Compass_Admin {
 
   public function getCurrentUser(){
     $user = wp_get_current_user();
+    $user_id = $user->ID;
+
+    // Fetch license info from user meta (likely set by w4.youmeos.com checkout)
+    $tier = get_user_meta($user_id, '_youmeos_tier', true) ?: 'unverified';
+    $license_key = get_user_meta($user_id, '_youmeos_license_key', true) ?: '';
+    $status = get_user_meta($user_id, '_youmeos_license_status', true) ?: (empty($license_key) ? 'none' : 'active');
 
     $currentUser = [
-      'avatar' => get_avatar_url($user->ID,250),
+      'avatar' => get_avatar_url($user_id, 250),
       'caps'   => $user->caps,
       'data'   => $user->data,
       'roles'   => $user->roles,
+      'license' => [
+        'key' => $license_key,
+        'tier' => $tier,
+        'status' => $status
+      ]
     ];
 
     $blogInfo = [
