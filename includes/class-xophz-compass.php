@@ -148,6 +148,8 @@ class Xophz_Compass {
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-passport-api.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 
 	}
@@ -231,6 +233,10 @@ class Xophz_Compass {
 
     // Check DB Schema
     $this->loader->add_action( 'admin_init', $this, 'check_db_schema' );
+
+    // Register Passport API
+    $plugin_passport = new Xophz_Compass_Passport_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_passport, 'register_routes' );
 
     // GitHub Plugin Updater (auto-discovers all xophz-compass-* plugins)
     Xophz_Compass_Updater::init();
