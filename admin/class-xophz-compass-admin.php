@@ -146,6 +146,10 @@ class Xophz_Compass_Admin {
       global $_wp_admin_css_colors;
       $current_user = wp_get_current_user();
       
+      $ehVersion = defined('XOPHZ_COMPASS_EVENT_HORIZON_VERSION')
+        ? XOPHZ_COMPASS_EVENT_HORIZON_VERSION
+        : '0.0.0';
+
       $settings = [
           'adminColors' => $_wp_admin_css_colors,
           'currentUser' => [
@@ -155,7 +159,9 @@ class Xophz_Compass_Admin {
           ],
           'nonce' => wp_create_nonce( 'wp_rest' ),
           'restUrl' => get_rest_url(),
-          'siteName' => get_bloginfo('name')
+          'siteName' => get_bloginfo('name'),
+          'compassVersion' => XOPHZ_COMPASS_VERSION,
+          'eventHorizonVersion' => $ehVersion
       ];
 
       if ( $this->isDevServer() ) {
@@ -668,6 +674,21 @@ class Xophz_Compass_Admin {
         return current_user_can('manage_options');
       }
     ]);
+
+    register_rest_route('xophz-compass/v1', '/versions', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_plugin_versions'],
+      'permission_callback' => function() {
+        return current_user_can('manage_options');
+      },
+      'args' => [
+        'slug' => [
+          'required' => false,
+          'type' => 'string',
+          'sanitize_callback' => 'sanitize_text_field'
+        ]
+      ]
+    ]);
   }
 
   /**
@@ -826,6 +847,38 @@ class Xophz_Compass_Admin {
     }
 
     return new WP_REST_Response($result, 200);
+  }
+
+  public function get_plugin_versions(WP_REST_Request $request) {
+    if (!function_exists('get_plugins')) {
+      require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+
+    $targetSlug = $request->get_param('slug');
+    $plugins = get_plugins();
+    $versions = [];
+
+    foreach ($plugins as $file => $meta) {
+      $isCompassPlugin = strpos($meta['TextDomain'] ?? '', 'xophz-compass') === 0;
+      if (!$isCompassPlugin) continue;
+
+      $slug = str_replace('xophz-compass-', '', $meta['TextDomain']);
+      if ($slug === 'xophz-compass') $slug = 'compass';
+
+      if ($targetSlug && $slug !== $targetSlug) continue;
+
+      $versions[$slug] = [
+        'version' => $meta['Version'] ?? '0.0.0',
+        'name' => trim(str_replace('Xophz', '', $meta['Name'])),
+        'active' => is_plugin_active($file)
+      ];
+    }
+
+    if ($targetSlug && isset($versions[$targetSlug])) {
+      return new WP_REST_Response($versions[$targetSlug], 200);
+    }
+
+    return new WP_REST_Response($versions, 200);
   }
 
   /**
