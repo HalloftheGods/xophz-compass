@@ -16,7 +16,18 @@ class Xophz_Compass_Updater {
 
 		self::discover_plugins();
 
+		if ( isset( $_GET['xophz_force_update'] ) && current_user_can( 'manage_options' ) ) {
+			delete_site_transient( 'update_plugins' );
+			foreach ( self::$registry as $file => $plugin ) {
+				delete_transient( 'xophz_gh_rel_' . md5( $plugin['repo'] ) );
+			}
+			wp_safe_redirect( admin_url( 'plugins.php' ) );
+			exit;
+		}
+
+		// Hook into both pre_set and the transient read to ensure our updates are always injected
 		add_filter( 'pre_set_site_transient_update_plugins', [ __CLASS__, 'check_for_updates' ] );
+		add_filter( 'site_transient_update_plugins', [ __CLASS__, 'check_for_updates' ] );
 		add_filter( 'update_plugins_github.com', [ __CLASS__, 'github_update_provider' ], 10, 3 );
 		add_filter( 'plugins_api', [ __CLASS__, 'plugin_info' ], 20, 3 );
 		add_filter( 'plugin_row_meta', [ __CLASS__, 'plugin_row_meta' ], 10, 2 );
@@ -159,6 +170,7 @@ class Xophz_Compass_Updater {
 
 		$repo = self::$registry[ $file ]['repo'];
 		$meta[] = '<a href="https://github.com/' . esc_attr( $repo ) . '/releases" target="_blank">View on GitHub</a>';
+		$meta[] = '<a href="' . esc_url( admin_url( 'plugins.php?xophz_force_update=1' ) ) . '" style="color: #d63638; font-weight: bold;">Check for Updates</a>';
 
 		return $meta;
 	}
