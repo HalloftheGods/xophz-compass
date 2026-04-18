@@ -145,6 +145,7 @@ class Xophz_Compass {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-cpt.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-api.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-polls-api.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
 
@@ -237,6 +238,9 @@ class Xophz_Compass {
     // Register Passport API
     $plugin_passport = new Xophz_Compass_Passport_API();
     $this->loader->add_action( 'rest_api_init', $plugin_passport, 'register_routes' );
+
+    $plugin_polls = new Xophz_Compass_Polls_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_polls, 'register_routes' );
 
     // GitHub Plugin Updater (auto-discovers all xophz-compass-* plugins)
     Xophz_Compass_Updater::init();
