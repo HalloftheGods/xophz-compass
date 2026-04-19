@@ -154,12 +154,15 @@ class Xophz_Compass_Admin {
           'adminColors' => $_wp_admin_css_colors,
           'currentUser' => [
               'ID' => $current_user->ID,
+              'user_login' => $current_user->user_login,
+              'user_email' => $current_user->user_email,
               'admin_color' => get_user_option('admin_color', $current_user->ID),
               'roles' => $current_user->roles,
           ],
           'nonce' => wp_create_nonce( 'wp_rest' ),
           'restUrl' => get_rest_url(),
           'siteName' => get_bloginfo('name'),
+          'siteUrl' => get_bloginfo('url'),
           'compassVersion' => XOPHZ_COMPASS_VERSION,
           'eventHorizonVersion' => $ehVersion
       ];
