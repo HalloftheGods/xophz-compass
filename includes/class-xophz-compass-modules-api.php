@@ -108,7 +108,7 @@ class Xophz_Compass_Modules_API {
 		// Bundled natively, does not download via GitHub
 		$modules['xophz-compass-magic-formula'] = array(
 			'slug'         => 'xophz-compass-magic-formula',
-			'name'         => 'Magic Formula',
+			'name'         => 'Magic Formulas',
 			'description'  => 'The ultimate form, poll, and quiz builder.',
 			'download_url' => '', 
 		);

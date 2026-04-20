@@ -414,9 +414,9 @@ class Xophz_Compass_Admin {
   public function getPluginsByXoph(){
     $plugins = get_plugins();
     
-    // Inject Magic Formula since it's now bundled natively in compass but needs to appear as a plugin in UI
+    // Inject Magic Formulas since it's now bundled natively in compass but needs to appear as a plugin in UI
     $plugins['xophz-compass-magic-formula/xophz-compass-magic-formula.php'] = [
-      'Name' => 'Xophz Magic Formula',
+      'Name' => 'Xophz Magic Formulas',
       'PluginURI' => 'http://www.mycompassconsulting.com/',
       'Version' => '1.0.0',
       'Description' => 'The ultimate form, poll, and quiz builder.',
@@ -424,9 +424,9 @@ class Xophz_Compass_Admin {
       'TextDomain' => 'xophz-compass-magic-formula',
       'DomainPath' => '/languages',
       'Network' => false,
-      'Title' => 'Xophz Magic Formula',
+      'Title' => 'Xophz Magic Formulas',
       'AuthorName' => 'Xoph',
-      'Category' => 'Trajectory'
+      'Category' => 'Command Deck'
     ];
 
     $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
