@@ -57,7 +57,12 @@ class Xophz_Compass_Updater {
 	}
 
 	public static function check_for_updates( $transient ) {
-		if ( empty( $transient->checked ) ) return $transient;
+		if ( ! is_object( $transient ) ) return $transient;
+
+		$is_update_check = ! empty( $transient->checked );
+		$is_force_check  = isset( $_GET['xophz_force_update'] ) && current_user_can( 'manage_options' );
+		
+		if ( ! $is_update_check && ! $is_force_check ) return $transient;
 
 		foreach ( self::$registry as $file => $plugin ) {
 			$release = self::fetch_release( $plugin['repo'] );
@@ -176,22 +181,24 @@ class Xophz_Compass_Updater {
 	}
 
 	private static function fetch_release( $repo ) {
-		$cache_key    = 'xophz_gh_rel_' . md5( $repo );
+		$hash         = md5( $repo );
+		$cache_key    = 'xophz_gh_rel_' . $hash;
+		$fallback_key = 'xophz_gh_rel_last_' . $hash;
+		
 		$is_force_check = isset( $_GET['xophz_force_update'] ) || isset( $_GET['force-check'] );
-		$force_check  = $is_force_check && current_user_can( 'manage_options' );
+		$force_check    = $is_force_check && current_user_can( 'manage_options' );
 
 		if ( $force_check ) {
 			delete_transient( $cache_key );
 		}
 
 		$cached = get_transient( $cache_key );
-
 		if ( $cached !== false ) return $cached;
 
 		$url = self::GITHUB_API . "/{$repo}/releases/latest";
 
 		$response = wp_remote_get( $url, [
-			'timeout' => 10,
+			'timeout' => 15,
 			'headers' => [
 				'Accept'     => 'application/vnd.github.v3+json',
 				'User-Agent' => 'Xophz-Compass-Updater',
@@ -203,19 +210,26 @@ class Xophz_Compass_Updater {
 		$is_ok    = $status === 200;
 
 		if ( $is_error || ! $is_ok ) {
-			set_transient( $cache_key, null, 3600 );
-			return null;
+			// On error, cache the failure for only 5 minutes (instead of 1 hour)
+			set_transient( $cache_key, null, 300 );
+			
+			// Return fallback if available
+			return get_option( $fallback_key, null );
 		}
 
 		$body    = wp_remote_retrieve_body( $response );
 		$release = json_decode( $body );
 
 		if ( ! $release || ! isset( $release->tag_name ) ) {
-			set_transient( $cache_key, null, 3600 );
-			return null;
+			set_transient( $cache_key, null, 300 );
+			return get_option( $fallback_key, null );
 		}
 
+		// Store in transient for high-performance cache
 		set_transient( $cache_key, $release, self::CACHE_TTL );
+		
+		// Store in options for permanent fallback
+		update_option( $fallback_key, $release, false );
 
 		return $release;
 	}
