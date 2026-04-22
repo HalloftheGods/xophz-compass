@@ -239,8 +239,14 @@ class Xophz_Compass {
     $plugin_passport = new Xophz_Compass_Passport_API();
     $this->loader->add_action( 'rest_api_init', $plugin_passport, 'register_routes' );
 
+		// Register Polls API
     $plugin_polls = new Xophz_Compass_Polls_API();
     $this->loader->add_action( 'rest_api_init', $plugin_polls, 'register_routes' );
+
+    // Register Gemini API wrapper
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-gemini-api.php';
+    $plugin_gemini = new Xophz_Compass_Gemini_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_gemini, 'register_routes' );
 
     // GitHub Plugin Updater (auto-discovers all xophz-compass-* plugins)
     Xophz_Compass_Updater::init();
