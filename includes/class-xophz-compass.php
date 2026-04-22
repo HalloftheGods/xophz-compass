@@ -198,6 +198,7 @@ class Xophz_Compass {
     $this->loader->add_action( 'wp_ajax_save_plugin_order', $plugin_admin, 'save_plugin_order' );
     $this->loader->add_action( 'wp_ajax_get_plugin_order', $plugin_admin, 'get_plugin_order' ); 
     $this->loader->add_action( 'wp_ajax_get_forminator_modules', $plugin_admin, 'get_forminator_modules' );
+    $this->loader->add_action( 'wp_ajax_get_compass_admin_menu', $plugin_admin, 'ajax_get_compass_admin_menu' );
 
     $this->loader->add_filter( 'manage_posts_columns', $plugin_admin, 'posts_column_views');
     

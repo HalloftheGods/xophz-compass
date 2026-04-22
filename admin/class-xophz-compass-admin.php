@@ -143,7 +143,7 @@ class Xophz_Compass_Admin {
       wp_enqueue_script( 'wp-api' );
       
       // Prepare data for injection
-      global $_wp_admin_css_colors;
+      global $_wp_admin_css_colors, $menu, $submenu;
       $current_user = wp_get_current_user();
       
       $ehVersion = defined('XOPHZ_COMPASS_EVENT_HORIZON_VERSION')
@@ -162,6 +162,8 @@ class Xophz_Compass_Admin {
               'roles' => $current_user->roles,
               'avatar' => get_user_meta($current_user->ID, 'youmeos_avatar_url', true) ?: get_avatar_url($current_user->ID, ['size' => 96]),
           ],
+          'adminMenu' => $menu,
+          'adminSubmenu' => $submenu,
           'nonce' => wp_create_nonce( 'wp_rest' ),
           'restUrl' => get_rest_url(),
           'siteName' => get_bloginfo('name'),
@@ -681,6 +683,14 @@ class Xophz_Compass_Admin {
       }
     ]);
 
+    register_rest_route('xophz-compass/v1', '/admin-menu', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_admin_menu_data'],
+      'permission_callback' => function() {
+        return current_user_can('read');
+      }
+    ]);
+
     register_rest_route('xophz-compass/v1', '/versions', [
       'methods'  => 'GET',
       'callback' => [$this, 'get_plugin_versions'],
@@ -853,6 +863,70 @@ class Xophz_Compass_Admin {
     }
 
     return new WP_REST_Response($result, 200);
+  }
+
+  /**
+   * Get the LIVE WordPress Admin Menu and Submenu data.
+   *
+   * @since    1.0.0
+   * @return   WP_REST_Response
+   */
+  public function get_admin_menu_data() {
+    // Set current screen to dashboard to satisfy plugins that check screen in admin_menu hooks
+    if (function_exists('set_current_screen')) {
+      set_current_screen('dashboard');
+    } else {
+      require_once ABSPATH . 'wp-admin/includes/screen.php';
+      set_current_screen('dashboard');
+    }
+    
+    // Load required admin files
+    if (!defined('WP_ADMIN')) {
+      define('WP_ADMIN', true);
+    }
+    require_once ABSPATH . 'wp-admin/includes/admin.php';
+    
+    // Run the menu building process
+    require_once ABSPATH . 'wp-admin/menu.php';
+    
+    global $menu, $submenu;
+    
+    return new WP_REST_Response([
+      'menu' => $menu ?: [],
+      'submenu' => $submenu ?: []
+    ], 200);
+  }
+
+  /**
+   * Get the LIVE WordPress Admin Menu via admin-ajax
+   *
+   * @since    1.0.0
+   */
+  public function ajax_get_compass_admin_menu() {
+    if (!current_user_can('read')) {
+      wp_send_json_error('Unauthorized', 401);
+      return;
+    }
+    
+    global $pagenow;
+    if (empty($pagenow)) {
+        $pagenow = 'index.php';
+    }
+    
+    require_once ABSPATH . 'wp-admin/includes/admin.php';
+    
+    if (function_exists('set_current_screen')) {
+      set_current_screen('dashboard');
+    }
+    
+    require_once ABSPATH . 'wp-admin/menu.php';
+    
+    global $menu, $submenu;
+    
+    wp_send_json_success([
+      'menu' => $menu ?: [],
+      'submenu' => $submenu ?: []
+    ]);
   }
 
   public function get_plugin_versions(WP_REST_Request $request) {

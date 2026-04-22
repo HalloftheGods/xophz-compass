@@ -1,5 +1,5 @@
 .toplevel_page_xophz-compass .dashicons-editor-customchar:before {
-    color: rgb(217, 190, 111) !important; 
+	color: rgb(217, 190, 111) !important;
 }
 
 .toplevel_page_xophz-compass #adminmenuwrap {
@@ -25,4 +25,11 @@
 
 .toplevel_page_xophz-compass #adminmenuwrap::-webkit-scrollbar-thumb:hover {
 	background: rgba(217, 190, 111, 0.8) !important;
+}
+
+#adminmenuwrap #adminmenu div.wp-menu-image img {
+	width: 24px;
+	height: 24px;
+	object-fit: scale-down;
+	padding: 6px 0px 0 2px;
 }
