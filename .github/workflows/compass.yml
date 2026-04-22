@@ -1,0 +1,11 @@
+name: Compass
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "59 23 * * *"
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    uses: HalloftheGods/.github-xophz-compass/workflows/master.yml@main
