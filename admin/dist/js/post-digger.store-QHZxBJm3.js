@@ -1,0 +1,1 @@
+import{c4 as t}from"./vendor-DQThJ81u.js";const a=t("postDigger",{state:()=>({query:{page:1,per_page:20,status:"any",search:""},editingPost:null}),actions:{setPage(e){this.query.page=e},setSearch(e){this.query.search=e,this.query.page=1},setStatus(e){this.query.status=e,this.query.page=1},setType(e){this.query.type=e,this.query.page=1},loadPost(e){}}});export{a as u};
