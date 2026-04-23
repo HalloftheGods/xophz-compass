@@ -210,6 +210,7 @@ class Xophz_Compass {
 
     $this->loader->add_action( 'admin_footer_text', $plugin_admin,'change_admin_footer',9999);
     $this->loader->add_action( 'update_footer', $plugin_admin,'change_footer',9999);
+    $this->loader->add_action( 'admin_footer', $plugin_admin, 'render_sidebar_version' );
 
     // Register branding REST API endpoints
     $this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_branding_endpoints' );

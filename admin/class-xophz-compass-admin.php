@@ -527,9 +527,23 @@ class Xophz_Compass_Admin {
   }
 
   public function change_admin_footer(){
-    // echo '<span id="footer-note">From your friends at <a href="http://www.mycompassconsulting.com/" target="_blank">My Compass Consulting</a>.</span>';
-    // echo ucwords(str_replace('-',' ',$this->plugin_name)) ." ". $this->version;
     echo "";
+  }
+
+  public function render_sidebar_version() {
+    $v = defined('XOPHZ_COMPASS_VERSION') ? XOPHZ_COMPASS_VERSION : $this->version;
+    ?>
+    <script>
+    (function(){
+      var w = document.getElementById('adminmenuwrap');
+      if (!w) return;
+      var el = document.createElement('span');
+      el.className = 'compass-sidebar-version';
+      el.textContent = 'v<?php echo esc_js($v); ?>';
+      w.appendChild(el);
+    })();
+    </script>
+    <?php
   }
   public function change_footer(){
     $plugin = 'My Compass';

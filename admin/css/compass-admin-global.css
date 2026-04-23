@@ -5,6 +5,17 @@
 .toplevel_page_xophz-compass #adminmenuwrap {
 	max-height: calc(100vh - 32px) !important;
 	overflow-y: auto !important;
+	overflow-x: hidden !important;
+}
+
+.compass-sidebar-version {
+	display: block;
+	text-align: center;
+	padding: 6px 0 10px;
+	font-size: 10px;
+	letter-spacing: 0.5px;
+	color: rgba(255, 255, 255, 0.25);
+	pointer-events: none;
 }
 
 /* Sexy scrollbar for adminmenuwrap */
