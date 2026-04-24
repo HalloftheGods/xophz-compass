@@ -37,7 +37,7 @@ class Xophz_Compass_Gemini_API {
 					'model' => array(
 						'required' => false,
 						'type'     => 'string',
-						'default'  => 'gemini-1.5-flash',
+						'default'  => 'gemini-2.5-flash',
 					)
 				),
 			)
