@@ -1,0 +1,1 @@
+import{i as t}from"./index-DhtR05Au.js";const i=()=>t.get("pixie_dust_get_pixels"),p=e=>t.get("pixie_dust_get_pixel",{id:e}),_=()=>t.get("pixie_dust_get_templates"),x=e=>t.post("pixie_dust_save_pixel",e),l=e=>t.post("pixie_dust_delete_pixel",{id:e}),g=e=>t.post("pixie_dust_toggle_pixel",{id:e});export{_ as a,p as b,l as d,i as g,x as s,g as t};
