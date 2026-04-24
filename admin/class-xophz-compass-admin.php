@@ -639,7 +639,22 @@ class Xophz_Compass_Admin {
   private function isDevServer()
   {
     $hotFilePath = plugin_dir_path( __FILE__ ) . 'hot';
-    return file_exists( $hotFilePath );
+    if ( ! file_exists( $hotFilePath ) ) {
+        return false;
+    }
+
+    // Safety check 1: Prevent loading insecure HTTP dev assets on a secure HTTPS production site
+    if ( is_ssl() ) {
+        return false;
+    }
+
+    // Safety check 2: Explicitly block known production/staging domains
+    $host = isset($_SERVER['HTTP_HOST']) ? strtolower($_SERVER['HTTP_HOST']) : '';
+    if ( strpos($host, 'tempurl.host') !== false || strpos($host, 'youmeos.com') !== false || strpos($host, 'mycompassconsulting.com') !== false ) {
+        return false;
+    }
+
+    return true;
   }
   /**
    * Register REST API endpoints for branding configuration.
