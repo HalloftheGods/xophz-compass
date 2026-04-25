@@ -14,7 +14,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:       My Compass 
- * Plugin URI:        https://youmeos.com
+ * Plugin URI:        https://github.com/HalloftheGods/xophz-compass
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
  * Version:           26.4.24.942
  * Author:            Hall of the Gods, Inc.
