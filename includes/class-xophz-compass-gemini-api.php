@@ -53,6 +53,12 @@ class Xophz_Compass_Gemini_API {
 		if ( defined( 'GEMINI_API_KEY' ) ) {
 			return GEMINI_API_KEY;
 		}
+		if ( ! empty( $_ENV['GEMINI_API_KEY'] ) ) {
+			return $_ENV['GEMINI_API_KEY'];
+		}
+		if ( ! empty( getenv( 'GEMINI_API_KEY' ) ) ) {
+			return getenv( 'GEMINI_API_KEY' );
+		}
 		return get_option( 'xophz_gemini_api_key', '' );
 	}
 
