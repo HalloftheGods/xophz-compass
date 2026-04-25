@@ -150,8 +150,12 @@ class Xophz_Compass {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-passport-api.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-content-restriction.php';
 
 		$this->loader = new Xophz_Compass_Loader();
+		
+		$plugin_content_restriction = new Xophz_Compass_Content_Restriction();
+		$plugin_content_restriction->register_hooks( $this->loader );
 
 	}
 
