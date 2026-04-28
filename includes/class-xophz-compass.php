@@ -151,6 +151,8 @@ class Xophz_Compass {
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-passport-api.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-content-restriction.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-matrix-api.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-performance-api.php';
 
 		$this->loader = new Xophz_Compass_Loader();
 		
@@ -253,6 +255,15 @@ class Xophz_Compass {
     require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-gemini-api.php';
     $plugin_gemini = new Xophz_Compass_Gemini_API();
     $this->loader->add_action( 'rest_api_init', $plugin_gemini, 'register_routes' );
+
+    // Register Matrix (Org Chart) API
+    $matrix_api = new Xophz_Compass_Matrix_API();
+    $this->loader->add_action( 'init', $matrix_api, 'register_taxonomy' );
+    $this->loader->add_action( 'rest_api_init', $matrix_api, 'register_routes' );
+
+    // Register Performance Widget API
+    $performance_api = new Xophz_Compass_Performance_API();
+    $this->loader->add_action( 'rest_api_init', $performance_api, 'register_routes' );
 
     // GitHub Plugin Updater (auto-discovers all xophz-compass-* plugins)
     Xophz_Compass_Updater::init();

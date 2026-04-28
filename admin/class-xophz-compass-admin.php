@@ -142,6 +142,11 @@ class Xophz_Compass_Admin {
     if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
       wp_enqueue_script( 'wp-api' );
       
+      // Prevent blackbox smoke script from loading in compass admin page since compass handles its own
+      if ( class_exists( '\BlackBOX\Core' ) ) {
+        remove_action( 'admin_footer', [ \BlackBOX\Core::class, 'inject_canvas_script' ], 9999 );
+      }
+
       // Prepare data for injection
       global $_wp_admin_css_colors, $menu, $submenu;
       $current_user = wp_get_current_user();
