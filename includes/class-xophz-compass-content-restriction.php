@@ -23,6 +23,9 @@ class Xophz_Compass_Content_Restriction {
 		$loader->add_filter( 'manage_pages_columns', $this, 'add_custom_column' );
 		$loader->add_action( 'manage_posts_custom_column', $this, 'custom_column_content', 10, 2 );
 		$loader->add_action( 'manage_pages_custom_column', $this, 'custom_column_content', 10, 2 );
+
+		// Standard Editor Meta Box Integration
+		$loader->add_action( 'add_meta_boxes', $this, 'add_meta_box' );
 	}
 
 	public function register_meta_field() {
@@ -89,6 +92,33 @@ class Xophz_Compass_Content_Restriction {
 				</label>
 			</div>
 		</fieldset>
+		<?php
+	}
+
+	public function add_meta_box() {
+		add_meta_box(
+			'compass_content_restriction_meta_box',
+			'Access Control',
+			array( $this, 'render_meta_box' ),
+			array( 'post', 'page' ),
+			'side',
+			'high'
+		);
+	}
+
+	public function render_meta_box( $post ) {
+		wp_nonce_field( 'compass_members_only_nonce', 'compass_members_only_nonce_field' );
+		$requires_login = get_post_meta( $post->ID, '_compass_requires_login', true );
+		?>
+		<div class="compass-access-control-box" style="padding: 10px 0;">
+			<label style="display: flex; align-items: center; gap: 8px;">
+				<input type="checkbox" name="_compass_requires_login" value="1" <?php checked( $requires_login, true ); ?>>
+				<strong>Members Only (Requires Login)</strong>
+			</label>
+			<p class="description" style="margin-top: 8px; color: #666;">
+				If checked, unauthenticated users will see a "Classified Intel" login gateway instead of the post content.
+			</p>
+		</div>
 		<?php
 	}
 
