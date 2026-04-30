@@ -85,8 +85,8 @@ class Xophz_Compass_Updater {
 				'url'         => "https://github.com/{$plugin['repo']}",
 				'package'     => $download_url,
 				'icons'       => $icons,
-				'tested'      => '',
-				'requires'    => '',
+				'tested'      => get_bloginfo( 'version' ),
+				'requires'    => '6.0',
 			];
 		}
 
@@ -119,8 +119,8 @@ class Xophz_Compass_Updater {
 			'url'         => "https://github.com/{$plugin['repo']}",
 			'package'     => $download_url,
 			'icons'       => $icons,
-			'tested'      => '',
-			'requires'    => '',
+			'tested'      => get_bloginfo( 'version' ),
+			'requires'    => '6.0',
 		];
 	}
 
@@ -155,9 +155,9 @@ class Xophz_Compass_Updater {
 		$info->homepage      = "https://github.com/{$match['repo']}";
 		$info->download_link = $download_url;
 		$info->trunk         = $download_url;
-		$info->tested        = '';
-		$info->requires      = '';
-		$info->requires_php  = '';
+		$info->tested        = get_bloginfo( 'version' );
+		$info->requires      = '6.0';
+		$info->requires_php  = '7.4';
 		$info->last_updated  = $release->published_at ?? '';
 		$info->icons         = $icons;
 
