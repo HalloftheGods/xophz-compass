@@ -64,7 +64,7 @@ class Xophz_Compass_Admin {
     $version  = file_exists($css_file) ? filemtime($css_file) : $this->version;
     wp_enqueue_style( 'compass-admin-global', plugins_url( 'css/compass-admin-global.css', __FILE__ ), array(), $version );
 
-    if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
+    if( isset($_GET['page']) && $_GET['page'] === $this->plugin_name ){
       // TARGETED STYLE DEQUEUING
       // Keep WordPress admin chrome functional, but prevent form styling conflicts
       $styles_to_keep = array(
@@ -139,7 +139,7 @@ class Xophz_Compass_Admin {
      * class.
      */
 
-    if( isset($_GET['page']) && false !== strpos($_GET['page'], $this->plugin_name) ){
+    if( isset($_GET['page']) && $_GET['page'] === $this->plugin_name ){
       wp_enqueue_script( 'wp-api' );
       
       // Prevent blackbox smoke script from loading in compass admin page since compass handles its own
@@ -369,6 +369,48 @@ class Xophz_Compass_Admin {
         'admin.php?page=' . $slug . '#/', 
     ]);
   }
+
+  /**
+   * Add My Compass submenu under w4-protocol
+   *
+   * @since    1.0.0
+   */
+  public function add_w4_my_compass_menu() {
+      add_submenu_page(
+          'w4-protocol',
+          'My Compass',
+          'My Compass',
+          'manage_options',
+          'w4-my-compass',
+          array( $this, 'render_my_compass_settings_page' )
+      );
+  }
+
+  /**
+   * Render the My Compass settings page
+   *
+   * @since    1.0.0
+   */
+  public function render_my_compass_settings_page() {
+      if ( ! current_user_can( 'manage_options' ) ) {
+          return;
+      }
+      ?>
+      <div class="wrap">
+          <h1>My Compass Settings</h1>
+          <form action="options.php" method="post">
+              <?php
+              settings_fields( 'xophz_compass_settings_group' );
+              do_settings_sections( 'w4-my-compass' );
+              submit_button( 'Save Settings' );
+              ?>
+          </form>
+      </div>
+      <?php
+  }
+
+
+
 
   /**
    * Sort the Xophz Compass submenu items alphabetically.
@@ -834,7 +876,7 @@ class Xophz_Compass_Admin {
 
       $route_map = [
           'quests' => 'questbook',
-          'post-digger' => 'newsroom'
+          'alphabet-soup' => 'newsroom'
       ];
       $slug = isset($route_map[$slug]) ? $route_map[$slug] : $slug;
 

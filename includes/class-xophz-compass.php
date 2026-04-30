@@ -150,14 +150,12 @@ class Xophz_Compass {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-passport-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-content-restriction.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-matrix-api.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-performance-api.php';
 
 		$this->loader = new Xophz_Compass_Loader();
 		
-		$plugin_content_restriction = new Xophz_Compass_Content_Restriction();
-		$plugin_content_restriction->register_hooks( $this->loader );
+
 
 	}
 
@@ -193,6 +191,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
     $this->loader->add_filter( 'script_loader_tag', $plugin_admin, 'add_module_type', 10, 3 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_w4_my_compass_menu');
 		$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'add_compass_admin_bar_button', 12 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'sort_xophz_submenu_alphabetically', 999 ); 
 		$this->loader->add_action( 'wp_ajax_get_plugins', $plugin_admin, 'getPluginsByXoph'); 
@@ -445,7 +444,7 @@ class Xophz_Compass {
           // Route mapping for renamed plugins
           $route_map = [
               'quests' => 'questbook',
-              'post-digger' => 'newsroom'
+              'alphabet-soup' => 'newsroom'
           ];
           $route_slug = isset($route_map[$page]) ? $route_map[$page] : $page;
 
