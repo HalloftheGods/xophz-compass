@@ -192,6 +192,7 @@ class Xophz_Compass {
     $this->loader->add_filter( 'script_loader_tag', $plugin_admin, 'add_module_type', 10, 3 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_w4_my_compass_menu');
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_my_compass_settings');
 		$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'add_compass_admin_bar_button', 12 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'sort_xophz_submenu_alphabetically', 999 ); 
 		$this->loader->add_action( 'wp_ajax_get_plugins', $plugin_admin, 'getPluginsByXoph'); 

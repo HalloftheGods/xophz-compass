@@ -269,6 +269,9 @@ class Xophz_Compass_Admin {
    * @param WP_Admin_Bar $wp_admin_bar The admin bar instance.
    */
   public function add_compass_admin_bar_button( $wp_admin_bar ) {
+    $isDisabled = ! get_option( 'xophz_compass_show_admin_bar', true );
+    if ( $isDisabled ) return;
+
     $omega_html = '<span class="ab-icon dashicons dashicons-editor-customchar compass-ab-omega"></span>';
 
     $menu_title = class_exists( 'Xophz_Compass_Branding' )
@@ -406,6 +409,48 @@ class Xophz_Compass_Admin {
               ?>
           </form>
       </div>
+      <?php
+  }
+
+  /**
+   * Register settings for My Compass
+   *
+   * @since    1.0.0
+   */
+  public function register_my_compass_settings() {
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_show_admin_bar', [
+          'type' => 'string',
+          'default' => true,
+          'sanitize_callback' => 'rest_sanitize_boolean',
+      ] );
+
+      add_settings_section(
+          'xophz_compass_main_section',
+          'General Configuration',
+          array( $this, 'render_compass_settings_section' ),
+          'w4-my-compass'
+      );
+
+      add_settings_field(
+          'xophz_compass_show_admin_bar_field',
+          'Admin Bar Menu',
+          array( $this, 'render_compass_admin_bar_field' ),
+          'w4-my-compass',
+          'xophz_compass_main_section'
+      );
+  }
+
+  public function render_compass_settings_section() {
+      echo '<p>Configure general settings for the My Compass platform.</p>';
+  }
+
+  public function render_compass_admin_bar_field() {
+      $isEnabled = get_option( 'xophz_compass_show_admin_bar', true );
+      ?>
+      <label>
+          <input type="checkbox" name="xophz_compass_show_admin_bar" value="1" <?php checked( $isEnabled, true ); ?>>
+          Show the My Compass menu in the WordPress admin bar.
+      </label>
       <?php
   }
 
