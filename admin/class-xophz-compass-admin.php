@@ -377,12 +377,11 @@ class Xophz_Compass_Admin {
    * Add My Compass submenu under w4-protocol
    *
    * @since    1.0.0
-   */
   public function add_w4_my_compass_menu() {
       add_submenu_page(
           'w4-protocol',
-          'My Compass',
-          'My Compass',
+          'My Compass Settings',
+          'My Compass Settings',
           'manage_options',
           'w4-my-compass',
           array( $this, 'render_my_compass_settings_page' )
