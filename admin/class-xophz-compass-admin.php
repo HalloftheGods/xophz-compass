@@ -424,6 +424,12 @@ class Xophz_Compass_Admin {
           'sanitize_callback' => 'rest_sanitize_boolean',
       ] );
 
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_redirect_dashboard', [
+          'type' => 'string',
+          'default' => false,
+          'sanitize_callback' => 'rest_sanitize_boolean',
+      ] );
+
       add_settings_section(
           'xophz_compass_main_section',
           'General Configuration',
@@ -435,6 +441,14 @@ class Xophz_Compass_Admin {
           'xophz_compass_show_admin_bar_field',
           'Admin Bar Menu',
           array( $this, 'render_compass_admin_bar_field' ),
+          'w4-my-compass',
+          'xophz_compass_main_section'
+      );
+
+      add_settings_field(
+          'xophz_compass_redirect_dashboard_field',
+          'Dashboard Redirect',
+          array( $this, 'render_compass_redirect_dashboard_field' ),
           'w4-my-compass',
           'xophz_compass_main_section'
       );
@@ -454,27 +468,58 @@ class Xophz_Compass_Admin {
       <?php
   }
 
+  public function render_compass_redirect_dashboard_field() {
+      $isEnabled = get_option( 'xophz_compass_redirect_dashboard', false );
+      ?>
+      <label>
+          <input type="checkbox" name="xophz_compass_redirect_dashboard" value="1" <?php checked( $isEnabled, true ); ?>>
+          Redirect administrators to the Compass dashboard after login and when clicking Dashboard.
+      </label>
+      <?php
+  }
+
+  public function redirect_login_to_compass( $redirect_to, $requested_redirect_to, $user ) {
+      $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', false );
+      if ( $isDisabled ) return $redirect_to;
+
+      $isNotUser = is_wp_error( $user ) || ! is_object( $user );
+      if ( $isNotUser ) return $redirect_to;
+
+      $isAdmin = in_array( 'administrator', (array) $user->roles, true );
+      $isDefaultRedirect = $requested_redirect_to === '' || $requested_redirect_to === admin_url();
+
+      if ( $isAdmin && $isDefaultRedirect ) {
+          return admin_url( 'admin.php?page=xophz-compass' );
+      }
+
+      return $redirect_to;
+  }
+
+  public function redirect_dashboard_index() {
+      $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', false );
+      if ( $isDisabled ) return;
+
+      $isAdmin = current_user_can( 'manage_options' );
+      if ( ! $isAdmin ) return;
+
+      wp_safe_redirect( admin_url( 'admin.php?page=xophz-compass' ) );
+      exit;
+  }
 
 
 
-  /**
-   * Sort the Xophz Compass submenu items alphabetically.
-   *
-   * @since    1.0.0
-   */
+
   public function sort_xophz_submenu_alphabetically() {
       global $submenu;
       $parent_slug = 'xophz-compass';
 
       if ( isset( $submenu[ $parent_slug ] ) ) {
-          // Preserve the first item (Compass/Dashboard)
           $first_item = array_shift( $submenu[ $parent_slug ] );
-          
+
           usort( $submenu[ $parent_slug ], function( $a, $b ) {
               return strcmp( $a[0], $b[0] );
           } );
 
-          // Add the first item back to the beginning
           array_unshift( $submenu[ $parent_slug ], $first_item );
       }
   }
@@ -520,7 +565,8 @@ class Xophz_Compass_Admin {
       'Network' => false,
       'Title' => 'Xophz Magic Formulas',
       'AuthorName' => 'Xoph',
-      'Category' => 'Command Deck'
+      'Category' => 'Command Deck',
+      'Group' => 'CRM'
     ];
 
     $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
@@ -588,6 +634,7 @@ class Xophz_Compass_Admin {
    */
   public function add_category_header($headers) {
       $headers['Category'] = 'Category';
+      $headers['Group'] = 'Group';
       return $headers;
   }
 
@@ -631,7 +678,13 @@ class Xophz_Compass_Admin {
       if (!w) return;
       var el = document.createElement('span');
       el.className = 'compass-sidebar-version';
-      el.textContent = 'v<?php echo esc_js($v); ?>';
+      // Parse version to get just vXX.Y for collapsed state
+      var fullVersion = 'v<?php echo esc_js($v); ?>';
+      var shortVersion = fullVersion;
+      var match = fullVersion.match(/^(v\d+\.\d+)/);
+      if (match) shortVersion = match[1];
+
+      el.innerHTML = '<span class="v-long">' + fullVersion + '</span><span class="v-short">' + shortVersion + '</span>';
       w.appendChild(el);
     })();
     </script>

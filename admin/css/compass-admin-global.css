@@ -2,7 +2,7 @@
 	color: rgb(217, 190, 111) !important;
 }
 
-.toplevel_page_xophz-compass #adminmenuwrap {
+body:not(.folded).toplevel_page_xophz-compass #adminmenuwrap {
 	max-height: calc(100vh - 32px) !important;
 	overflow-y: auto !important;
 	overflow-x: hidden !important;
@@ -11,11 +11,34 @@
 .compass-sidebar-version {
 	display: block;
 	text-align: center;
-	padding: 6px 0 10px;
+	padding: 20px 0 10px;
 	font-size: 10px;
 	letter-spacing: 0.5px;
 	color: rgba(255, 255, 255, 0.25);
 	pointer-events: none;
+	position: relative;
+	width: 100%;
+	z-index: 9999;
+}
+
+body.folded .compass-sidebar-version {
+	width: 36px;
+}
+
+.compass-sidebar-version .v-long {
+	display: inline;
+}
+
+.compass-sidebar-version .v-short {
+	display: none;
+}
+
+body.folded .compass-sidebar-version .v-long {
+	display: none;
+}
+
+body.folded .compass-sidebar-version .v-short {
+	display: inline;
 }
 
 /* Sexy scrollbar for adminmenuwrap */
@@ -36,4 +59,37 @@
 
 .toplevel_page_xophz-compass #adminmenuwrap::-webkit-scrollbar-thumb:hover {
 	background: rgba(217, 190, 111, 0.8) !important;
+}
+
+#adminmenuwrap #adminmenu div.wp-menu-image img {
+	width: 20px !important;
+	height: 20px !important;
+	max-width: 100%;
+	object-fit: contain;
+	padding: 8px 0 0 0 !important;
+	margin: 0 !important;
+}
+
+#adminmenu .wp-menu-name {
+	position: relative;
+}
+
+#adminmenu .wp-menu-name .update-plugins,
+#adminmenu .wp-menu-name .awaiting-mod {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+#adminmenu .wp-submenu li a {
+	position: relative;
+}
+
+#adminmenu .wp-submenu .update-plugins,
+#adminmenu .wp-submenu .awaiting-mod {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
 }

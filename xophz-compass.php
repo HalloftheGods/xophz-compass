@@ -25,6 +25,7 @@
  * Domain Path:       /languages
  * Update URI:        https://github.com/HalloftheGods/xophz-compass
  * Category:          Command Deck
+ * Group:             OS
  */
 
 // If this file is called directly, abort.

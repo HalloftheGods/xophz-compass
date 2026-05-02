@@ -193,6 +193,8 @@ class Xophz_Compass {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_w4_my_compass_menu');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_my_compass_settings');
+		$this->loader->add_filter( 'login_redirect', $plugin_admin, 'redirect_login_to_compass', 10, 3 );
+		$this->loader->add_action( 'load-index.php', $plugin_admin, 'redirect_dashboard_index' );
 		$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'add_compass_admin_bar_button', 12 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'sort_xophz_submenu_alphabetically', 999 ); 
 		$this->loader->add_action( 'wp_ajax_get_plugins', $plugin_admin, 'getPluginsByXoph'); 
@@ -390,8 +392,13 @@ class Xophz_Compass {
 					);
 				}
 				
-				// Update the user option
-				update_user_option($user->ID, 'admin_color', sanitize_text_field($value));
+				$sanitized = sanitize_text_field($value);
+				update_user_option($user->ID, 'admin_color', $sanitized, true);
+
+				global $wpdb;
+				$prefixed_key = $wpdb->get_blog_prefix() . 'admin_color';
+				delete_user_meta($user->ID, $prefixed_key);
+
 				return true;
 			},
 			'schema' => [
