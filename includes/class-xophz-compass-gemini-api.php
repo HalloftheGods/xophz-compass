@@ -79,6 +79,21 @@ class Xophz_Compass_Gemini_API {
 		$system_instruction = $request->get_param( 'system_instruction' );
 		$model = $request->get_param( 'model' );
 
+		// Implement Rate Limiting (15 requests per minute per user)
+		$user_id = get_current_user_id();
+		$limit_key = 'gemini_rate_limit_' . $user_id;
+		$usage = get_transient( $limit_key );
+		
+		if ( false === $usage ) {
+			$usage = 0;
+		}
+		
+		if ( $usage >= 15 ) {
+			return new WP_Error( 'gemini_rate_limit', 'You are generating spells too quickly! Please wait a minute for your mana to recharge.', array( 'status' => 429 ) );
+		}
+		
+		set_transient( $limit_key, $usage + 1, MINUTE_IN_SECONDS );
+
 		// Construct the Gemini API endpoint
 		$endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
 
