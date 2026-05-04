@@ -309,6 +309,9 @@ class Xophz_Compass {
     // Register views field
     $this->loader->add_action( 'rest_api_init', $this, 'register_post_views_rest_field' );
 
+    // Mail sender modifier hooks
+    $this->loader->add_filter( 'wp_mail_from', $this, 'modify_mail_from' );
+    $this->loader->add_filter( 'wp_mail_from_name', $this, 'modify_mail_from_name' );
 
 	}
 
@@ -425,6 +428,43 @@ class Xophz_Compass {
 				'context' => ['view', 'edit'],
 			]
 		]);
+	}
+
+	/**
+	 * Change the default email address in outgoing mail.
+	 *
+	 * @since     1.0.0
+	 */
+	public function modify_mail_from($old_email) {
+		$new_email = get_option('xophz_compass_mail_sender_email');
+		if ( ! empty( $new_email ) ) {
+			return $new_email;
+		}
+
+		// Default to noreply@sitedomain
+		$sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
+		if ( null === $sitename ) {
+			$sitename = 'example.com';
+		}
+		if ( strpos( $sitename, 'www.' ) === 0 ) {
+			$sitename = substr( $sitename, 4 );
+		}
+		return 'noreply@' . $sitename;
+	}
+
+	/**
+	 * Change the default name in outgoing mail.
+	 *
+	 * @since     1.0.0
+	 */
+	public function modify_mail_from_name($old_name) {
+		$new_name = get_option('xophz_compass_mail_sender_name');
+		if ( ! empty( $new_name ) ) {
+			return $new_name;
+		}
+
+		// Default to SITENAME
+		return wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 	}
 
   public static function add_submenu($plugin, $args=[]){

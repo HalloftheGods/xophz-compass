@@ -452,6 +452,41 @@ class Xophz_Compass_Admin {
           'w4-my-compass',
           'xophz_compass_main_section'
       );
+
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_mail_sender_name', [
+          'type' => 'string',
+          'default' => '',
+          'sanitize_callback' => 'sanitize_text_field',
+      ] );
+
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_mail_sender_email', [
+          'type' => 'string',
+          'default' => '',
+          'sanitize_callback' => 'sanitize_email',
+      ] );
+
+      add_settings_section(
+          'xophz_compass_mail_sender_section',
+          'Mail Sender Settings',
+          array( $this, 'render_compass_mail_sender_section' ),
+          'w4-my-compass'
+      );
+
+      add_settings_field(
+          'xophz_compass_mail_sender_name_field',
+          'Mail Sender Name',
+          array( $this, 'render_compass_mail_sender_name_field' ),
+          'w4-my-compass',
+          'xophz_compass_mail_sender_section'
+      );
+
+      add_settings_field(
+          'xophz_compass_mail_sender_email_field',
+          'Mail Sender Email',
+          array( $this, 'render_compass_mail_sender_email_field' ),
+          'w4-my-compass',
+          'xophz_compass_mail_sender_section'
+      );
   }
 
   public function render_compass_settings_section() {
@@ -476,6 +511,38 @@ class Xophz_Compass_Admin {
           Redirect administrators to the Compass dashboard after login and when clicking Dashboard.
       </label>
       <?php
+  }
+
+  public function render_compass_mail_sender_section() {
+      echo '<p>You may change your WordPress default mail sender name and email. If left blank, it defaults to the site name and noreply@sitedomain.</p>';
+  }
+
+  public function render_compass_mail_sender_name_field() {
+      $val = get_option('xophz_compass_mail_sender_name');
+      printf(
+          '<input name="xophz_compass_mail_sender_name" type="text" class="regular-text" value="%s" placeholder="%s"/>',
+          esc_attr($val),
+          esc_attr(wp_specialchars_decode(get_option('blogname'), ENT_QUOTES))
+      );
+  }
+
+  public function render_compass_mail_sender_email_field() {
+      $val = get_option('xophz_compass_mail_sender_email');
+      
+      $sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
+      if ( null === $sitename ) {
+          $sitename = 'example.com';
+      }
+      if ( strpos( $sitename, 'www.' ) === 0 ) {
+          $sitename = substr( $sitename, 4 );
+      }
+      $placeholder = 'noreply@' . $sitename;
+      
+      printf(
+          '<input name="xophz_compass_mail_sender_email" type="email" class="regular-text" value="%s" placeholder="%s"/>',
+          esc_attr($val),
+          esc_attr($placeholder)
+      );
   }
 
   public function redirect_login_to_compass( $redirect_to, $requested_redirect_to, $user ) {
