@@ -347,7 +347,7 @@ class Xophz_Compass_Admin {
   public function add_menu(){ 
     global $submenu;
 
-    $capability = 'read';
+    $capability = 'manage_options';
     $slug       = 'xophz-compass';
     
     // Use branding helper for customizable menu title and icon
@@ -932,7 +932,7 @@ class Xophz_Compass_Admin {
       'methods'  => 'GET',
       'callback' => [$this, 'get_admin_menu_data'],
       'permission_callback' => function() {
-        return current_user_can('read');
+        return current_user_can('manage_options');
       }
     ]);
 
@@ -1148,7 +1148,7 @@ class Xophz_Compass_Admin {
    * @since    1.0.0
    */
   public function ajax_get_compass_admin_menu() {
-    if (!current_user_can('read')) {
+    if (!current_user_can('manage_options')) {
       wp_send_json_error('Unauthorized', 401);
       return;
     }
