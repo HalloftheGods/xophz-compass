@@ -272,6 +272,10 @@ class Xophz_Compass_Admin {
     $isDisabled = ! get_option( 'xophz_compass_show_admin_bar', true );
     if ( $isDisabled ) return;
 
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
     $omega_html = '<span class="ab-icon dashicons dashicons-editor-customchar compass-ab-omega"></span>';
 
     $menu_title = class_exists( 'Xophz_Compass_Branding' )
