@@ -31,6 +31,7 @@ class Xophz_Compass_Updater {
 		add_filter( 'update_plugins_github.com', [ __CLASS__, 'github_update_provider' ], 10, 3 );
 		add_filter( 'plugins_api', [ __CLASS__, 'plugin_info' ], 20, 3 );
 		add_filter( 'plugin_row_meta', [ __CLASS__, 'plugin_row_meta' ], 10, 2 );
+		add_filter( 'upgrader_source_selection', [ __CLASS__, 'upgrader_source_selection' ], 10, 4 );
 	}
 
 	private static function discover_plugins() {
@@ -288,5 +289,32 @@ class Xophz_Compass_Updater {
 		$html = str_replace( '</ul></p>', '</ul>', $html );
 
 		return wp_kses_post( $html );
+	}
+
+	public static function upgrader_source_selection( $source, $remote_source, $upgrader, $hook_extra = null ) {
+		global $wp_filesystem;
+
+		if ( ! isset( $hook_extra['plugin'] ) ) {
+			return $source;
+		}
+
+		$plugin = $hook_extra['plugin'];
+		if ( ! isset( self::$registry[ $plugin ] ) ) {
+			return $source;
+		}
+
+		$expected_dir = self::$registry[ $plugin ]['slug'];
+
+		$source_dir = untrailingslashit( $source );
+		if ( basename( $source_dir ) === $expected_dir ) {
+			return $source;
+		}
+
+		$new_source = trailingslashit( $remote_source ) . $expected_dir;
+		if ( $wp_filesystem->move( $source, $new_source ) ) {
+			return trailingslashit( $new_source );
+		}
+
+		return $source;
 	}
 }
