@@ -1,0 +1,1 @@
+import{i as t}from"./index-D0A8VRrS.js";const n=async()=>t.get("get_system_info"),o=async()=>t.get("get_wp_info"),g=async s=>t.post("get_logs",s||{}),r=async()=>t.get("get_files"),a=async()=>t.get("get_cron_jobs");export{o as a,g as b,r as c,a as d,n as g};
