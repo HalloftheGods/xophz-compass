@@ -172,6 +172,7 @@ class Xophz_Compass_Admin {
           'nonce' => wp_create_nonce( 'wp_rest' ),
           'restUrl' => get_rest_url(),
           'siteName' => get_bloginfo('name'),
+          'siteDescription' => get_bloginfo('description'),
           'siteUrl' => get_bloginfo('url'),
           'compassVersion' => XOPHZ_COMPASS_VERSION,
           'eventHorizonVersion' => $ehVersion
