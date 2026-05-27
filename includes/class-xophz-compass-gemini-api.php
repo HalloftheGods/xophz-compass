@@ -50,6 +50,18 @@ class Xophz_Compass_Gemini_API {
 	 * @return string API key or empty string if not found.
 	 */
 	private function get_api_key() {
+		// Attempt to use the official WP Google Connector via Connectors API
+		if ( function_exists( 'wp_get_connectors' ) ) {
+			$connectors = wp_get_connectors();
+			if ( ! empty( $connectors['google']['authentication']['setting_name'] ) ) {
+				$api_key = get_option( $connectors['google']['authentication']['setting_name'], '' );
+				if ( ! empty( $api_key ) ) {
+					return $api_key;
+				}
+			}
+		}
+
+		// Fallbacks
 		if ( defined( 'GEMINI_API_KEY' ) ) {
 			return GEMINI_API_KEY;
 		}
@@ -59,6 +71,8 @@ class Xophz_Compass_Gemini_API {
 		if ( ! empty( getenv( 'GEMINI_API_KEY' ) ) ) {
 			return getenv( 'GEMINI_API_KEY' );
 		}
+		
+		// Legacy setting name
 		return get_option( 'xophz_gemini_api_key', '' );
 	}
 

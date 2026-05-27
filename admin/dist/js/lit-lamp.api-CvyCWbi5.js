@@ -1,0 +1,1 @@
+import{y as t}from"./index-ee-8631D.js";const n=async()=>t.get("get_system_info"),o=async()=>t.get("get_wp_info"),g=async s=>t.post("get_logs",s||{}),r=async()=>t.get("get_files"),a=async()=>t.get("get_cron_jobs");export{r as a,g as b,n as c,o as d,a as g};
