@@ -1,1 +1,0 @@
-import{y as e}from"./index-B_bpFVwo.js";const c=()=>e.get("get_recipes"),g=(t,s)=>e.post("toggle_recipe",{id:t,enabled:s}),a=()=>e.get("get_custom_code"),p=(t,s)=>e.post("save_custom_code",{css:t,js:s});export{c as a,a as g,p as s,g as t};
