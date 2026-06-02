@@ -1,1 +1,0 @@
-import{y as t}from"./index-ee-8631D.js";const i=()=>t.get("pixie_dust_get_pixels"),p=e=>t.get("pixie_dust_get_pixel",{id:e}),_=()=>t.get("pixie_dust_get_templates"),x=e=>t.post("pixie_dust_save_pixel",e),l=e=>t.post("pixie_dust_delete_pixel",{id:e}),g=e=>t.post("pixie_dust_toggle_pixel",{id:e});export{i as a,_ as b,l as d,p as g,x as s,g as t};

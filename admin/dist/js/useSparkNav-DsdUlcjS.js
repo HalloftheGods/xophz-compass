@@ -1,1 +1,0 @@
-import{a5 as s}from"./index-ee-8631D.js";import{a7 as m}from"./vendor-nsCUwSxw.js";const i=e=>{const t=s(),n=m(()=>t.windows[e]?.urme||[]);return{currentUrme:n,navigate:(...r)=>{const o=Array.isArray(r[0])?r[0]:r;t.setSparkUrme(e,o)},pushUrme:r=>{const o=[...n.value];o.push(r),t.setSparkUrme(e,o)},popUrme:()=>{const r=[...n.value];r.pop(),t.setSparkUrme(e,r)}}};export{i as u};
