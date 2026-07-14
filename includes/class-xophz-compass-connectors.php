@@ -148,6 +148,20 @@ class Xophz_Compass_Connectors {
 			),
 		) );
 
+		// ---------------------------------------------------------
+		// Tracking / Analytics Configuration
+		// ---------------------------------------------------------
+		$registry->register( 'google_tag_id', array(
+			'name'           => __( 'Google Tag ID', 'xophz-compass' ),
+			'description'    => __( 'Google Tag ID (e.g. G-XXXXXXX) for analytics and event tracking.', 'xophz-compass' ),
+			'type'           => 'analytics',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => 'https://tagmanager.google.com/',
+				'setting_name'    => 'compass_google_tag_id',
+			),
+		) );
+
 		// The official WP Google Connector is used for Gemini/AI Studio keys, 
 		// so we no longer need to register a custom compass_gemini_key here.
 
