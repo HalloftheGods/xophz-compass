@@ -166,6 +166,20 @@ class Xophz_Compass_Connectors {
 		// so we no longer need to register a custom compass_gemini_key here.
 
 		// ---------------------------------------------------------
+		// Stripe Configuration
+		// ---------------------------------------------------------
+		$registry->register( 'stripe_secret_key', array(
+			'name'           => __( 'Stripe Secret Key', 'xophz-compass' ),
+			'description'    => __( 'Secret key for Stripe Checkout and billing integrations.', 'xophz-compass' ),
+			'type'           => 'payment',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => 'https://dashboard.stripe.com/apikeys',
+				'setting_name'    => 'compass_stripe_secret_key',
+			),
+		) );
+
+		// ---------------------------------------------------------
 		// System / Wizard Keys
 		// ---------------------------------------------------------
 		$registry->register( 'compass_wizard_key', array(

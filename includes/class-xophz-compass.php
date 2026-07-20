@@ -261,6 +261,11 @@ class Xophz_Compass {
     $plugin_gemini = new Xophz_Compass_Gemini_API();
     $this->loader->add_action( 'rest_api_init', $plugin_gemini, 'register_routes' );
 
+    // Register Stripe API wrapper
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-stripe-api.php';
+    $stripe_api = new Xophz_Compass_Stripe_API();
+    $this->loader->add_action( 'rest_api_init', $stripe_api, 'register_routes' );
+
     // Register Matrix (Org Chart) API
     $matrix_api = new Xophz_Compass_Matrix_API();
     $this->loader->add_action( 'init', $matrix_api, 'register_taxonomy' );

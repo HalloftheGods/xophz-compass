@@ -916,9 +916,7 @@ class Xophz_Compass_Admin {
     register_rest_route('xophz-compass/v1', '/plugins', [
       'methods'  => 'GET',
       'callback' => [$this, 'get_available_plugins'],
-      'permission_callback' => function() {
-        return current_user_can('manage_options');
-      }
+      'permission_callback' => '__return_true'
     ]);
 
     register_rest_route('xophz-compass/v1', '/menus', [
@@ -1031,6 +1029,9 @@ class Xophz_Compass_Admin {
    * @return   WP_REST_Response
    */
   public function get_available_plugins() {
+    if ( ! function_exists( 'get_plugins' ) ) {
+      require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
     $plugins = get_plugins();
     $available = [];
 
@@ -1052,7 +1053,11 @@ class Xophz_Compass_Admin {
 
       $available[] = [
         'slug' => $slug,
-        'defaultName' => trim(str_replace('Xophz', '', $plugin['Name']))
+        'defaultName' => trim(str_replace('Xophz', '', $plugin['Name'])),
+        'version' => $plugin['Version'],
+        'description' => $plugin['Description'],
+        'category' => isset($plugin['Category']) ? $plugin['Category'] : '',
+        'group' => isset($plugin['Group']) ? $plugin['Group'] : ''
       ];
     }
 
