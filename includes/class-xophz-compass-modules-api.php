@@ -64,14 +64,14 @@ class Xophz_Compass_Modules_API {
 				'name'         => 'Bazaar',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bazaar/archive/refs/heads/main.zip',
-				'category'     => 'True North',
+				'category'     => 'Command Deck',
 			),
 			'xophz-compass-event-horizon' => array(
 				'slug'         => 'xophz-compass-event-horizon',
 				'name'         => 'Event Horizon',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-event-horizon/archive/refs/heads/main.zip',
-				'category'     => 'Trajectory',
+				'category'     => 'Command Deck',
 			),
 			'xophz-compass-bomb-bag' => array(
 				'slug'         => 'xophz-compass-bomb-bag',
@@ -85,7 +85,7 @@ class Xophz_Compass_Modules_API {
 				'name'         => 'Enchanted Mirror',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-enchanted-mirror/archive/refs/heads/main.zip',
-				'category'     => 'Castle Walls',
+				'category'     => 'True North',
 			),
 			'xophz-compass-bugnet' => array(
 				'slug'         => 'xophz-compass-bugnet',
@@ -106,14 +106,21 @@ class Xophz_Compass_Modules_API {
 				'name'         => 'Gale Boomerang',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-gale-boomerang/archive/refs/heads/main.zip',
-				'category'     => 'Castle Walls',
+				'category'     => 'True North',
 			),
 			'xophz-compass-golden-keys' => array(
 				'slug'         => 'xophz-compass-golden-keys',
 				'name'         => 'Golden Keys',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-golden-keys/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
+				'category'     => 'True North',
+			),
+			'xophz-compass-hookshot' => array(
+				'slug'         => 'xophz-compass-hookshot',
+				'name'         => 'Hookshot',
+				'description'  => 'Compass Ecosystem Module',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-hookshot/archive/refs/heads/main.zip',
+				'category'     => 'True North',
 			),
 			'xophz-compass-lead-magnet' => array(
 				'slug'         => 'xophz-compass-lead-magnet',
@@ -127,14 +134,14 @@ class Xophz_Compass_Modules_API {
 				'name'         => 'Lit Lamp',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-lit-lamp/archive/refs/heads/main.zip',
-				'category'     => 'True North',
+				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-magic-cloak' => array(
 				'slug'         => 'xophz-compass-magic-cloak',
 				'name'         => 'Magic Cloak',
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-magic-cloak/archive/refs/heads/main.zip',
-				'category'     => 'Castle Walls',
+				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-midnight-nerd' => array(
 				'slug'         => 'xophz-compass-midnight-nerd',
@@ -256,6 +263,7 @@ class Xophz_Compass_Modules_API {
 			'name'         => 'Magic Formulas',
 			'description'  => 'The ultimate form, poll, and quiz builder.',
 			'download_url' => '', 
+			'category'     => 'Command Deck',
 		);
 
 		return apply_filters( 'xophz_compass_modules_registry', $modules );
