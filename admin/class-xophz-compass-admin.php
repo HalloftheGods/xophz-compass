@@ -649,7 +649,7 @@ class Xophz_Compass_Admin {
         unset($plugins[$p]);
         continue;
       }
-      $plugin_dir = str_replace($_SERVER["DOCUMENT_ROOT"],"", plugins_url($plugin['TextDomain']));
+      $plugin_dir = wp_make_link_relative( plugins_url( $plugin['TextDomain'] ) );
 
       // Extract slug from text domain (e.g., 'xophz-compass-bomb-bag' -> 'bomb-bag')
       $slug = str_replace('xophz-compass-', '', $plugin['TextDomain']);
@@ -671,7 +671,7 @@ class Xophz_Compass_Admin {
       
       if ($slug === 'magic-formula') {
         $icon_version = time();
-        $plugins[$p]['icon'] = plugins_url('xophz-compass/assets/magic-formula.svg') . "?v={$icon_version}";
+        $plugins[$p]['icon'] = wp_make_link_relative( plugins_url('xophz-compass/assets/magic-formula.svg') ) . "?v={$icon_version}";
       } else {
         $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
         $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
