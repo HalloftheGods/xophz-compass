@@ -254,6 +254,13 @@ class Xophz_Compass_Modules_API {
 				'description'  => 'Compass Ecosystem Module',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-phone/releases/download/v26.7.20.1409/xophz-compass-phone-26.7.20.1409.zip',
 				'category'     => 'Command Deck',
+			),
+			'super-nerd-bros-dodo-air' => array(
+				'slug'         => 'super-nerd-bros-dodo-air',
+				'name'         => 'Dodo Air',
+				'description'  => 'Standalone WordPress backend and router for the Dodo Air SvelteKit app.',
+				'download_url' => 'https://github.com/SuperNerdBros/wp-dodo-air/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
 			)
 		);
 
@@ -318,6 +325,21 @@ class Xophz_Compass_Modules_API {
 		$download_url = $module_data['download_url'];
 		$plugin_file  = $slug . '/' . $slug . '.php';
 
+		// Dynamically fetch the latest release asset from GitHub if applicable
+		if ( strpos( $download_url, 'github.com' ) !== false && class_exists( 'Xophz_Compass_Updater' ) ) {
+			$parts = explode( '/', parse_url( $download_url, PHP_URL_PATH ) );
+			if ( isset( $parts[1], $parts[2] ) ) {
+				$repo = $parts[1] . '/' . $parts[2];
+				$release = Xophz_Compass_Updater::fetch_release( $repo );
+				if ( $release ) {
+					$release_url = Xophz_Compass_Updater::get_download_url( $release );
+					if ( $release_url ) {
+						$download_url = $release_url;
+					}
+				}
+			}
+		}
+
 		// Include necessary files for the Upgrader
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -327,8 +349,29 @@ class Xophz_Compass_Modules_API {
 		$skin     = new WP_Ajax_Upgrader_Skin();
 		$upgrader = new Plugin_Upgrader( $skin );
 
+		// Hook to rename GitHub archive folders which usually end in '-main' or a version string
+		$rename_filter = function( $source, $remote_source, $upgrader_obj, $hook_extra = null ) use ( $slug ) {
+			global $wp_filesystem;
+			$expected_dir = $slug;
+			$source_dir = untrailingslashit( $source );
+			
+			if ( basename( $source_dir ) === $expected_dir ) {
+				return $source;
+			}
+			
+			$new_source = trailingslashit( $remote_source ) . $expected_dir;
+			if ( $wp_filesystem->move( $source, $new_source ) ) {
+				return trailingslashit( $new_source );
+			}
+			return $source;
+		};
+		
+		add_filter( 'upgrader_source_selection', $rename_filter, 10, 4 );
+
 		// Run the installation
 		$installed = $upgrader->install( $download_url );
+		
+		remove_filter( 'upgrader_source_selection', $rename_filter, 10 );
 
 		if ( is_wp_error( $installed ) ) {
 			return new WP_Error( 'install_failed', 'Installation failed: ' . $installed->get_error_message(), array( 'status' => 500 ) );

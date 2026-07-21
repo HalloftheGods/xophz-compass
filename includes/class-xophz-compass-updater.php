@@ -181,7 +181,7 @@ class Xophz_Compass_Updater {
 		return $meta;
 	}
 
-	private static function fetch_release( $repo ) {
+	public static function fetch_release( $repo ) {
 		$hash         = md5( $repo );
 		$cache_key    = 'xophz_gh_rel_' . $hash;
 		$fallback_key = 'xophz_gh_rel_last_' . $hash;
@@ -235,7 +235,7 @@ class Xophz_Compass_Updater {
 		return $release;
 	}
 
-	private static function get_download_url( $release ) {
+	public static function get_download_url( $release ) {
 		$has_assets = ! empty( $release->assets );
 
 		if ( $has_assets ) {
