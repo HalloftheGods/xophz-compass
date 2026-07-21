@@ -43,6 +43,175 @@ class Xophz_Compass_Modules_API {
 				),
 			)
 		) );
+
+		register_rest_route( 'xophz/v1', '/stripe/checkout', array(
+			array(
+				'methods'  => WP_REST_Server::CREATABLE,
+				'callback' => array( $this, 'create_stripe_checkout' ),
+				'permission_callback' => '__return_true',
+			)
+		) );
+
+		register_rest_route( 'xophz/v1', '/client/onboard', array(
+			array(
+				'methods'  => WP_REST_Server::CREATABLE,
+				'callback' => array( $this, 'submit_client_onboarding' ),
+				'permission_callback' => '__return_true',
+			)
+		) );
+	}
+
+	/**
+	 * Handle Client Onboarding Form Submission
+	 */
+	public function submit_client_onboarding( $request ) {
+		$params = $request->get_json_params();
+
+		$name    = isset( $params['name'] ) ? sanitize_text_field( $params['name'] ) : '';
+		$email   = isset( $params['email'] ) ? sanitize_email( $params['email'] ) : '';
+		$phone   = isset( $params['phone'] ) ? sanitize_text_field( $params['phone'] ) : '';
+		$website = isset( $params['website'] ) ? esc_url_raw( $params['website'] ) : '';
+		$license = isset( $params['license'] ) ? sanitize_text_field( $params['license'] ) : 'True North Subscription';
+
+		if ( empty( $email ) ) {
+			return new WP_Error( 'missing_email', 'Email address is required for provisioning.', array( 'status' => 400 ) );
+		}
+
+		$submission = array(
+			'id'         => uniqid( 'client_' ),
+			'name'       => $name,
+			'email'      => $email,
+			'phone'      => $phone,
+			'website'    => $website,
+			'license'    => $license,
+			'created_at' => current_time( 'mysql' ),
+		);
+
+		// Store in WordPress option array as a log
+		$existing = get_option( 'compass_client_onboardings', array() );
+		if ( ! is_array( $existing ) ) {
+			$existing = array();
+		}
+		array_unshift( $existing, $submission );
+		update_option( 'compass_client_onboardings', array_slice( $existing, 0, 100 ) );
+
+		// 1. Send Admin Email Notification
+		$admin_email = get_option( 'admin_email' );
+		$subject     = '[Compass] New Client Provisioning Request: ' . ( ! empty( $name ) ? $name : $email );
+		$body        = "A new client has completed checkout and submitted their onboarding details for dedicated My Compass instance setup:\n\n" .
+		               "• Name: " . $name . "\n" .
+		               "• Email: " . $email . "\n" .
+		               "• Phone: " . $phone . "\n" .
+		               "• Website: " . $website . "\n" .
+		               "• License Tier: " . $license . "\n\n" .
+		               "Please log in to your WP-MU-DEV portal to provision their dedicated My Compass site instance.";
+
+		wp_mail( $admin_email, $subject, $body );
+
+		// 2. Trigger SMS Alert if Twilio is configured
+		if ( class_exists( 'Xophz_Compass_Twilio_API' ) ) {
+			$twilio_phone = get_option( 'compass_twilio_phone_number' );
+			if ( ! empty( $twilio_phone ) ) {
+				$sms_msg = "🚀 [Compass Alert] New Provisioning Request: $name ($email, $website). Ready for instance setup!";
+				Xophz_Compass_Twilio_API::send_sms( $twilio_phone, $sms_msg );
+			}
+		}
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'message' => 'Onboarding information received successfully.',
+		) );
+	}
+
+	/**
+	 * Create Stripe Checkout Session
+	 */
+	public function create_stripe_checkout( $request ) {
+		$params = $request->get_json_params();
+		$price = isset( $params['price'] ) ? intval( $params['price'] ) : 100;
+		$license = isset( $params['license'] ) ? sanitize_text_field( $params['license'] ) : 'True North Monthly';
+		$success_url = isset( $params['success_url'] ) ? esc_url_raw( $params['success_url'] ) : home_url();
+		$cancel_url = isset( $params['cancel_url'] ) ? esc_url_raw( $params['cancel_url'] ) : home_url();
+
+		// Fetch Stripe Secret Key via WordPress Connectors API
+		$secret_key = '';
+
+		if ( function_exists( 'wp_get_connectors' ) ) {
+			$connectors = wp_get_connectors();
+			if ( ! empty( $connectors['stripe_secret_key']['authentication']['setting_name'] ) ) {
+				$setting_name = $connectors['stripe_secret_key']['authentication']['setting_name'];
+				$secret_key = get_option( $setting_name, '' );
+			}
+		}
+
+		if ( empty( $secret_key ) ) {
+			$secret_key = get_option( 'compass_stripe_secret_key', '' );
+		}
+
+		if ( empty( $secret_key ) && defined( 'STRIPE_SECRET_KEY' ) ) {
+			$secret_key = STRIPE_SECRET_KEY;
+		}
+
+		if ( empty( $secret_key ) && ! empty( $_ENV['STRIPE_SECRET_KEY'] ) ) {
+			$secret_key = $_ENV['STRIPE_SECRET_KEY'];
+		}
+
+		if ( empty( $secret_key ) ) {
+			return new WP_Error( 'no_stripe_key', 'Stripe secret key is not configured in Settings -> Connectors UI or STRIPE_SECRET_KEY.', array( 'status' => 400 ) );
+		}
+
+		$is_subscription = strpos( strtolower( $license ), 'monthly' ) !== false || strpos( strtolower( $license ), 'true north' ) !== false;
+		$mode = $is_subscription ? 'subscription' : 'payment';
+
+		// Clean product title formatting for Stripe Checkout
+		$product_name = 'My Compass';
+		if ( ! empty( $license ) ) {
+			$product_name .= ' (' . $license . ')';
+		}
+
+		$price_data = array(
+			'currency'     => 'usd',
+			'product_data' => array(
+				'name' => $product_name,
+			),
+			'unit_amount'  => $price * 100, // Stripe expects cents
+		);
+
+		if ( $is_subscription ) {
+			$price_data['recurring'] = array( 'interval' => 'month' );
+		}
+
+		// Make request to Stripe API
+		$response = wp_remote_post( 'https://api.stripe.com/v1/checkout/sessions', array(
+			'headers' => array(
+				'Authorization' => 'Bearer ' . $secret_key,
+				'Content-Type'  => 'application/x-www-form-urlencoded',
+			),
+			'body' => http_build_query( array(
+				'payment_method_types'  => array( 'card' ),
+				'allow_promotion_codes' => 'true',
+				'line_items'            => array(
+					array(
+						'price_data' => $price_data,
+						'quantity'   => 1,
+					)
+				),
+				'mode'                  => $mode,
+				'success_url'           => $success_url,
+				'cancel_url'            => $cancel_url,
+			) ),
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			return new WP_Error( 'stripe_error', $response->get_error_message(), array( 'status' => 500 ) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! empty( $body['url'] ) ) {
+			return rest_ensure_response( array( 'url' => $body['url'] ) );
+		}
+
+		return new WP_Error( 'stripe_api_error', isset( $body['error']['message'] ) ? $body['error']['message'] : 'Stripe checkout creation failed.', array( 'status' => 400 ) );
 	}
 
 	/**
