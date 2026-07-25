@@ -65,6 +65,13 @@ class Xophz_Compass_Updater {
 		
 		if ( ! $is_update_check && ! $is_force_check ) return $transient;
 
+		if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
+			$transient->response = [];
+		}
+		if ( ! isset( $transient->no_update ) || ! is_array( $transient->no_update ) ) {
+			$transient->no_update = [];
+		}
+
 		foreach ( self::$registry as $file => $plugin ) {
 			$release = self::fetch_release( $plugin['repo'] );
 			if ( ! $release ) continue;
@@ -72,7 +79,18 @@ class Xophz_Compass_Updater {
 			$remote_version = ltrim( $release->tag_name ?? '', 'v' );
 			$has_update = version_compare( $remote_version, $plugin['version'], '>' );
 
-			if ( ! $has_update ) continue;
+			if ( ! $has_update ) {
+				$transient->no_update[ $file ] = (object) [
+					'slug'        => $plugin['slug'],
+					'plugin'      => $file,
+					'new_version' => $remote_version,
+					'url'         => "https://github.com/{$plugin['repo']}",
+				];
+				if ( isset( $transient->response[ $file ] ) ) {
+					unset( $transient->response[ $file ] );
+				}
+				continue;
+			}
 
 			$download_url = self::get_download_url( $release );
 			if ( ! $download_url ) continue;
@@ -89,6 +107,10 @@ class Xophz_Compass_Updater {
 				'tested'      => get_bloginfo( 'version' ),
 				'requires'    => '6.0',
 			];
+
+			if ( isset( $transient->no_update[ $file ] ) ) {
+				unset( $transient->no_update[ $file ] );
+			}
 		}
 
 		return $transient;
