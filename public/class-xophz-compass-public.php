@@ -122,4 +122,141 @@ class Xophz_Compass_Public {
     return true;
   }
 
+  public function inject_aeo_json_ld() {
+    if ( ! get_option( 'xophz_compass_aeo_enabled', true ) ) {
+        return;
+    }
+
+    $org_name = get_option( 'xophz_compass_aeo_org_name' );
+    if ( empty( $org_name ) ) {
+        $org_name = get_bloginfo( 'name' );
+    }
+
+    $logo_url = get_option( 'xophz_compass_aeo_logo_url' );
+    if ( empty( $logo_url ) && has_custom_logo() ) {
+        $custom_logo_id = get_theme_mod( 'custom_logo' );
+        $logo_url = wp_get_attachment_image_url( $custom_logo_id, 'full' );
+    }
+
+    $publisher = array(
+        '@type' => 'Organization',
+        'name'  => $org_name,
+    );
+
+    if ( ! empty( $logo_url ) ) {
+        $publisher['logo'] = array(
+            '@type' => 'ImageObject',
+            'url'   => $logo_url,
+        );
+    }
+
+    $schema = array(
+        '@context'  => 'https://schema.org',
+        '@graph'    => array()
+    );
+
+    $schema['@graph'][] = array(
+        '@type' => 'WebSite',
+        '@id'   => home_url( '/#website' ),
+        'url'   => home_url( '/' ),
+        'name'  => get_bloginfo( 'name' ),
+        'publisher' => $publisher,
+    );
+
+    if ( is_singular() ) {
+        global $post;
+        
+        // Prevent duplicate injection if it's a specific type handled by its own plugin (like recipes)
+        if ( 'ks_saved_recipe' !== $post->post_type ) {
+            $article = array(
+                '@type'    => 'Article',
+                '@id'      => get_permalink() . '#article',
+                'isPartOf' => array( '@id' => home_url( '/#website' ) ),
+                'headline' => get_the_title(),
+                'datePublished' => get_the_date( 'c' ),
+                'dateModified'  => get_the_modified_date( 'c' ),
+                'author'   => array(
+                    '@type' => 'Person',
+                    'name'  => get_the_author_meta( 'display_name', $post->post_author ),
+                ),
+                'publisher' => $publisher,
+            );
+
+            if ( has_post_thumbnail() ) {
+                $article['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
+            }
+
+            $schema['@graph'][] = $article;
+        }
+    }
+
+    echo '<script type="application/ld+json" class="compass-aeo-json-ld">' . wp_json_encode( $schema ) . '</script>' . "\n";
+  }
+
+  public function serve_llms_txt() {
+    if ( ! get_option( 'xophz_compass_aeo_enabled', true ) ) {
+        return;
+    }
+
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+    $path = parse_url( $request_uri, PHP_URL_PATH );
+
+    if ( '/llms.txt' === $path ) {
+        header( 'Content-Type: text/plain; charset=utf-8' );
+        
+        $org_name = get_option( 'xophz_compass_aeo_org_name' );
+        if ( empty( $org_name ) ) {
+            $org_name = get_bloginfo( 'name' );
+        }
+
+        echo "# " . $org_name . " - LLM Manifest\n\n";
+        echo "This file provides a structured overview of the public content available on this site, optimized for Answer Engines and AI agents.\n\n";
+        
+        echo "## Organization\n";
+        echo "- Name: " . $org_name . "\n";
+        echo "- Description: " . get_bloginfo( 'description' ) . "\n";
+        echo "- URL: " . home_url( '/' ) . "\n\n";
+
+        // Generate a list of recent public posts (or pages) as a reference point
+        echo "## Recent Content\n";
+        $recent_posts = get_posts( array(
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => 10,
+        ) );
+
+        if ( ! empty( $recent_posts ) ) {
+            foreach ( $recent_posts as $post ) {
+                echo "- [" . get_the_title( $post->ID ) . "](" . get_permalink( $post->ID ) . ")\n";
+            }
+        } else {
+            echo "No recent posts found.\n";
+        }
+        echo "\n";
+
+        // Integrate with Kitchen Synk if active
+        if ( post_type_exists( 'ks_saved_recipe' ) ) {
+            echo "## Kitchen Synk Recipes\n";
+            $recipes = get_posts( array(
+                'post_type'      => 'ks_saved_recipe',
+                'post_status'    => 'publish',
+                'posts_per_page' => 10,
+            ) );
+            if ( ! empty( $recipes ) ) {
+                foreach ( $recipes as $recipe ) {
+                    echo "- [" . get_the_title( $recipe->ID ) . "](" . get_permalink( $recipe->ID ) . ")\n";
+                }
+            } else {
+                echo "No recent recipes found.\n";
+            }
+            echo "\n";
+        }
+
+        // Action hook for other plugins (like Kitchen Synk or Nook Phone) to append their own LLM data
+        do_action( 'xophz_compass_llms_txt_output' );
+
+        exit;
+    }
+  }
+
 }

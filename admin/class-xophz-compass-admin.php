@@ -492,6 +492,56 @@ class Xophz_Compass_Admin {
           'w4-my-compass',
           'xophz_compass_mail_sender_section'
       );
+
+      // AEO Settings
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_aeo_enabled', [
+          'type' => 'string',
+          'default' => true,
+          'sanitize_callback' => 'rest_sanitize_boolean',
+      ] );
+
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_aeo_org_name', [
+          'type' => 'string',
+          'default' => '',
+          'sanitize_callback' => 'sanitize_text_field',
+      ] );
+
+      register_setting( 'xophz_compass_settings_group', 'xophz_compass_aeo_logo_url', [
+          'type' => 'string',
+          'default' => '',
+          'sanitize_callback' => 'sanitize_url',
+      ] );
+
+      add_settings_section(
+          'xophz_compass_aeo_section',
+          'Answer Engine Optimization (AEO)',
+          array( $this, 'render_compass_aeo_section' ),
+          'w4-my-compass'
+      );
+
+      add_settings_field(
+          'xophz_compass_aeo_enabled_field',
+          'Enable AEO JSON-LD',
+          array( $this, 'render_compass_aeo_enabled_field' ),
+          'w4-my-compass',
+          'xophz_compass_aeo_section'
+      );
+
+      add_settings_field(
+          'xophz_compass_aeo_org_name_field',
+          'Publisher Organization Name',
+          array( $this, 'render_compass_aeo_org_name_field' ),
+          'w4-my-compass',
+          'xophz_compass_aeo_section'
+      );
+
+      add_settings_field(
+          'xophz_compass_aeo_logo_url_field',
+          'Publisher Logo URL',
+          array( $this, 'render_compass_aeo_logo_url_field' ),
+          'w4-my-compass',
+          'xophz_compass_aeo_section'
+      );
   }
 
   public function render_compass_settings_section() {
@@ -548,6 +598,46 @@ class Xophz_Compass_Admin {
           esc_attr($val),
           esc_attr($placeholder)
       );
+  }
+
+  public function render_compass_aeo_section() {
+      echo '<p>Configure Answer Engine Optimization (AEO) to inject structured data (JSON-LD) and an llms.txt endpoint for AI crawlers like ChatGPT, Perplexity, and Claude.</p>';
+  }
+
+  public function render_compass_aeo_enabled_field() {
+      $isEnabled = get_option( 'xophz_compass_aeo_enabled', true );
+      ?>
+      <label>
+          <input type="checkbox" name="xophz_compass_aeo_enabled" value="1" <?php checked( $isEnabled, true ); ?>>
+          Automatically inject dynamic AEO JSON-LD and enable /llms.txt virtual file.
+      </label>
+      <?php
+  }
+
+  public function render_compass_aeo_org_name_field() {
+      $val = get_option('xophz_compass_aeo_org_name');
+      $placeholder = get_bloginfo('name');
+      printf(
+          '<input name="xophz_compass_aeo_org_name" type="text" class="regular-text" value="%s" placeholder="%s"/>',
+          esc_attr($val),
+          esc_attr($placeholder)
+      );
+      echo '<p class="description">If empty, defaults to your WordPress Site Name.</p>';
+  }
+
+  public function render_compass_aeo_logo_url_field() {
+      $val = get_option('xophz_compass_aeo_logo_url');
+      $placeholder = '';
+      if ( has_custom_logo() ) {
+          $custom_logo_id = get_theme_mod( 'custom_logo' );
+          $placeholder = wp_get_attachment_image_url( $custom_logo_id, 'full' );
+      }
+      printf(
+          '<input name="xophz_compass_aeo_logo_url" type="url" class="regular-text" value="%s" placeholder="%s"/>',
+          esc_attr($val),
+          esc_attr($placeholder)
+      );
+      echo '<p class="description">If empty, defaults to your WordPress Custom Logo.</p>';
   }
 
   public function redirect_login_to_compass( $redirect_to, $requested_redirect_to, $user ) {
