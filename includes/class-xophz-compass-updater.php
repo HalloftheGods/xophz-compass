@@ -43,7 +43,7 @@ class Xophz_Compass_Updater {
 
 		foreach ( $all_plugins as $file => $data ) {
 			$text_domain = $data['TextDomain'] ?? '';
-			$is_compass_plugin = strpos( $text_domain, 'xophz-compass' ) === 0;
+			$is_compass_plugin = strpos( $text_domain, 'xophz-' ) === 0;
 
 			if ( ! $is_compass_plugin ) continue;
 
@@ -236,18 +236,19 @@ class Xophz_Compass_Updater {
 	}
 
 	public static function get_download_url( $release ) {
-		$has_assets = ! empty( $release->assets );
+		$assets = $release->assets ?? [];
 
-		if ( $has_assets ) {
-			foreach ( $release->assets as $asset ) {
-				$is_zip = substr( $asset->name ?? '', -4 ) === '.zip';
-				if ( $is_zip ) {
+		if ( ! empty( $assets ) ) {
+			foreach ( $assets as $asset ) {
+				$name = $asset->name ?? '';
+				if ( substr( $name, -4 ) === '.zip' ) {
 					return $asset->browser_download_url;
 				}
 			}
 		}
 
-		return $release->zipball_url ?? '';
+		// Strict security: Never fallback to raw GitHub zipball_url (uncompiled source with wrong folder structure)
+		return '';
 	}
 
 	private static function get_icon_urls( $repo ) {
