@@ -146,13 +146,13 @@ class Xophz_Compass {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-cpt.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-api.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-polls-api.php';
-
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
-
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-passport-api.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-matrix-api.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-performance-api.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-twilio-api.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-cafeteria-cpt.php';
+		Xophz_Compass_Cafeteria_CPT::init();
 
 		$this->loader = new Xophz_Compass_Loader();
 		

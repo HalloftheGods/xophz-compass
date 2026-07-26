@@ -35,23 +35,62 @@ class Xophz_Compass_Polls_API {
         $polls = Forminator_API::get_polls( null, 1, 999, 'publish' );
         
         $format_polls = function($modules) {
+            global $wpdb;
+            $entry_table = $wpdb->prefix . 'forminator_form_entry';
+            $meta_table  = $wpdb->prefix . 'forminator_form_entry_meta';
             $res = array();
+
             if (is_array($modules) || is_object($modules)) {
                 foreach($modules as $m) {
-                    $name = isset($m->settings['pollName']) ? $m->settings['pollName'] : $m->name;
+                    $poll_id = isset($m->id) ? (int)$m->id : 0;
+                    $name    = isset($m->settings['pollName']) ? $m->settings['pollName'] : $m->name;
                     $answers = isset($m->settings['answers']) ? $m->settings['answers'] : array();
                     
-                    // Fetch results
-                    $results = array();
-                    if ( class_exists('Forminator_Form_Entry_Model') && method_exists('Forminator_Form_Entry_Model', 'count_entries') ) {
-                        // Let's get entries for poll
+                    $vote_counts = array();
+                    if ( $poll_id > 0 ) {
+                        $sql = $wpdb->prepare(
+                            "SELECT meta_key, meta_value, COUNT(*) as cnt FROM {$meta_table} WHERE entry_id IN (SELECT entry_id FROM {$entry_table} WHERE form_id = %d) GROUP BY meta_key, meta_value",
+                            $poll_id
+                        );
+                        $rows = $wpdb->get_results( $sql );
+                        if ( is_array($rows) ) {
+                            foreach( $rows as $row ) {
+                                $k1 = (string)$row->meta_key;
+                                $k2 = (string)$row->meta_value;
+                                $cnt = (int)$row->cnt;
+                                if ( ! isset( $vote_counts[$k1] ) ) $vote_counts[$k1] = 0;
+                                $vote_counts[$k1] += $cnt;
+                                if ( ! isset( $vote_counts[$k2] ) ) $vote_counts[$k2] = 0;
+                                $vote_counts[$k2] += $cnt;
+                            }
+                        }
+                    }
+
+                    $formatted_answers = array();
+                    if ( is_array($answers) ) {
+                        foreach ( $answers as $ans ) {
+                            $hash  = isset($ans['hash']) ? $ans['hash'] : '';
+                            $title = isset($ans['title']) ? $ans['title'] : '';
+                            $votes = 0;
+                            if ( ! empty($hash) && isset($vote_counts[$hash]) ) {
+                                $votes = (int)$vote_counts[$hash];
+                            } else if ( ! empty($title) && isset($vote_counts[$title]) ) {
+                                $votes = (int)$vote_counts[$title];
+                            }
+
+                            $formatted_answers[] = array(
+                                'hash'  => $hash,
+                                'title' => $title,
+                                'votes' => $votes,
+                            );
+                        }
                     }
                     
                     $res[] = array(
-                        'id' => isset($m->id) ? $m->id : '',
-                        'name' => $name,
-                        'answers' => $answers,
-                        'settings' => $m->settings,
+                        'id'       => $poll_id,
+                        'name'     => $name,
+                        'answers'  => $formatted_answers,
+                        'settings' => isset($m->settings) ? $m->settings : array(),
                     );
                 }
             }
@@ -67,7 +106,7 @@ class Xophz_Compass_Polls_API {
         }
 
         $name = $request->get_param('name');
-        $emoji_options = $request->get_param('emojis'); // array of emojis
+        $emoji_options = $request->get_param('emojis');
         if ( ! is_array($emoji_options) ) {
             $emoji_options = array();
         }
@@ -82,7 +121,7 @@ class Xophz_Compass_Polls_API {
                 'title' => $emoji,
                 'use_image' => false,
                 'image' => '',
-                'hash' => md5($emoji . time() . rand(0, 1000))
+                'hash' => md5($emoji . time() . wp_rand(0, 1000))
             );
         }
         
@@ -98,7 +137,6 @@ class Xophz_Compass_Polls_API {
         $settings = array(
             'pollName' => $name,
             'answers' => $answers,
-            // standard forminator poll settings
             'show-votes-count' => true,
             'results-behav' => 'show_after',
         );
@@ -139,7 +177,7 @@ class Xophz_Compass_Polls_API {
         $hash = '';
 
         foreach ( $answers as $ans ) {
-            if ( $ans['title'] === $emoji ) {
+            if ( isset($ans['title']) && $ans['title'] === $emoji ) {
                 $found = true;
                 $hash = isset($ans['hash']) ? $ans['hash'] : '';
                 break;
@@ -162,7 +200,15 @@ class Xophz_Compass_Polls_API {
         // Record the entry using Forminator's API
         $entry_meta = array(
             array(
-                'name'  => $poll_id, // For polls, the name is typically the poll ID
+                'name'  => $hash,
+                'value' => '1'
+            ),
+            array(
+                'name'  => $emoji,
+                'value' => '1'
+            ),
+            array(
+                'name'  => 'entry',
                 'value' => $hash
             )
         );
