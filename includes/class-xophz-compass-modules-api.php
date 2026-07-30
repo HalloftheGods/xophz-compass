@@ -128,8 +128,8 @@ class Xophz_Compass_Modules_API {
 	 */
 	public function create_stripe_checkout( $request ) {
 		$params = $request->get_json_params();
-		$price = isset( $params['price'] ) ? intval( $params['price'] ) : 100;
-		$license = isset( $params['license'] ) ? sanitize_text_field( $params['license'] ) : 'True North Monthly';
+		$price = isset( $params['price'] ) ? floatval( $params['price'] ) : 99.98;
+		$license = isset( $params['license'] ) ? sanitize_text_field( $params['license'] ) : 'Sovereign Ecosystem Engine';
 		$success_url = isset( $params['success_url'] ) ? esc_url_raw( $params['success_url'] ) : home_url();
 		$cancel_url = isset( $params['cancel_url'] ) ? esc_url_raw( $params['cancel_url'] ) : home_url();
 
@@ -160,7 +160,9 @@ class Xophz_Compass_Modules_API {
 			return new WP_Error( 'no_stripe_key', 'Stripe secret key is not configured in Settings -> Connectors UI or STRIPE_SECRET_KEY.', array( 'status' => 400 ) );
 		}
 
-		$is_subscription = strpos( strtolower( $license ), 'monthly' ) !== false || strpos( strtolower( $license ), 'true north' ) !== false;
+		$license_lower = strtolower( $license );
+		$is_subscription = ( strpos( $license_lower, 'monthly' ) !== false || strpos( $license_lower, 'engine' ) !== false || strpos( $license_lower, 'castle' ) !== false || strpos( $license_lower, 'sovereign' ) !== false || $price >= 90 );
+		$is_castle = ( strpos( $license_lower, 'castle' ) !== false || strpos( $license_lower, 'enterprise' ) !== false || $price >= 3000 );
 		$mode = $is_subscription ? 'subscription' : 'payment';
 
 		// Clean product title formatting for Stripe Checkout
@@ -172,13 +174,32 @@ class Xophz_Compass_Modules_API {
 		$price_data = array(
 			'currency'     => 'usd',
 			'product_data' => array(
-				'name' => $product_name,
+				'name'     => $product_name,
+				'tax_code' => 'txcd_10103000',
 			),
-			'unit_amount'  => $price * 100, // Stripe expects cents
+			'unit_amount'  => (int) round( $price * 100 ), // Stripe expects cents
 		);
 
 		if ( $is_subscription ) {
 			$price_data['recurring'] = array( 'interval' => 'month' );
+		}
+
+		$payload = array(
+			'allow_promotion_codes' => 'true',
+			'line_items'            => array(
+				array(
+					'price_data' => $price_data,
+					'quantity'   => 1,
+				)
+			),
+			'mode'                  => $mode,
+			'success_url'           => $success_url,
+			'cancel_url'            => $cancel_url,
+		);
+
+		if ( $is_castle ) {
+			// Automatically stop recurring billing after 6 months for Enterprise engagements
+			$payload['subscription_data[cancel_at]'] = strtotime( '+6 months' );
 		}
 
 		// Make request to Stripe API
@@ -187,19 +208,8 @@ class Xophz_Compass_Modules_API {
 				'Authorization' => 'Bearer ' . $secret_key,
 				'Content-Type'  => 'application/x-www-form-urlencoded',
 			),
-			'body' => http_build_query( array(
-				'payment_method_types'  => array( 'card' ),
-				'allow_promotion_codes' => 'true',
-				'line_items'            => array(
-					array(
-						'price_data' => $price_data,
-						'quantity'   => 1,
-					)
-				),
-				'mode'                  => $mode,
-				'success_url'           => $success_url,
-				'cancel_url'            => $cancel_url,
-			) ),
+			'body' => http_build_query( $payload ),
+			'timeout' => 15,
 		) );
 
 		if ( is_wp_error( $response ) ) {
