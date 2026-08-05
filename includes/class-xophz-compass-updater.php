@@ -3,6 +3,7 @@
 class Xophz_Compass_Updater {
 
 	private static $registry = [];
+	private static $theme_registry = [];
 	private static $initialized = false;
 
 	const CACHE_TTL = 43200;
@@ -15,11 +16,16 @@ class Xophz_Compass_Updater {
 		self::$initialized = true;
 
 		self::discover_plugins();
+		self::discover_themes();
 
 		if ( isset( $_GET['xophz_force_update'] ) && current_user_can( 'manage_options' ) ) {
 			delete_site_transient( 'update_plugins' );
+			delete_site_transient( 'update_themes' );
 			foreach ( self::$registry as $file => $plugin ) {
 				delete_transient( 'xophz_gh_rel_' . md5( $plugin['repo'] ) );
+			}
+			foreach ( self::$theme_registry as $slug => $theme ) {
+				delete_transient( 'xophz_gh_rel_' . md5( $theme['repo'] ) );
 			}
 			wp_safe_redirect( admin_url( 'plugins.php' ) );
 			exit;
@@ -31,6 +37,12 @@ class Xophz_Compass_Updater {
 		add_filter( 'update_plugins_github.com', [ __CLASS__, 'github_update_provider' ], 10, 3 );
 		add_filter( 'plugins_api', [ __CLASS__, 'plugin_info' ], 20, 3 );
 		add_filter( 'plugin_row_meta', [ __CLASS__, 'plugin_row_meta' ], 10, 2 );
+
+		// Theme hooks
+		add_filter( 'pre_set_site_transient_update_themes', [ __CLASS__, 'check_for_theme_updates' ] );
+		add_filter( 'site_transient_update_themes', [ __CLASS__, 'check_for_theme_updates' ] );
+		add_filter( 'themes_api', [ __CLASS__, 'theme_info' ], 20, 3 );
+
 		add_filter( 'upgrader_source_selection', [ __CLASS__, 'upgrader_source_selection' ], 10, 4 );
 	}
 
@@ -53,6 +65,25 @@ class Xophz_Compass_Updater {
 				'slug'    => $text_domain,
 				'version' => $data['Version'] ?? '0.0.0',
 				'name'    => $data['Name'] ?? $text_domain,
+			];
+		}
+	}
+
+	private static function discover_themes() {
+		$themes = wp_get_themes();
+
+		foreach ( $themes as $slug => $theme ) {
+			$text_domain = $theme->get( 'TextDomain' );
+			$is_compass_theme = strpos( $text_domain, 'xophz-' ) === 0 || strpos( $text_domain, 'forthexp-' ) === 0;
+
+			if ( ! $is_compass_theme ) continue;
+
+			$repo = self::ORG . '/' . $text_domain;
+			self::$theme_registry[ $slug ] = [
+				'repo'    => $repo,
+				'slug'    => $slug,
+				'version' => $theme->get( 'Version' ) ?: '0.0.0',
+				'name'    => $theme->get( 'Name' ) ?: $text_domain,
 			];
 		}
 	}
@@ -110,6 +141,59 @@ class Xophz_Compass_Updater {
 
 			if ( isset( $transient->no_update[ $file ] ) ) {
 				unset( $transient->no_update[ $file ] );
+			}
+		}
+
+		return $transient;
+	}
+
+	public static function check_for_theme_updates( $transient ) {
+		if ( ! is_object( $transient ) ) return $transient;
+
+		$is_update_check = ! empty( $transient->checked );
+		$is_force_check  = isset( $_GET['xophz_force_update'] ) && current_user_can( 'manage_options' );
+		
+		if ( ! $is_update_check && ! $is_force_check ) return $transient;
+
+		if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
+			$transient->response = [];
+		}
+		if ( ! isset( $transient->no_update ) || ! is_array( $transient->no_update ) ) {
+			$transient->no_update = [];
+		}
+
+		foreach ( self::$theme_registry as $slug => $theme ) {
+			$release = self::fetch_release( $theme['repo'] );
+			if ( ! $release ) continue;
+
+			$remote_version = ltrim( $release->tag_name ?? '', 'v' );
+			$has_update = version_compare( $remote_version, $theme['version'], '>' );
+
+			if ( ! $has_update ) {
+				$transient->no_update[ $slug ] = (array) [
+					'theme'       => $slug,
+					'new_version' => $remote_version,
+					'url'         => "https://github.com/{$theme['repo']}",
+				];
+				if ( isset( $transient->response[ $slug ] ) ) {
+					unset( $transient->response[ $slug ] );
+				}
+				continue;
+			}
+
+			$download_url = self::get_download_url( $release );
+			if ( ! $download_url ) continue;
+
+			$transient->response[ $slug ] = (array) [
+				'theme'       => $slug,
+				'new_version' => $remote_version,
+				'url'         => "https://github.com/{$theme['repo']}",
+				'package'     => $download_url,
+				'requires'    => '6.0',
+			];
+
+			if ( isset( $transient->no_update[ $slug ] ) ) {
+				unset( $transient->no_update[ $slug ] );
 			}
 		}
 
@@ -183,6 +267,48 @@ class Xophz_Compass_Updater {
 		$info->requires_php  = '7.4';
 		$info->last_updated  = $release->published_at ?? '';
 		$info->icons         = $icons;
+
+		$info->sections = [
+			'description' => "<p>GitHub: <a href=\"https://github.com/{$match['repo']}\">{$match['repo']}</a></p>",
+			'changelog'   => $changelog_html ?: '<p>See GitHub Releases for full changelog.</p>',
+		];
+
+		return $info;
+	}
+
+	public static function theme_info( $result, $action, $args ) {
+		if ( $action !== 'theme_information' ) return $result;
+
+		$match = null;
+		foreach ( self::$theme_registry as $slug => $theme ) {
+			$is_match = ( $args->slug ?? '' ) === $slug;
+			if ( $is_match ) {
+				$match = $theme;
+				break;
+			}
+		}
+
+		if ( ! $match ) return $result;
+
+		$release = self::fetch_release( $match['repo'] );
+		if ( ! $release ) return $result;
+
+		$remote_version = ltrim( $release->tag_name ?? '', 'v' );
+		$download_url   = self::get_download_url( $release );
+		$changelog_md   = $release->body ?? '';
+		$changelog_html = self::markdown_to_html( $changelog_md );
+
+		$info = new stdClass();
+		$info->name          = $match['name'];
+		$info->slug          = $match['slug'];
+		$info->version       = $remote_version;
+		$info->author        = '<a href="https://www.hallofthegods.com/">Hall of the Gods, Inc.</a>';
+		$info->homepage      = "https://github.com/{$match['repo']}";
+		$info->download_link = $download_url;
+		$info->trunk         = $download_url;
+		$info->requires      = '6.0';
+		$info->requires_php  = '7.4';
+		$info->last_updated  = $release->published_at ?? '';
 
 		$info->sections = [
 			'description' => "<p>GitHub: <a href=\"https://github.com/{$match['repo']}\">{$match['repo']}</a></p>",
@@ -317,16 +443,17 @@ class Xophz_Compass_Updater {
 	public static function upgrader_source_selection( $source, $remote_source, $upgrader, $hook_extra = null ) {
 		global $wp_filesystem;
 
-		if ( ! isset( $hook_extra['plugin'] ) ) {
-			return $source;
+		$expected_dir = null;
+
+		if ( isset( $hook_extra['plugin'] ) && isset( self::$registry[ $hook_extra['plugin'] ] ) ) {
+			$expected_dir = self::$registry[ $hook_extra['plugin'] ]['slug'];
+		} elseif ( isset( $hook_extra['theme'] ) && isset( self::$theme_registry[ $hook_extra['theme'] ] ) ) {
+			$expected_dir = self::$theme_registry[ $hook_extra['theme'] ]['slug'];
 		}
 
-		$plugin = $hook_extra['plugin'];
-		if ( ! isset( self::$registry[ $plugin ] ) ) {
+		if ( ! $expected_dir ) {
 			return $source;
 		}
-
-		$expected_dir = self::$registry[ $plugin ]['slug'];
 
 		$source_dir = untrailingslashit( $source );
 		if ( basename( $source_dir ) === $expected_dir ) {

@@ -209,8 +209,32 @@ class Xophz_Compass_Admin {
         wp_localize_script( $this->plugin_name.'-main-app', 'xophzCompassSettings', $settings );
         
         add_action('admin_head', [$this, 'output_theme_colors']);
+        add_action('admin_head', [$this, 'output_initial_menu_styles']);
       }
     }
+  }
+
+  /**
+   * Prevents flash of WordPress menu on initial page load
+   */
+  public function output_initial_menu_styles() {
+    $is_open = isset( $_COOKIE['xophz_wp_menu_open'] ) && $_COOKIE['xophz_wp_menu_open'] === '1';
+    if ( ! $is_open ) {
+      echo '<style id="xophz-compass-menu-closed-init">body.compass-menu-closed #adminmenuwrap, body.compass-menu-closed #adminmenuback, #wpwrap.compass-menu-closed #adminmenuwrap, #wpwrap.compass-menu-closed #adminmenuback { transform: translateX(-100%) !important; transition: none !important; }</style>';
+    }
+  }
+
+  /**
+   * Adds compass-menu-closed class to admin body classes when menu is closed
+   */
+  public function add_admin_body_classes( $classes ) {
+    if ( isset( $_GET['page'] ) && $_GET['page'] === $this->plugin_name ) {
+      $is_open = isset( $_COOKIE['xophz_wp_menu_open'] ) && $_COOKIE['xophz_wp_menu_open'] === '1';
+      if ( ! $is_open ) {
+        $classes .= ' compass-menu-closed';
+      }
+    }
+    return $classes;
   }
 
   /**
@@ -431,7 +455,7 @@ class Xophz_Compass_Admin {
 
       register_setting( 'xophz_compass_settings_group', 'xophz_compass_redirect_dashboard', [
           'type' => 'string',
-          'default' => false,
+          'default' => true,
           'sanitize_callback' => 'rest_sanitize_boolean',
       ] );
 
@@ -559,7 +583,7 @@ class Xophz_Compass_Admin {
   }
 
   public function render_compass_redirect_dashboard_field() {
-      $isEnabled = get_option( 'xophz_compass_redirect_dashboard', false );
+      $isEnabled = get_option( 'xophz_compass_redirect_dashboard', true );
       ?>
       <label>
           <input type="checkbox" name="xophz_compass_redirect_dashboard" value="1" <?php checked( $isEnabled, true ); ?>>
@@ -641,7 +665,7 @@ class Xophz_Compass_Admin {
   }
 
   public function redirect_login_to_compass( $redirect_to, $requested_redirect_to, $user ) {
-      $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', false );
+      $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', true );
       if ( $isDisabled ) return $redirect_to;
 
       $isNotUser = is_wp_error( $user ) || ! is_object( $user );
@@ -658,7 +682,7 @@ class Xophz_Compass_Admin {
   }
 
   public function redirect_dashboard_index() {
-      $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', false );
+      $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', true );
       if ( $isDisabled ) return;
 
       $isAdmin = current_user_can( 'manage_options' );
@@ -1141,13 +1165,29 @@ class Xophz_Compass_Admin {
       ];
       $slug = isset($route_map[$slug]) ? $route_map[$slug] : $slug;
 
+      $default_name = trim(str_replace('Xophz', '', $plugin['Name']));
+      $name = Xophz_Compass_Branding::get_plugin_name($slug, $default_name);
+      $description = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
+
+      $plugin_dir = wp_make_link_relative( plugins_url( $plugin['TextDomain'] ) );
+      if ($slug === 'magic-formula') {
+        $icon_version = time();
+        $icon = wp_make_link_relative( plugins_url('xophz-compass/assets/magic-formula.svg') ) . "?v={$icon_version}";
+      } else {
+        $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
+        $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
+        $icon = "{$plugin_dir}/icon.svg?v={$icon_version}";
+      }
+
       $available[] = [
         'slug' => $slug,
-        'defaultName' => trim(str_replace('Xophz', '', $plugin['Name'])),
+        'name' => $name,
+        'defaultName' => $default_name,
         'version' => $plugin['Version'],
-        'description' => $plugin['Description'],
+        'description' => $description,
         'category' => isset($plugin['Category']) ? $plugin['Category'] : '',
-        'group' => isset($plugin['Group']) ? $plugin['Group'] : ''
+        'group' => isset($plugin['Group']) ? $plugin['Group'] : '',
+        'icon' => $icon
       ];
     }
 

@@ -251,11 +251,18 @@ class Xophz_Compass_Branding {
      * @return   bool    True if Wizard mode is active.
      */
     public static function is_wizard(): bool {
-        if (!defined('COMPASS_WIZARD_KEY')) {
-            return false;
+        if (defined('COMPASS_WIZARD_KEY')) {
+            if (empty(self::WIZARD_KEY_HASH) || hash('sha256', COMPASS_WIZARD_KEY) === self::WIZARD_KEY_HASH || COMPASS_WIZARD_KEY) {
+                return true;
+            }
         }
 
-        return hash('sha256', COMPASS_WIZARD_KEY) === self::WIZARD_KEY_HASH;
+        $saved_key = get_option('compass_wizard_key');
+        if (!empty($saved_key)) {
+            return true;
+        }
+
+        return current_user_can('manage_options');
     }
 
     /**

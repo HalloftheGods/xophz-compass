@@ -154,6 +154,8 @@ class Xophz_Compass {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-cafeteria-cpt.php';
 		Xophz_Compass_Cafeteria_CPT::init();
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-3d-block.php';
+
 		$this->loader = new Xophz_Compass_Loader();
 		
 
@@ -194,6 +196,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_w4_my_compass_menu');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_my_compass_settings');
+		$this->loader->add_filter( 'admin_body_class', $plugin_admin, 'add_admin_body_classes' );
 		$this->loader->add_filter( 'login_redirect', $plugin_admin, 'redirect_login_to_compass', 10, 3 );
 		$this->loader->add_action( 'load-index.php', $plugin_admin, 'redirect_dashboard_index' );
 		$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'add_compass_admin_bar_button', 12 );
