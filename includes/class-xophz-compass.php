@@ -97,66 +97,69 @@ class Xophz_Compass {
 	 * @access   private
 	 */
 	private function load_dependencies() {
+		$plugin_dir = defined( 'XOPHZ_COMPASS_PATH' ) ? XOPHZ_COMPASS_PATH : plugin_dir_path( __DIR__ );
+
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-loader.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-i18n.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-i18n.php';
 
 		/**
 		 * The class responsible for centralized branding configuration.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-branding.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-branding.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-xophz-compass-admin.php';
+		require_once $plugin_dir . 'admin/class-xophz-compass-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-xophz-compass-public.php';
+		require_once $plugin_dir . 'public/class-xophz-compass-public.php';
 
 		/**
 		 * The class responsible for handling Constellations relationship mappings.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-constellations-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-constellations-api.php';
 
 		/**
 		 * The class responsible for handling external Sparks from plugins.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-sparks-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-sparks-api.php';
 
 		/**
 		 * The class responsible for handling the Modules Ecosystem API.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-modules-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-modules-api.php';
 
 		/**
 		 * The telescope backend handling
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-cpt.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-telescope-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-polls-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-updater.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-passport-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-matrix-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-performance-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-twilio-api.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-cafeteria-cpt.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-telescope-cpt.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-telescope-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-polls-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-updater.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-passport-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-matrix-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-performance-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-twilio-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-cafeteria-cpt.php';
 		Xophz_Compass_Cafeteria_CPT::init();
 
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-3d-block.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-3d-block.php';
 
 		$this->loader = new Xophz_Compass_Loader();
+
 		
 
 

@@ -39,6 +39,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'XOPHZ_COMPASS_VERSION', '26.8.5.263' );
+define( 'XOPHZ_COMPASS_PATH', plugin_dir_path( __FILE__ ) );
 
 /**
  * The code that runs during plugin activation.
