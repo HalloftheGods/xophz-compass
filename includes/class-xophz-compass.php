@@ -246,6 +246,9 @@ class Xophz_Compass {
     $plugin_modules = new Xophz_Compass_Modules_API();
     $this->loader->add_action( 'rest_api_init', $plugin_modules, 'register_routes' );
 
+    // Register Connectors REST API
+    $this->loader->add_action( 'rest_api_init', 'Xophz_Compass_Connectors', 'register_routes' );
+
     // Register Telescope API & CPT
     $this->loader->add_action( 'init', 'Xophz_Compass_Telescope_CPT', 'register_post_type' );
     $plugin_telescope_api = new Xophz_Compass_Telescope_API();
