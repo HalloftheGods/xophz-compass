@@ -93,7 +93,7 @@ class Xophz_Compass_Modules_API {
 			$existing = array();
 		}
 		array_unshift( $existing, $submission );
-		update_option( 'compass_client_onboardings', array_slice( $existing, 0, 100 ) );
+		update_option( 'compass_client_onboardings', array_slice( $existing, 0, 100 ), false );
 
 		// 1. Send Admin Email Notification
 		$admin_email = get_option( 'admin_email' );

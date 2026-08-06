@@ -214,6 +214,14 @@ class Xophz_Compass_Connectors {
 			),
 		) );
 
+		register_rest_route( 'xophz/v1', '/abilities', array(
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'get_abilities_api' ),
+				'permission_callback' => '__return_true',
+			),
+		) );
+
 		register_rest_route( 'xophz/v1', '/site-settings', array(
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -280,6 +288,24 @@ class Xophz_Compass_Connectors {
 				'icon'         => 'fad fa-brain',
 				'color'        => '#d97706',
 				'description'  => 'Text generation and AI assistance with Claude',
+			),
+			array(
+				'id'           => 'openrouter',
+				'name'         => 'OpenRouter AI Proxy',
+				'setting_name' => 'compass_openrouter_api_key',
+				'type'         => 'ai',
+				'icon'         => 'fad fa-network-wired',
+				'color'        => '#8b5cf6',
+				'description'  => 'Unified gateway for open-source and proprietary models',
+			),
+			array(
+				'id'           => 'ollama',
+				'name'         => 'Local Ollama Runner (Docker)',
+				'setting_name' => 'compass_ollama_url',
+				'type'         => 'ai',
+				'icon'         => 'fad fa-microchip',
+				'color'        => '#10b981',
+				'description'  => 'Isolated local Docker container endpoint (e.g. http://ollama:11434)',
 			),
 			array(
 				'id'           => 'patreon',
@@ -393,6 +419,59 @@ class Xophz_Compass_Connectors {
 	}
 
 	/**
+	 * GET Callback for /xophz/v1/abilities
+	 * Aggregates all registered WP Abilities across COMPASS plugins.
+	 */
+	public static function get_abilities_api( WP_REST_Request $request ) {
+		$raw_abilities = array();
+
+		// Allow individual COMPASS plugins to register their abilities via filter hook
+		$raw_abilities = apply_filters( 'compass_abilities_registry', $raw_abilities );
+
+		// Also check native WP Abilities registry if available
+		if ( function_exists( 'wp_get_abilities' ) ) {
+			$wp_abilities = wp_get_abilities();
+			if ( is_array( $wp_abilities ) ) {
+				$raw_abilities = array_merge( $raw_abilities, $wp_abilities );
+			}
+		}
+
+		$normalized = array();
+		$seen_ids   = array();
+
+		foreach ( $raw_abilities as $ab ) {
+			if ( is_object( $ab ) ) {
+				$ab = (array) $ab;
+			}
+			if ( ! is_array( $ab ) ) {
+				continue;
+			}
+
+			$name = ! empty( $ab['name'] ) ? $ab['name'] : ( ! empty( $ab['label'] ) ? $ab['label'] : ( ! empty( $ab['id'] ) ? $ab['id'] : '' ) );
+			$id   = ! empty( $ab['id'] ) ? $ab['id'] : ( ! empty( $name ) ? sanitize_title( $name ) : '' );
+
+			if ( empty( $name ) || empty( $id ) || isset( $seen_ids[ $id ] ) ) {
+				continue;
+			}
+
+			$seen_ids[ $id ] = true;
+
+			$normalized[] = array(
+				'id'          => $id,
+				'name'        => $name,
+				'plugin'      => ! empty( $ab['plugin'] ) ? $ab['plugin'] : 'WordPress System',
+				'category'    => ! empty( $ab['category'] ) ? ucfirst( $ab['category'] ) : 'General',
+				'description' => ! empty( $ab['description'] ) ? $ab['description'] : 'No description provided.',
+			);
+		}
+
+		return rest_ensure_response( array(
+			'success'   => true,
+			'abilities' => $normalized,
+		) );
+	}
+
+	/**
 	 * POST Callback for /xophz/v1/connectors
 	 */
 	public static function update_connector_api( WP_REST_Request $request ) {
@@ -401,10 +480,10 @@ class Xophz_Compass_Connectors {
 		if ( isset( $params['setting_name'] ) && isset( $params['value'] ) ) {
 			$setting_name = sanitize_key( $params['setting_name'] );
 			$val          = sanitize_text_field( $params['value'] );
-			update_option( $setting_name, $val );
+			update_option( $setting_name, $val, false );
 		} elseif ( isset( $params['connectors'] ) && is_array( $params['connectors'] ) ) {
 			foreach ( $params['connectors'] as $setting_name => $val ) {
-				update_option( sanitize_key( $setting_name ), sanitize_text_field( $val ) );
+				update_option( sanitize_key( $setting_name ), sanitize_text_field( $val ), false );
 			}
 		}
 
