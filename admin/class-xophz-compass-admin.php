@@ -685,6 +685,9 @@ class Xophz_Compass_Admin {
       $isDisabled = ! get_option( 'xophz_compass_redirect_dashboard', true );
       if ( $isDisabled ) return;
 
+      if ( is_network_admin() ) return;
+      if ( isset( $_GET['wp_dashboard'] ) || isset( $_GET['wp'] ) || isset( $_GET['native'] ) ) return;
+
       $isAdmin = current_user_can( 'manage_options' );
       if ( ! $isAdmin ) return;
 
@@ -788,8 +791,12 @@ class Xophz_Compass_Admin {
         $plugins[$p]['icon'] = wp_make_link_relative( plugins_url('xophz-compass/assets/magic-formula.svg') ) . "?v={$icon_version}";
       } else {
         $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
-        $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
-        $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
+        if (file_exists($icon_path)) {
+          $icon_version = filemtime($icon_path);
+          $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
+        } else {
+          $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.png', dirname( __FILE__ ) ) );
+        }
       }
       
       // Fallback approach if WP's native plugins caching hides Category

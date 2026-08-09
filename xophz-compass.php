@@ -13,7 +13,7 @@
  * @package           Xophz_COMPASS
  *
  * @wordpress-plugin
- * Plugin Name:       My Compass 
+ * Plugin Name:       My Compass Engine
  * Plugin URI:        https://github.com/HalloftheGods/xophz-compass
  * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
  * Version:           26.8.7.332

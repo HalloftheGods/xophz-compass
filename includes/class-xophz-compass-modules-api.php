@@ -472,6 +472,15 @@ class Xophz_Compass_Modules_API {
 		$installed_plugins = get_plugins();
 
 		foreach ( $modules as $slug => &$module ) {
+			if ( empty( $module['icon'] ) ) {
+				$icon_path = WP_PLUGIN_DIR . '/' . $slug . '/icon.svg';
+				if ( file_exists( $icon_path ) ) {
+					$module['icon'] = wp_make_link_relative( plugins_url( $slug . '/icon.svg' ) );
+				} else {
+					$module['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $slug . '.png', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
+				}
+			}
+
 			if ( $slug === 'xophz-compass-magic-formula' ) {
 				$module['is_installed'] = true;
 				$module['is_active']    = true;
