@@ -37,7 +37,7 @@ class Xophz_Compass_Gemini_API {
 					'model' => array(
 						'required' => false,
 						'type'     => 'string',
-						'default'  => 'gemini-2.5-flash',
+						'default'  => 'gemini-2.0-flash',
 					)
 				),
 			)
@@ -59,10 +59,30 @@ class Xophz_Compass_Gemini_API {
 					return $api_key;
 				}
 			}
+			if ( ! empty( $connectors['google_gemini_api_key']['authentication']['setting_name'] ) ) {
+				$api_key = get_option( $connectors['google_gemini_api_key']['authentication']['setting_name'], '' );
+				if ( ! empty( $api_key ) ) {
+					return $api_key;
+				}
+			}
+		}
+
+		// Direct options check for official Connectors & COMPASS settings
+		$keys = array(
+			'connectors_ai_google_api_key',
+			'ai_google_api_key',
+			'compass_gemini_api_key',
+			'xophz_gemini_api_key',
+		);
+		foreach ( $keys as $k ) {
+			$val = get_option( $k, '' );
+			if ( ! empty( $val ) ) {
+				return $val;
+			}
 		}
 
 		// Fallbacks
-		if ( defined( 'GEMINI_API_KEY' ) ) {
+		if ( defined( 'GEMINI_API_KEY' ) && ! empty( GEMINI_API_KEY ) ) {
 			return GEMINI_API_KEY;
 		}
 		if ( ! empty( $_ENV['GEMINI_API_KEY'] ) ) {
@@ -72,8 +92,7 @@ class Xophz_Compass_Gemini_API {
 			return getenv( 'GEMINI_API_KEY' );
 		}
 		
-		// Legacy setting name
-		return get_option( 'xophz_gemini_api_key', '' );
+		return '';
 	}
 
 	/**
@@ -92,6 +111,9 @@ class Xophz_Compass_Gemini_API {
 		$prompt = $request->get_param( 'prompt' );
 		$system_instruction = $request->get_param( 'system_instruction' );
 		$model = $request->get_param( 'model' );
+		if ( empty( $model ) || 'gemini-2.5-flash' === $model ) {
+			$model = 'gemini-2.0-flash';
+		}
 
 		// Implement Rate Limiting (15 requests per minute per user)
 		$user_id = get_current_user_id();

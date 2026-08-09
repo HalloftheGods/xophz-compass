@@ -17,6 +17,39 @@ class Xophz_Compass_Connectors {
 	 */
 	public static function init() {
 		add_action( 'wp_connectors_init', array( __CLASS__, 'register_connectors' ) );
+		add_filter( 'option_wpai_connector_approvals', array( __CLASS__, 'auto_approve_compass_ai_connectors' ) );
+		add_filter( 'default_option_wpai_connector_approvals', array( __CLASS__, 'auto_approve_compass_ai_connectors' ) );
+	}
+
+	/**
+	 * Automatically approve COMPASS ecosystem plugins for AI connectors in WP 7.0+ AI plugin.
+	 *
+	 * @param mixed $approvals
+	 * @return array
+	 */
+	public static function auto_approve_compass_ai_connectors( $approvals = array() ) {
+		if ( ! is_array( $approvals ) ) {
+			$approvals = array();
+		}
+		$compass_plugins = array(
+			'xophz-compass/xophz-compass.php',
+			'xophz-compass-moving-castle/xophz-compass-moving-castle.php',
+			'xophz-kitchen-synk/xophz-kitchen-synk.php',
+			'xophz-nook-phone/xophz-nook-phone.php',
+			'xophz-thoth-reader-wp/xophz-thoth-reader-wp.php',
+		);
+		$connectors = array( 'google', 'openai', 'anthropic' );
+
+		foreach ( $compass_plugins as $plugin ) {
+			if ( ! isset( $approvals[ $plugin ] ) || ! is_array( $approvals[ $plugin ] ) ) {
+				$approvals[ $plugin ] = array();
+			}
+			foreach ( $connectors as $conn ) {
+				$approvals[ $plugin ][ $conn ] = true;
+			}
+		}
+
+		return $approvals;
 	}
 
 	/**
@@ -162,8 +195,19 @@ class Xophz_Compass_Connectors {
 			),
 		) );
 
-		// The official WP Google Connector is used for Gemini/AI Studio keys, 
-		// so we no longer need to register a custom compass_gemini_key here.
+		// ---------------------------------------------------------
+		// Google Gemini AI Configuration
+		// ---------------------------------------------------------
+		$registry->register( 'google_gemini_api_key', array(
+			'name'           => __( 'Google Gemini AI', 'xophz-compass' ),
+			'description'    => __( 'API Key for Google Gemini text and content generation models.', 'xophz-compass' ),
+			'type'           => 'ai',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => 'https://aistudio.google.com/app/apikey',
+				'setting_name'    => 'connectors_ai_google_api_key',
+			),
+		) );
 
 		// ---------------------------------------------------------
 		// Stripe Configuration
@@ -281,9 +325,18 @@ class Xophz_Compass_Connectors {
 				'description'  => 'Protect your site and comments from spam',
 			),
 			array(
+				'id'           => 'gemini',
+				'name'         => 'Google Gemini AI',
+				'setting_name' => 'connectors_ai_google_api_key',
+				'type'         => 'ai',
+				'icon'         => 'fab fa-google',
+				'color'        => '#4285f4',
+				'description'  => 'Text and content generation with Google Gemini models',
+			),
+			array(
 				'id'           => 'anthropic',
 				'name'         => 'Anthropic Claude AI',
-				'setting_name' => 'compass_anthropic_api_key',
+				'setting_name' => 'connectors_ai_anthropic_api_key',
 				'type'         => 'ai',
 				'icon'         => 'fad fa-brain',
 				'color'        => '#d97706',
@@ -383,18 +436,130 @@ class Xophz_Compass_Connectors {
 	}
 
 	/**
+	 * Helper function to map connector icon by ID/name.
+	 */
+	private static function get_connector_icon( $id, $name ) {
+		$str = strtolower( $id . ' ' . $name );
+		if ( strpos( $str, 'google' ) !== false || strpos( $str, 'gemini' ) !== false ) return 'fab fa-google';
+		if ( strpos( $str, 'anthropic' ) !== false || strpos( $str, 'claude' ) !== false ) return 'fad fa-brain';
+		if ( strpos( $str, 'openai' ) !== false || strpos( $str, 'gpt' ) !== false ) return 'fad fa-robot';
+		if ( strpos( $str, 'akismet' ) !== false ) return 'fad fa-shield-alt';
+		if ( strpos( $str, 'stripe' ) !== false ) return 'fab fa-stripe-s';
+		if ( strpos( $str, 'patreon' ) !== false ) return 'fab fa-patreon';
+		if ( strpos( $str, 'discord' ) !== false ) return 'fab fa-discord';
+		if ( strpos( $str, 'twilio' ) !== false ) return 'fad fa-comments';
+		if ( strpos( $str, 'pinata' ) !== false || strpos( $str, 'ipfs' ) !== false ) return 'fad fa-database';
+		if ( strpos( $str, 'hookshot' ) !== false || strpos( $str, 'github' ) !== false ) return 'fad fa-link';
+		if ( strpos( $str, 'wordpress' ) !== false || strpos( $str, 'rest' ) !== false ) return 'fab fa-wordpress';
+		return 'fad fa-plug';
+	}
+
+	/**
+	 * Helper function to map connector color by ID/type.
+	 */
+	private static function get_connector_color( $id, $type ) {
+		$str = strtolower( $id . ' ' . $type );
+		if ( strpos( $str, 'google' ) !== false || strpos( $str, 'gemini' ) !== false ) return '#ea4335';
+		if ( strpos( $str, 'anthropic' ) !== false ) return '#d97706';
+		if ( strpos( $str, 'openai' ) !== false ) return '#10a37f';
+		if ( strpos( $str, 'akismet' ) !== false ) return '#388e3c';
+		if ( strpos( $str, 'stripe' ) !== false ) return '#635bff';
+		if ( strpos( $str, 'patreon' ) !== false ) return '#ff424d';
+		if ( strpos( $str, 'discord' ) !== false ) return '#5865f2';
+		if ( strpos( $str, 'twilio' ) !== false ) return '#f22f46';
+		if ( strpos( $str, 'pinata' ) !== false ) return '#00d2ff';
+		return '#62c9ff';
+	}
+
+	/**
 	 * GET Callback for /xophz/v1/connectors
 	 */
 	public static function get_connectors_api( WP_REST_Request $request ) {
-		$definitions = self::get_connector_definitions();
-		$list        = array();
+		$list                    = array();
+		$processed_setting_names = array();
+		$processed_ids           = array();
 
+		// 1. Fetch from WP Connectors API if available (WordPress native registry)
+		if ( function_exists( 'wp_get_connectors' ) ) {
+			$wp_connectors = wp_get_connectors();
+			if ( is_array( $wp_connectors ) && ! empty( $wp_connectors ) ) {
+				foreach ( $wp_connectors as $cid => $cdata ) {
+					$setting_name = '';
+					if ( is_array( $cdata ) && isset( $cdata['authentication']['setting_name'] ) ) {
+						$setting_name = $cdata['authentication']['setting_name'];
+					} elseif ( is_object( $cdata ) && isset( $cdata->authentication['setting_name'] ) ) {
+						$setting_name = $cdata->authentication['setting_name'];
+					}
+
+					if ( in_array( $cid, $processed_ids, true ) ) {
+						continue;
+					}
+					if ( ! empty( $setting_name ) && in_array( $setting_name, $processed_setting_names, true ) ) {
+						continue;
+					}
+
+					$name = '';
+					$desc = '';
+					$type = 'system';
+
+					if ( is_array( $cdata ) ) {
+						$name = isset( $cdata['name'] ) ? $cdata['name'] : ( isset( $cdata['label'] ) ? $cdata['label'] : ucfirst( $cid ) );
+						$desc = isset( $cdata['description'] ) ? $cdata['description'] : '';
+						$type = isset( $cdata['type'] ) ? $cdata['type'] : 'system';
+					} elseif ( is_object( $cdata ) ) {
+						$name = isset( $cdata->name ) ? $cdata->name : ucfirst( $cid );
+						$desc = isset( $cdata->description ) ? $cdata->description : '';
+						$type = isset( $cdata->type ) ? $cdata->type : 'system';
+					}
+
+					$val        = ! empty( $setting_name ) ? get_option( $setting_name, '' ) : '';
+					if ( empty( $val ) && 'connectors_ai_anthropic_api_key' === $setting_name ) {
+						$val = get_option( 'compass_anthropic_api_key', '' );
+					}
+					$configured = ! empty( $val );
+
+					$icon  = self::get_connector_icon( $cid, $name );
+					$color = self::get_connector_color( $cid, $type );
+
+					$list[] = array(
+						'id'           => $cid,
+						'name'         => $name,
+						'setting_name' => $setting_name,
+						'type'         => $type,
+						'icon'         => $icon,
+						'color'        => $color,
+						'description'  => $desc,
+						'configured'   => $configured,
+						'status'       => $configured ? 'CONNECTED' : 'NOT CONFIGURED',
+						'value'        => is_string( $val ) ? $val : '',
+					);
+
+					$processed_ids[] = $cid;
+					if ( ! empty( $setting_name ) ) {
+						$processed_setting_names[] = $setting_name;
+					}
+				}
+			}
+		}
+
+		// 2. Merge COMPASS ecosystem connector definitions
+		$definitions = self::get_connector_definitions();
 		foreach ( $definitions as $def ) {
+			if ( in_array( $def['id'], $processed_ids, true ) ) {
+				continue;
+			}
+			if ( ! empty( $def['setting_name'] ) && in_array( $def['setting_name'], $processed_setting_names, true ) ) {
+				continue;
+			}
+
 			if ( ! empty( $def['is_fixed'] ) ) {
 				$val        = 'CONNECTED';
 				$configured = true;
 			} else {
 				$val        = get_option( $def['setting_name'], '' );
+				if ( empty( $val ) && 'connectors_ai_anthropic_api_key' === $def['setting_name'] ) {
+					$val = get_option( 'compass_anthropic_api_key', '' );
+				}
 				$configured = ! empty( $val );
 			}
 
@@ -410,7 +575,17 @@ class Xophz_Compass_Connectors {
 				'status'       => $configured ? 'CONNECTED' : 'NOT CONFIGURED',
 				'value'        => is_string( $val ) ? $val : '',
 			);
+
+			$processed_ids[] = $def['id'];
+			if ( ! empty( $def['setting_name'] ) ) {
+				$processed_setting_names[] = $def['setting_name'];
+			}
 		}
+
+		// Sort connectors alphabetically (A-Z) by name
+		usort( $list, function( $a, $b ) {
+			return strcasecmp( $a['name'], $b['name'] );
+		} );
 
 		return rest_ensure_response( array(
 			'success'    => true,
