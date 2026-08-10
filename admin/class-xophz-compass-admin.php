@@ -913,6 +913,41 @@ class Xophz_Compass_Admin {
       ]
     ];
 
+    $is_multisite = is_multisite();
+    $is_super_admin = $is_multisite && is_super_admin( $user_id );
+    $user_sites = array();
+
+    if ( $is_multisite && $user_id ) {
+      $blogs = get_blogs_of_user( $user_id );
+      foreach ( $blogs as $blog ) {
+        $blog_id = (int) $blog->userblog_id;
+        $site_name = get_blog_option( $blog_id, 'blogname' ) ?: $blog->blogname;
+        $site_url = get_blog_option( $blog_id, 'siteurl' ) ?: get_home_url( $blog_id );
+        $admin_url = get_admin_url( $blog_id );
+        $compass_url = get_admin_url( $blog_id, 'admin.php?page=xophz-compass' );
+
+        $user_sites[] = array(
+          'blog_id'     => $blog_id,
+          'domain'      => $blog->domain,
+          'path'        => $blog->path,
+          'site_name'   => $site_name,
+          'site_url'    => $site_url,
+          'admin_url'   => $admin_url,
+          'compass_url' => $compass_url,
+        );
+      }
+    } else {
+      $user_sites[] = array(
+        'blog_id'     => (int) get_current_blog_id(),
+        'domain'      => isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '',
+        'path'        => '/',
+        'site_name'   => get_bloginfo( 'name' ),
+        'site_url'    => get_bloginfo( 'url' ),
+        'admin_url'   => admin_url(),
+        'compass_url' => admin_url( 'admin.php?page=xophz-compass' ),
+      );
+    }
+
     $blogInfo = [
       'name' => get_bloginfo('name'),
       'description' => get_bloginfo('description'),
@@ -920,7 +955,11 @@ class Xophz_Compass_Admin {
       'wpurl' => get_bloginfo('wpurl'),
       'version' => get_bloginfo('version'),
       'logouturl' => htmlspecialchars_decode(wp_logout_url()),
-      'front_page_title' => get_option('show_on_front') === 'page' ? get_the_title(get_option('page_on_front')) : 'Latest Posts'
+      'front_page_title' => get_option('show_on_front') === 'page' ? get_the_title(get_option('page_on_front')) : 'Latest Posts',
+      'is_multisite' => $is_multisite,
+      'is_super_admin' => $is_super_admin,
+      'network_admin_url' => $is_multisite ? network_admin_url() : '',
+      'user_sites' => $user_sites,
     ];
 
     Xophz_Compass::output_json([
