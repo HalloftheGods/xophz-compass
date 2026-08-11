@@ -496,6 +496,67 @@ class Xophz_Compass_Modules_API {
 	}
 
 	/**
+	 * Dynamically query GitHub API for the latest release ZIP package asset.
+	 *
+	 * @param string $slug Repository slug (e.g. 'xophz-compass-phone' or 'xophz-compass')
+	 * @param string $github_token Optional GitHub API bearer token
+	 * @return array|false Release asset array or false if not found
+	 */
+	public static function fetch_latest_release_zip( $slug, $github_token = '' ) {
+		$owner = 'HalloftheGods';
+		$repo  = $slug;
+
+		if ( strpos( $slug, '/' ) !== false ) {
+			list( $owner, $repo ) = explode( '/', $slug, 2 );
+		}
+
+		$api_url = "https://api.github.com/repos/{$owner}/{$repo}/releases/latest";
+
+		$args = array(
+			'timeout'    => 15,
+			'user-agent' => 'COMPASS-Plugin-Installer',
+			'headers'    => array(
+				'Accept' => 'application/vnd.github+json',
+			),
+		);
+
+		if ( ! empty( $github_token ) ) {
+			$args['headers']['Authorization'] = 'token ' . $github_token;
+		}
+
+		$response = wp_remote_get( $api_url, $args );
+
+		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+			return false;
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['assets'] ) && is_array( $body['assets'] ) ) {
+			foreach ( $body['assets'] as $asset ) {
+				$asset_name = isset( $asset['name'] ) ? $asset['name'] : '';
+				if ( substr( $asset_name, -4 ) === '.zip' ) {
+					$is_private = ! empty( $body['repository']['private'] );
+					$download_url = ( $is_private && ! empty( $github_token ) )
+						? ( isset( $asset['url'] ) ? $asset['url'] : $asset['browser_download_url'] )
+						: ( isset( $asset['browser_download_url'] ) ? $asset['browser_download_url'] : '' );
+
+					if ( ! empty( $download_url ) ) {
+						return array(
+							'download_url' => $download_url,
+							'is_api_asset' => ( $is_private && ! empty( $github_token ) ),
+							'asset_name'   => $asset_name,
+							'version'      => isset( $body['tag_name'] ) ? ltrim( $body['tag_name'], 'v' ) : '',
+						);
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Install a module given its slug.
 	 *
 	 * @param WP_REST_Request $request
@@ -505,33 +566,65 @@ class Xophz_Compass_Modules_API {
 		$slug = $request->get_param( 'slug' );
 		$registry = self::get_module_registry();
 
-		if ( ! isset( $registry[ $slug ] ) ) {
-			return new WP_Error( 'invalid_module_slug', 'The requested module slug does not exist in the COMPASS ecosystem registry.', array( 'status' => 404 ) );
+		$plugin_file = $slug . '/' . $slug . '.php';
+
+		// If plugin is already installed on disk, simply activate it
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		$module_data  = $registry[ $slug ];
-		$download_url = $module_data['download_url'];
-		$plugin_file  = $slug . '/' . $slug . '.php';
-
-		// Dynamically fetch the latest release asset from GitHub if applicable
-		if ( strpos( $download_url, 'github.com' ) !== false && class_exists( 'Xophz_Compass_Updater' ) ) {
-			$parts = explode( '/', parse_url( $download_url, PHP_URL_PATH ) );
-			if ( isset( $parts[1], $parts[2] ) ) {
-				$repo = $parts[1] . '/' . $parts[2];
-				$release = Xophz_Compass_Updater::fetch_release( $repo );
-				if ( $release ) {
-					$release_url = Xophz_Compass_Updater::get_download_url( $release );
-					if ( $release_url ) {
-						$download_url = $release_url;
-					}
-				}
+		$installed_plugins = get_plugins();
+		if ( array_key_exists( $plugin_file, $installed_plugins ) || file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+			$activated = activate_plugin( $plugin_file );
+			if ( is_wp_error( $activated ) ) {
+				return new WP_Error( 'activation_failed', 'Module is present but activation failed: ' . $activated->get_error_message(), array( 'status' => 500 ) );
 			}
+			return rest_ensure_response( array(
+				'success' => true,
+				'message' => 'Module activated successfully.',
+				'slug'    => $slug
+			) );
+		}
+
+		// Set up GitHub token auth filter if available
+		$github_token = '';
+		if ( defined( 'GITHUB_TOKEN' ) ) {
+			$github_token = GITHUB_TOKEN;
+		} elseif ( defined( 'GITHUB_PA_TOKEN' ) ) {
+			$github_token = GITHUB_PA_TOKEN;
+		} else {
+			$github_token = get_option( 'xophz_compass_bugnet_github_token', '' );
+		}
+
+		// Dynamically fetch official GitHub release ZIP package asset
+		$release_asset = self::fetch_latest_release_zip( $slug, $github_token );
+		if ( $release_asset && ! empty( $release_asset['download_url'] ) ) {
+			$download_url = $release_asset['download_url'];
+		} elseif ( isset( $registry[ $slug ] ) && ! empty( $registry[ $slug ]['download_url'] ) ) {
+			$download_url = $registry[ $slug ]['download_url'];
+		} else {
+			$download_url = "https://github.com/HalloftheGods/{$slug}/archive/refs/heads/main.zip";
 		}
 
 		// Include necessary files for the Upgrader
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 		require_once ABSPATH . 'wp-admin/includes/class-plugin-upgrader.php';
+
+		$auth_filter = null;
+		if ( ! empty( $github_token ) ) {
+			$auth_filter = function( $args, $url ) use ( $github_token ) {
+				$args['timeout'] = 300;
+				if ( strpos( $url, 'api.github.com' ) !== false ) {
+					$args['headers']['Authorization'] = 'token ' . $github_token;
+					$args['headers']['Accept']        = 'application/octet-stream';
+				} elseif ( strpos( $url, 'github.com' ) !== false ) {
+					$args['headers']['Authorization'] = 'token ' . $github_token;
+				}
+				return $args;
+			};
+			add_filter( 'http_request_args', $auth_filter, 10, 2 );
+		}
 
 		// Silent upgrader skin so it doesn't print HTML to the REST API request output
 		$skin     = new WP_Ajax_Upgrader_Skin();
@@ -540,16 +633,34 @@ class Xophz_Compass_Modules_API {
 		// Hook to rename GitHub archive folders which usually end in '-main' or a version string
 		$rename_filter = function( $source, $remote_source, $upgrader_obj, $hook_extra = null ) use ( $slug ) {
 			global $wp_filesystem;
+			if ( is_wp_error( $source ) ) {
+				return $source;
+			}
+			if ( ! is_object( $wp_filesystem ) ) {
+				require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+				require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+				$wp_filesystem = new WP_Filesystem_Direct( null );
+			}
 			$expected_dir = $slug;
-			$source_dir = untrailingslashit( $source );
+			$source_dir   = untrailingslashit( $source );
 			
 			if ( basename( $source_dir ) === $expected_dir ) {
 				return $source;
 			}
 			
 			$new_source = trailingslashit( $remote_source ) . $expected_dir;
+			if ( $wp_filesystem->is_dir( $new_source ) ) {
+				$wp_filesystem->delete( $new_source, true );
+			}
 			if ( $wp_filesystem->move( $source, $new_source ) ) {
 				return trailingslashit( $new_source );
+			}
+			if ( function_exists( 'copy_dir' ) ) {
+				$copy_res = copy_dir( $source, $new_source );
+				if ( ! is_wp_error( $copy_res ) && $copy_res !== false ) {
+					$wp_filesystem->delete( $source, true );
+					return trailingslashit( $new_source );
+				}
 			}
 			return $source;
 		};
@@ -560,6 +671,9 @@ class Xophz_Compass_Modules_API {
 		$installed = $upgrader->install( $download_url );
 		
 		remove_filter( 'upgrader_source_selection', $rename_filter, 10 );
+		if ( $auth_filter ) {
+			remove_filter( 'http_request_args', $auth_filter, 10 );
+		}
 
 		if ( is_wp_error( $installed ) ) {
 			return new WP_Error( 'install_failed', 'Installation failed: ' . $installed->get_error_message(), array( 'status' => 500 ) );
