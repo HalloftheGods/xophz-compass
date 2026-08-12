@@ -234,203 +234,203 @@ class Xophz_Compass_Modules_API {
 			'xophz-compass-xp' => array(
 				'slug'         => 'xophz-compass-xp',
 				'name'         => 'XP',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'User rewards, experience points, and achievement badges',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-xp/archive/refs/heads/main.zip',
 				'category'     => 'True North',
 			),
 			'xophz-compass-bazaar' => array(
 				'slug'         => 'xophz-compass-bazaar',
 				'name'         => 'Bazaar',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'E-Commerce and digital storefront hub',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bazaar/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-event-horizon' => array(
 				'slug'         => 'xophz-compass-event-horizon',
 				'name'         => 'Event Horizon',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Task automation and event trigger engine',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-event-horizon/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-bomb-bag' => array(
 				'slug'         => 'xophz-compass-bomb-bag',
 				'name'         => 'Bomb Bag',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'High-impact messaging and notification dispatch',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bomb-bag/archive/refs/heads/main.zip',
 				'category'     => 'Trajectory',
 			),
 			'xophz-compass-enchanted-mirror' => array(
 				'slug'         => 'xophz-compass-enchanted-mirror',
 				'name'         => 'Enchanted Mirror',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'User social profiles, avatars, and community reflection',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-enchanted-mirror/archive/refs/heads/main.zip',
 				'category'     => 'True North',
 			),
 			'xophz-compass-bugnet' => array(
 				'slug'         => 'xophz-compass-bugnet',
 				'name'         => 'Bugnet',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Issue capture and error logging system',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bugnet/archive/refs/heads/main.zip',
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-enchiridion' => array(
 				'slug'         => 'xophz-compass-enchiridion',
 				'name'         => 'Enchiridion',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Comprehensive system manual and developer documentation',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-enchiridion/archive/refs/heads/main.zip',
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-gale-boomerang' => array(
 				'slug'         => 'xophz-compass-gale-boomerang',
 				'name'         => 'Gale Boomerang',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Abandoned cart recovery and customer re-engagement',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-gale-boomerang/archive/refs/heads/main.zip',
 				'category'     => 'True North',
 			),
 			'xophz-compass-golden-keys' => array(
 				'slug'         => 'xophz-compass-golden-keys',
 				'name'         => 'Golden Keys',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Granular RBAC vault, role controls, and access permissions',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-golden-keys/archive/refs/heads/main.zip',
 				'category'     => 'True North',
 			),
 			'xophz-compass-hookshot' => array(
 				'slug'         => 'xophz-compass-hookshot',
 				'name'         => 'Hookshot',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'GitHub and webhook deployment trigger listener',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-hookshot/archive/refs/heads/main.zip',
 				'category'     => 'True North',
 			),
 			'xophz-compass-lead-magnet' => array(
 				'slug'         => 'xophz-compass-lead-magnet',
 				'name'         => 'Lead Magnet',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Marketing pop-ups, opt-in incentives, and lead generation engine',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-lead-magnet/archive/refs/heads/main.zip',
 				'category'     => 'Trajectory',
 			),
 			'xophz-compass-lit-lamp' => array(
 				'slug'         => 'xophz-compass-lit-lamp',
 				'name'         => 'Lit Lamp',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Google Analytics integration and telemetry insights',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-lit-lamp/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-magic-cloak' => array(
 				'slug'         => 'xophz-compass-magic-cloak',
 				'name'         => 'Magic Cloak',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Zero-knowledge privacy suite, WAF firewall, and encryption',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-magic-cloak/archive/refs/heads/main.zip',
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-midnight-nerd' => array(
 				'slug'         => 'xophz-compass-midnight-nerd',
 				'name'         => 'Midnight Nerd',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Developer tools console and system inspection',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-midnight-nerd/archive/refs/heads/main.zip',
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-mirror-shield' => array(
 				'slug'         => 'xophz-compass-mirror-shield',
 				'name'         => 'Mirror Shield',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Threat protection, IP firewall, and intrusion defense',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-mirror-shield/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-moving-castle' => array(
 				'slug'         => 'xophz-compass-moving-castle',
 				'name'         => 'Moving Castle',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Multi-client agency management hub and site network',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-moving-castle/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-pegasus-boots' => array(
 				'slug'         => 'xophz-compass-pegasus-boots',
 				'name'         => 'Pegasus Boots',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'High-speed caching and extreme scaling engine',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-pegasus-boots/archive/refs/heads/main.zip',
 				'category'     => 'True North',
 			),
 			'xophz-compass-phantom-zone' => array(
 				'slug'         => 'xophz-compass-phantom-zone',
 				'name'         => 'Phantom Zone',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Sandbox testing environment and staging clones',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-phantom-zone/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-pixie-dust' => array(
 				'slug'         => 'xophz-compass-pixie-dust',
 				'name'         => 'Pixie Dust',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'UI/UX design suite, CSS overrides, and spark styling',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-pixie-dust/archive/refs/heads/main.zip',
 				'category'     => 'Trajectory',
 			),
 			'xophz-compass-quests' => array(
 				'slug'         => 'xophz-compass-quests',
 				'name'         => 'Quests',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Gamified quest tracking and customer relationship management',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-quests/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-silver-arrow' => array(
 				'slug'         => 'xophz-compass-silver-arrow',
 				'name'         => 'Silver Arrow',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Direct sales links, friction-free checkout, and high-ticket closing',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-silver-arrow/archive/refs/heads/main.zip',
 				'category'     => 'Trajectory',
 			),
 			'xophz-compass-thors-hammer' => array(
 				'slug'         => 'xophz-compass-thors-hammer',
 				'name'         => 'Thors Hammer',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Automated site maintenance, DB repair, and cron tasks',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-thors-hammer/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-titans-mitt' => array(
 				'slug'         => 'xophz-compass-titans-mitt',
 				'name'         => 'Titans Mitt',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Data migration engine and heavy payload transfer',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-titans-mitt/archive/refs/heads/main.zip',
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-treasure-map' => array(
 				'slug'         => 'xophz-compass-treasure-map',
 				'name'         => 'Treasure Map',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Node-based mind mapping and strategy planner',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-treasure-map/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-treasure-trove' => array(
 				'slug'         => 'xophz-compass-treasure-trove',
 				'name'         => 'Treasure Trove',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Centralized media library and asset vault',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-treasure-trove/archive/refs/heads/main.zip',
 				'category'     => 'Castle Walls',
 			),
 			'xophz-compass-alphabet-soup' => array(
 				'slug'         => 'xophz-compass-alphabet-soup',
 				'name'         => 'Alphabet Soup',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Modern post manager and article publishing studio',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-alphabet-soup/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-magic-wand' => array(
 				'slug'         => 'xophz-compass-magic-wand',
 				'name'         => 'Magic Wand',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Front-end visual editor and quick page tweak tool',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-magic-wand/archive/refs/heads/main.zip',
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-nook-phone' => array(
 				'slug'         => 'xophz-nook-phone',
 				'name'         => 'Xophz Nook Phone',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Island companion widget suite and mini-app launcher',
 				'download_url' => 'https://github.com/SuperNerdBros/xophz-nook-phone/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-phone' => array(
 				'slug'         => 'xophz-compass-phone',
 				'name'         => 'Phone',
-				'description'  => 'Compass Ecosystem Module',
+				'description'  => 'Mobile companion app backend and system bridge',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-phone/releases/download/v26.7.20.1409/xophz-compass-phone-26.7.20.1409.zip',
 				'category'     => 'Command Deck',
 			),
@@ -490,9 +490,72 @@ class Xophz_Compass_Modules_API {
 			$plugin_file = $slug . '/' . $slug . '.php';
 			$module['is_installed'] = array_key_exists( $plugin_file, $installed_plugins );
 			$module['is_active'] = is_plugin_active( $plugin_file );
+
+			if ( $module['is_installed'] && ! empty( $installed_plugins[ $plugin_file ]['Description'] ) ) {
+				$module['description'] = $installed_plugins[ $plugin_file ]['Description'];
+			} elseif ( ! $module['is_installed'] ) {
+				$cached_desc = get_transient( 'compass_mod_desc_' . $slug );
+				if ( false !== $cached_desc && ! empty( $cached_desc ) ) {
+					$module['description'] = $cached_desc;
+				} else {
+					$fetched_desc = self::fetch_github_module_description( $slug );
+					if ( ! empty( $fetched_desc ) ) {
+						$module['description'] = $fetched_desc;
+						set_transient( 'compass_mod_desc_' . $slug, $fetched_desc, DAY_IN_SECONDS );
+					}
+				}
+			}
 		}
 
 		return rest_ensure_response( array( 'modules' => $modules ) );
+	}
+
+	/**
+	 * Fetch module description from raw GitHub main file header or repo description.
+	 *
+	 * @param string $slug
+	 * @return string|false
+	 */
+	public static function fetch_github_module_description( $slug ) {
+		$owner = 'HalloftheGods';
+		$repo  = $slug;
+
+		if ( strpos( $slug, '/' ) !== false ) {
+			list( $owner, $repo ) = explode( '/', $slug, 2 );
+		} elseif ( strpos( $slug, 'super-nerd-bros' ) !== false || strpos( $slug, 'nook-phone' ) !== false ) {
+			$owner = 'SuperNerdBros';
+		}
+
+		$raw_url  = "https://raw.githubusercontent.com/{$owner}/{$repo}/main/{$repo}.php";
+		$response = wp_remote_get( $raw_url, array(
+			'timeout'    => 5,
+			'user-agent' => 'COMPASS-Module-Fetcher',
+		) );
+
+		if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+			$body = wp_remote_retrieve_body( $response );
+			if ( preg_match( '/ Description:\s*(.+)/i', $body, $matches ) ) {
+				return trim( $matches[1] );
+			}
+		}
+
+		$api_url  = "https://api.github.com/repos/{$owner}/{$repo}";
+		$response = wp_remote_get( $api_url, array(
+			'timeout'    => 5,
+			'user-agent' => 'COMPASS-Module-Fetcher',
+			'headers'    => array(
+				'Accept' => 'application/vnd.github+json',
+			),
+		) );
+
+		if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+			$data = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( ! empty( $data['description'] ) ) {
+				return trim( $data['description'] );
+			}
+		}
+
+		return false;
 	}
 
 	/**
