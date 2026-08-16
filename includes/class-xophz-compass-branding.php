@@ -100,12 +100,44 @@ class Xophz_Compass_Branding {
         return $config[$key] ?? $default;
     }
 
+    /**
+     * Get all known alias slugs for a given plugin slug.
+     *
+     * @since    1.0.0
+     * @param    string    $slug    The plugin slug or identifier.
+     * @return   array              List of candidate alias slugs.
+     */
+    public static function get_alias_slugs(string $slug): array {
+        if (empty($slug)) {
+            return [];
+        }
+        $clean = trim(str_replace(['xophz-compass-', 'xophz-', 'u-'], '', $slug));
+        $aliases = [$slug, $clean, 'xophz-compass-' . $clean, 'xophz-' . $clean];
+
+        if (in_array($clean, ['alphabet-soup', 'newsroom', 'notepad'], true)) {
+            $aliases = array_merge($aliases, ['alphabet-soup', 'newsroom', 'notepad', 'xophz-compass-alphabet-soup']);
+        } elseif (in_array($clean, ['quests', 'questbook'], true)) {
+            $aliases = array_merge($aliases, ['questbook', 'quests', 'xophz-compass-quests', 'xophz-compass-questbook']);
+        } elseif (in_array($clean, ['golden-keys', 'golden-keywords'], true)) {
+            $aliases = array_merge($aliases, ['golden-keys', 'golden-keywords', 'xophz-compass-golden-keys', 'xophz-compass-golden-keywords']);
+        } elseif (in_array($clean, ['magic-formula', 'magic-formulas'], true)) {
+            $aliases = array_merge($aliases, ['magic-formula', 'magic-formulas', 'xophz-compass-magic-formula']);
+        } elseif (empty($clean) || in_array($clean, ['compass', 'my-compass-suite', 'my-compass'], true)) {
+            $aliases = array_merge($aliases, ['compass', 'my-compass-suite', 'my-compass', 'xophz-compass']);
+        }
+
+        return array_values(array_unique(array_filter($aliases)));
+    }
+
     public static function get_plugin_name(string $slug, string $default_name = ''): string {
         $config = self::get_config();
-        
-        // Check for custom name override
-        if (isset($config['plugins'][$slug]['name']) && !empty($config['plugins'][$slug]['name'])) {
-            return $config['plugins'][$slug]['name'];
+        $aliases = self::get_alias_slugs($slug);
+
+        // Check for custom name override across all candidate aliases
+        foreach ($aliases as $alias) {
+            if (isset($config['plugins'][$alias]['name']) && !empty(trim($config['plugins'][$alias]['name']))) {
+                return trim($config['plugins'][$alias]['name']);
+            }
         }
 
         // Return header name stripped of Xophz
@@ -127,10 +159,13 @@ class Xophz_Compass_Branding {
      */
     public static function get_plugin_description(string $slug, string $default_desc = ''): string {
         $config = self::get_config();
-        
-        // Check for custom description override
-        if (isset($config['plugins'][$slug]['description']) && !empty($config['plugins'][$slug]['description'])) {
-            return $config['plugins'][$slug]['description'];
+        $aliases = self::get_alias_slugs($slug);
+
+        // Check for custom description override across all candidate aliases
+        foreach ($aliases as $alias) {
+            if (isset($config['plugins'][$alias]['description']) && !empty(trim($config['plugins'][$alias]['description']))) {
+                return trim($config['plugins'][$alias]['description']);
+            }
         }
 
         return $default_desc;

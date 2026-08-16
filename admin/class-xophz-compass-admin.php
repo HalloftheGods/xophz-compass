@@ -142,6 +142,11 @@ class Xophz_Compass_Admin {
     if( isset($_GET['page']) && $_GET['page'] === $this->plugin_name ){
       wp_enqueue_script( 'wp-api' );
       
+      // Dequeue native WordPress Gutenberg command palette to prevent conflicting bottom search widget
+      wp_dequeue_script( 'wp-commands' );
+      wp_dequeue_script( 'wp-core-commands' );
+      wp_dequeue_style( 'wp-commands' );
+      
       // Prevent blackbox smoke script from loading in compass admin page since compass handles its own
       if ( class_exists( '\BlackBOX\Core' ) ) {
         remove_action( 'admin_footer', [ \BlackBOX\Core::class, 'inject_canvas_script' ], 9999 );
@@ -177,6 +182,7 @@ class Xophz_Compass_Admin {
           'compassVersion' => XOPHZ_COMPASS_VERSION,
           'eventHorizonVersion' => $ehVersion,
           'vapidPublicKey' => class_exists( 'Xophz_Compass_Push_API' ) ? Xophz_Compass_Push_API::get_public_key() : '',
+          'branding' => class_exists( 'Xophz_Compass_Branding' ) ? Xophz_Compass_Branding::get_config() : null,
       ];
 
       if ( $this->isDevServer() ) {
@@ -1117,6 +1123,19 @@ class Xophz_Compass_Admin {
         ]
       ]
     ]);
+
+    register_rest_route('xophz-compass/v1', '/search', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'search_global'],
+      'permission_callback' => '__return_true',
+      'args' => [
+        'q' => [
+          'required' => true,
+          'type' => 'string',
+          'sanitize_callback' => 'sanitize_text_field'
+        ]
+      ]
+    ]);
   }
 
   /**
@@ -1435,5 +1454,334 @@ class Xophz_Compass_Admin {
     );
 
     wp_send_json_success( $response );
+  }
+
+  /**
+   * Search globally across WordPress posts, pages, CPTs, Bazaar products/coupons,
+   * Bomb Bag marketing, Questbook CRM, Bugnet tickets, Yellow Links, and XP goals.
+   *
+   * @param WP_REST_Request $request
+   * @return WP_REST_Response
+   */
+  public function search_global( WP_REST_Request $request ) {
+    global $wpdb;
+    $raw_query = trim( (string) $request->get_param('q') );
+    if ( mb_strlen( $raw_query ) < 2 ) {
+      return new WP_REST_Response( [], 200 );
+    }
+
+    $results = [];
+    $like = '%' . $wpdb->esc_like( $raw_query ) . '%';
+
+    // 1. Query WordPress Posts, Pages, Products, and Custom Post Types
+    $post_types = get_post_types( [ 'public' => true ], 'names' );
+    unset( $post_types['attachment'] );
+
+    $wp_query = new WP_Query( [
+      'post_type'      => array_values( $post_types ),
+      'post_status'    => [ 'publish', 'draft', 'pending', 'private' ],
+      's'              => $raw_query,
+      'posts_per_page' => 8,
+      'no_found_rows'  => true,
+    ] );
+
+    if ( $wp_query->have_posts() ) {
+      while ( $wp_query->have_posts() ) {
+        $wp_query->the_post();
+        $p_id = get_the_ID();
+        $p_type = get_post_type();
+        $type_obj = get_post_type_object( $p_type );
+        $type_label = $type_obj ? $type_obj->labels->singular_name : ucfirst( $p_type );
+
+        $icon = 'fad fa-file-alt';
+        $icon_color = '#62c9ff';
+        $route = '/newsroom?type=' . $p_type . '&post=' . $p_id;
+
+        if ( $p_type === 'page' ) {
+          $icon = 'fad fa-file';
+          $icon_color = '#00e676';
+        } elseif ( $p_type === 'product' ) {
+          $icon = 'fad fa-shopping-bag';
+          $icon_color = '#ff9100';
+          $sku = get_post_meta( $p_id, '_sku', true );
+          $price = get_post_meta( $p_id, '_price', true );
+          $route = '/bazaar/products';
+          $subtitle = sprintf( 'Product • %s%s', $price ? '$' . $price . ' • ' : '', $sku ? 'SKU: ' . $sku : ucfirst( get_post_status() ) );
+        } elseif ( $p_type === 'post' ) {
+          $icon = 'fad fa-newspaper';
+          $icon_color = '#29b6f6';
+        } elseif ( $p_type === 'bugnet_bug' ) {
+          $icon = 'fad fa-bug';
+          $icon_color = '#ff5252';
+          $route = '/bugnet/detail/' . $p_id;
+        } elseif ( $p_type === 'questbook_quest' ) {
+          $icon = 'fad fa-scroll';
+          $icon_color = '#ab47bc';
+          $route = '/questbook/profile';
+        }
+
+        if ( ! isset( $subtitle ) ) {
+          $subtitle = sprintf( '%s • Status: %s', $type_label, ucfirst( get_post_status() ) );
+        }
+
+        $results[] = [
+          'id'            => 'post-' . $p_id,
+          'title'         => html_entity_decode( get_the_title(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ?: 'Untitled',
+          'subtitle'      => $subtitle,
+          'category'      => 'views',
+          'categoryLabel' => $type_label,
+          'icon'          => $icon,
+          'iconColor'     => $icon_color,
+          'route'         => $route,
+          'badge'         => ucfirst( get_post_status() ),
+        ];
+        unset( $subtitle );
+      }
+      wp_reset_postdata();
+    }
+
+    // 2. Query WooCommerce Coupons (Bazaar)
+    $coupon_query = new WP_Query( [
+      'post_type'      => 'shop_coupon',
+      'post_status'    => 'publish',
+      's'              => $raw_query,
+      'posts_per_page' => 4,
+      'no_found_rows'  => true,
+    ] );
+    if ( $coupon_query->have_posts() ) {
+      while ( $coupon_query->have_posts() ) {
+        $coupon_query->the_post();
+        $c_id = get_the_ID();
+        $results[] = [
+          'id'            => 'coupon-' . $c_id,
+          'title'         => get_the_title(),
+          'subtitle'      => 'Discount Coupon Code',
+          'category'      => 'views',
+          'categoryLabel' => 'Bazaar Coupons',
+          'icon'          => 'fad fa-ticket-alt',
+          'iconColor'     => '#ff9100',
+          'route'         => '/bazaar/coupons',
+          'badge'         => 'Coupon',
+        ];
+      }
+      wp_reset_postdata();
+    }
+
+    // 3. Query Bomb Bag (Journeys, Campaigns, Subscribers, Lists, Templates)
+    $bb_journeys = $wpdb->prefix . 'bomb_bag_journeys';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$bb_journeys}'" ) === $bb_journeys ) {
+      $journeys = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, name, description, status FROM {$bb_journeys} WHERE name LIKE %s OR description LIKE %s LIMIT 4",
+        $like, $like
+      ) );
+      if ( ! empty( $journeys ) ) {
+        foreach ( $journeys as $j ) {
+          $results[] = [
+            'id'            => 'bb-journey-' . $j->id,
+            'title'         => $j->name,
+            'subtitle'      => $j->description ?: 'Automated email journey',
+            'category'      => 'views',
+            'categoryLabel' => 'Journeys',
+            'icon'          => 'fad fa-map-marked-alt',
+            'iconColor'     => '#62c9ff',
+            'route'         => '/bomb-bag/journeys',
+            'badge'         => ucfirst( $j->status ),
+          ];
+        }
+      }
+    }
+
+    $bb_campaigns = $wpdb->prefix . 'bomb_bag_campaigns';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$bb_campaigns}'" ) === $bb_campaigns ) {
+      $campaigns = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, name, subject, status FROM {$bb_campaigns} WHERE name LIKE %s OR subject LIKE %s LIMIT 4",
+        $like, $like
+      ) );
+      if ( ! empty( $campaigns ) ) {
+        foreach ( $campaigns as $c ) {
+          $results[] = [
+            'id'            => 'bb-campaign-' . $c->id,
+            'title'         => $c->name,
+            'subtitle'      => sprintf( 'Subject: %s', $c->subject ?: 'None' ),
+            'category'      => 'views',
+            'categoryLabel' => 'Campaigns',
+            'icon'          => 'fad fa-bullhorn',
+            'iconColor'     => '#62c9ff',
+            'route'         => '/bomb-bag/campaigns',
+            'badge'         => ucfirst( $c->status ),
+          ];
+        }
+      }
+    }
+
+    $bb_subs = $wpdb->prefix . 'bomb_bag_subscribers';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$bb_subs}'" ) === $bb_subs ) {
+      $subscribers = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, email, first_name, last_name, status FROM {$bb_subs} WHERE email LIKE %s OR first_name LIKE %s OR last_name LIKE %s LIMIT 4",
+        $like, $like, $like
+      ) );
+      if ( ! empty( $subscribers ) ) {
+        foreach ( $subscribers as $s ) {
+          $name = trim( $s->first_name . ' ' . $s->last_name );
+          $results[] = [
+            'id'            => 'bb-sub-' . $s->id,
+            'title'         => $name ? $name . ' (' . $s->email . ')' : $s->email,
+            'subtitle'      => sprintf( 'Subscriber • Status: %s', ucfirst( $s->status ) ),
+            'category'      => 'views',
+            'categoryLabel' => 'Subscribers',
+            'icon'          => 'fad fa-user-circle',
+            'iconColor'     => '#00e676',
+            'route'         => '/bomb-bag/subscribers',
+            'badge'         => ucfirst( $s->status ),
+          ];
+        }
+      }
+    }
+
+    $bb_lists = $wpdb->prefix . 'bomb_bag_lists';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$bb_lists}'" ) === $bb_lists ) {
+      $lists = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, name, description FROM {$bb_lists} WHERE name LIKE %s OR description LIKE %s LIMIT 3",
+        $like, $like
+      ) );
+      if ( ! empty( $lists ) ) {
+        foreach ( $lists as $l ) {
+          $results[] = [
+            'id'            => 'bb-list-' . $l->id,
+            'title'         => $l->name,
+            'subtitle'      => $l->description ?: 'Contact Audience List',
+            'category'      => 'views',
+            'categoryLabel' => 'Audience Lists',
+            'icon'          => 'fad fa-th-list',
+            'iconColor'     => '#62c9ff',
+            'route'         => '/bomb-bag/lists',
+            'badge'         => 'List',
+          ];
+        }
+      }
+    }
+
+    $bb_templates = $wpdb->prefix . 'bomb_bag_templates';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$bb_templates}'" ) === $bb_templates ) {
+      $templates = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, name, description, category FROM {$bb_templates} WHERE name LIKE %s OR description LIKE %s LIMIT 4",
+        $like, $like
+      ) );
+      if ( ! empty( $templates ) ) {
+        foreach ( $templates as $t ) {
+          $results[] = [
+            'id'            => 'bb-template-' . $t->id,
+            'title'         => $t->name,
+            'subtitle'      => $t->description ?: 'Email Stationery Template',
+            'category'      => 'views',
+            'categoryLabel' => 'Templates',
+            'icon'          => 'fad fa-palette',
+            'iconColor'     => '#ab47bc',
+            'route'         => '/bomb-bag/templates',
+            'badge'         => ucfirst( $t->category ?: 'Template' ),
+          ];
+        }
+      }
+    }
+
+    // 4. Query Questbook CRM (Deals, Contacts, Organizations)
+    $qb_deals = $wpdb->prefix . 'questbook_deals';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$qb_deals}'" ) === $qb_deals ) {
+      $deals = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, title, value, stage FROM {$qb_deals} WHERE title LIKE %s LIMIT 4",
+        $like
+      ) );
+      if ( ! empty( $deals ) ) {
+        foreach ( $deals as $d ) {
+          $results[] = [
+            'id'            => 'qb-deal-' . $d->id,
+            'title'         => $d->title,
+            'subtitle'      => sprintf( 'Deal • Value: $%s • Stage: %s', number_format( (float) $d->value, 2 ), ucfirst( $d->stage ) ),
+            'category'      => 'views',
+            'categoryLabel' => 'Questbook Deals',
+            'icon'          => 'fad fa-handshake',
+            'iconColor'     => '#ffd54f',
+            'route'         => '/questbook/deals',
+            'badge'         => ucfirst( $d->stage ),
+          ];
+        }
+      }
+    }
+
+    $qb_contacts = $wpdb->prefix . 'questbook_contacts';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$qb_contacts}'" ) === $qb_contacts ) {
+      $contacts = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, name, email, phone, company FROM {$qb_contacts} WHERE name LIKE %s OR email LIKE %s OR company LIKE %s LIMIT 4",
+        $like, $like, $like
+      ) );
+      if ( ! empty( $contacts ) ) {
+        foreach ( $contacts as $c ) {
+          $results[] = [
+            'id'            => 'qb-contact-' . $c->id,
+            'title'         => $c->name,
+            'subtitle'      => sprintf( '%s%s', $c->email, $c->company ? ' • ' . $c->company : '' ),
+            'category'      => 'views',
+            'categoryLabel' => 'CRM Contacts',
+            'icon'          => 'fad fa-address-card',
+            'iconColor'     => '#00e676',
+            'route'         => '/questbook/directory',
+            'badge'         => 'Contact',
+          ];
+        }
+      }
+    }
+
+    // 5. Query Yellow Links Directory
+    $yellow_links_table = $wpdb->prefix . 'yellow_links';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$yellow_links_table}'" ) === $yellow_links_table ) {
+      $links = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, title, url, category FROM {$yellow_links_table} WHERE title LIKE %s OR url LIKE %s OR category LIKE %s LIMIT 4",
+        $like, $like, $like
+      ) );
+      if ( ! empty( $links ) ) {
+        foreach ( $links as $l ) {
+          $results[] = [
+            'id'            => 'link-' . $l->id,
+            'title'         => $l->title ?: $l->url,
+            'subtitle'      => $l->url,
+            'category'      => 'views',
+            'categoryLabel' => 'Yellow Links',
+            'icon'          => 'fad fa-link',
+            'iconColor'     => '#ffd54f',
+            'route'         => '/yellow-links',
+            'badge'         => $l->category ?: 'Link',
+          ];
+        }
+      }
+    }
+
+    // 6. Query Sparks (Event Horizon)
+    $sparks_table = $wpdb->prefix . 'xophz_sparks';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$sparks_table}'" ) === $sparks_table ) {
+      $sparks = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, name, description, category FROM {$sparks_table} WHERE name LIKE %s OR description LIKE %s LIMIT 4",
+        $like, $like
+      ) );
+      if ( ! empty( $sparks ) ) {
+        foreach ( $sparks as $sp ) {
+          $results[] = [
+            'id'            => 'spark-' . $sp->id,
+            'title'         => $sp->name,
+            'subtitle'      => $sp->description ?: 'Event Horizon Spark Trigger',
+            'category'      => 'sparks',
+            'categoryLabel' => 'Sparks',
+            'icon'          => 'fad fa-bolt',
+            'iconColor'     => '#00e5ff',
+            'route'         => '/event-horizon/settings',
+            'badge'         => 'Spark',
+          ];
+        }
+      }
+    }
+
+    // 7. Allow external plugins to inject their indexed records via WordPress filter
+    $results = apply_filters( 'xophz_compass_global_search_results', $results, $raw_query, $request );
+
+    return new WP_REST_Response( $results, 200 );
   }
 }

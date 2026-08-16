@@ -256,3 +256,18 @@ body.folded .compass-sidebar-version .v-short {
 		color: rgba(255, 255, 255, 0.85) !important;
 	}
 }
+
+/* Suppress WordPress native Gutenberg command palette & command search */
+.toplevel_page_xophz-compass .commands-command-menu,
+.toplevel_page_xophz-compass .commands-command-input,
+.toplevel_page_xophz-compass .block-editor-commands,
+.toplevel_page_xophz-compass .commands-search,
+.toplevel_page_xophz-compass #wp-admin-bar-commands,
+.toplevel_page_xophz-compass [class*="commands-command"],
+.toplevel_page_xophz-compass [aria-label="Command palette"],
+.toplevel_page_xophz-compass [placeholder*="Search commands and setting"] {
+	display: none !important;
+	visibility: hidden !important;
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
