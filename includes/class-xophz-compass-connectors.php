@@ -237,6 +237,42 @@ class Xophz_Compass_Connectors {
 			),
 		) );
 
+		// ---------------------------------------------------------
+		// Web Push (VAPID) Configuration
+		// ---------------------------------------------------------
+		$registry->register( 'compass_vapid_public_key', array(
+			'name'           => __( 'VAPID Public Key', 'xophz-compass' ),
+			'description'    => __( 'Public VAPID key (P-256 base64url) for native device push notifications.', 'xophz-compass' ),
+			'type'           => 'communication',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => '',
+				'setting_name'    => 'compass_vapid_public_key',
+			),
+		) );
+
+		$registry->register( 'compass_vapid_private_key', array(
+			'name'           => __( 'VAPID Private Key', 'xophz-compass' ),
+			'description'    => __( 'Private VAPID key (scalar base64url) for signing Web Push requests.', 'xophz-compass' ),
+			'type'           => 'communication',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => '',
+				'setting_name'    => 'compass_vapid_private_key',
+			),
+		) );
+
+		$registry->register( 'compass_vapid_subject', array(
+			'name'           => __( 'VAPID Subject', 'xophz-compass' ),
+			'description'    => __( 'Subject contact URL or mailto: address for Web Push services.', 'xophz-compass' ),
+			'type'           => 'communication',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => '',
+				'setting_name'    => 'compass_vapid_subject',
+			),
+		) );
+
 	}
 
 	/**
@@ -431,6 +467,33 @@ class Xophz_Compass_Connectors {
 				'icon'         => 'fad fa-key',
 				'color'        => '#62c9ff',
 				'description'  => 'Master key for Compass Wizard permissions',
+			),
+			array(
+				'id'           => 'vapid_public_key',
+				'name'         => 'Web Push VAPID Public Key',
+				'setting_name' => 'compass_vapid_public_key',
+				'type'         => 'communication',
+				'icon'         => 'fad fa-bell-on',
+				'color'        => '#62c9ff',
+				'description'  => 'P-256 Public Key for browser push notification registration',
+			),
+			array(
+				'id'           => 'vapid_private_key',
+				'name'         => 'Web Push VAPID Private Key',
+				'setting_name' => 'compass_vapid_private_key',
+				'type'         => 'communication',
+				'icon'         => 'fad fa-key-skeleton',
+				'color'        => '#62c9ff',
+				'description'  => 'Private key for signing device push dispatches via RFC 8292',
+			),
+			array(
+				'id'           => 'vapid_subject',
+				'name'         => 'Web Push VAPID Subject',
+				'setting_name' => 'compass_vapid_subject',
+				'type'         => 'communication',
+				'icon'         => 'fad fa-envelope',
+				'color'        => '#62c9ff',
+				'description'  => 'Contact email or URI for Web Push services',
 			),
 		);
 	}

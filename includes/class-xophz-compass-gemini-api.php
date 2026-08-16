@@ -111,8 +111,21 @@ class Xophz_Compass_Gemini_API {
 		$prompt = $request->get_param( 'prompt' );
 		$system_instruction = $request->get_param( 'system_instruction' );
 		$model = $request->get_param( 'model' );
-		if ( empty( $model ) || 'gemini-2.5-flash' === $model ) {
-			$model = 'gemini-2.0-flash';
+		
+		// Attempt to use WP Connectors API to get the default model if defined
+		if ( function_exists( 'wp_get_connectors' ) ) {
+			$connectors = wp_get_connectors();
+			if ( ! empty( $connectors['google']['options']['model']['setting_name'] ) ) {
+				$wp_model = get_option( $connectors['google']['options']['model']['setting_name'], '' );
+				if ( ! empty( $wp_model ) ) {
+					$model = $wp_model;
+				}
+			}
+		}
+
+		// Fallback to latest known working model if not set or using older deprecated models
+		if ( empty( $model ) || strpos( $model, 'gemini-2.0' ) !== false || strpos( $model, 'gemini-2.5' ) !== false ) {
+			$model = 'gemini-3.6-flash';
 		}
 
 		// Implement Rate Limiting (15 requests per minute per user)

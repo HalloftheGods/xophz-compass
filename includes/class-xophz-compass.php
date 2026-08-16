@@ -153,6 +153,7 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-matrix-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-performance-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-twilio-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-push-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-cafeteria-cpt.php';
 		Xophz_Compass_Cafeteria_CPT::init();
 
@@ -437,7 +438,8 @@ class Xophz_Compass {
 	 * @since     1.0.0
 	 */
 	public function register_post_views_rest_field() {
-		register_rest_field(['post'], 'post_views_count', [
+		$types = array_values( get_post_types( ['public' => true] ) );
+		register_rest_field($types, 'post_views_count', [
 			'get_callback' => function($post) {
 				return (int) get_post_meta($post['id'], 'post_views_count', true);
 			},
@@ -447,6 +449,40 @@ class Xophz_Compass {
 				'context' => ['view', 'edit'],
 			]
 		]);
+
+		register_rest_route( 'xophz-compass/v1', '/track-view', [
+			'methods'             => 'POST',
+			'callback'            => function( $request ) {
+				$post_id = (int) $request->get_param( 'post_id' );
+				if ( ! $post_id ) {
+					return new WP_Error( 'invalid_post_id', 'Invalid Post ID', [ 'status' => 400 ] );
+				}
+				$tracked = Xophz_Compass_Public::incrementPostViews( $post_id );
+				return [
+					'success' => true,
+					'tracked' => $tracked,
+					'views'   => (int) get_post_meta( $post_id, 'post_views_count', true ),
+				];
+			},
+			'permission_callback' => '__return_true',
+			'args'                => [
+				'post_id' => [
+					'required'          => true,
+					'validate_callback' => function( $param ) {
+						return is_numeric( $param );
+					}
+				]
+			]
+		] );
+
+		foreach ( $types as $type ) {
+			add_filter( "rest_prepare_{$type}", function( $response, $post, $request ) {
+				if ( 'GET' === $request->get_method() && isset( $request['id'] ) && (int) $request['id'] === (int) $post->ID ) {
+					Xophz_Compass_Public::incrementPostViews( $post->ID );
+				}
+				return $response;
+			}, 10, 3 );
+		}
 	}
 
 	/**

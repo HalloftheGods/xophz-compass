@@ -175,7 +175,8 @@ class Xophz_Compass_Admin {
           'siteDescription' => get_bloginfo('description'),
           'siteUrl' => get_bloginfo('url'),
           'compassVersion' => XOPHZ_COMPASS_VERSION,
-          'eventHorizonVersion' => $ehVersion
+          'eventHorizonVersion' => $ehVersion,
+          'vapidPublicKey' => class_exists( 'Xophz_Compass_Push_API' ) ? Xophz_Compass_Push_API::get_public_key() : '',
       ];
 
       if ( $this->isDevServer() ) {
@@ -786,18 +787,25 @@ class Xophz_Compass_Admin {
       $plugins[$p]['Name'] = Xophz_Compass_Branding::get_plugin_name($slug, $default_name);
       $plugins[$p]['Description'] = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
       
-      if ($slug === 'magic-formula') {
-        $icon_version = time();
-        $plugins[$p]['icon'] = wp_make_link_relative( plugins_url('xophz-compass/assets/magic-formula.svg') ) . "?v={$icon_version}";
-      } else {
-        $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
+        $icon_path     = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
+        $icon_png_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.png';
+        $bundled_png   = dirname( __FILE__, 2 ) . '/assets/' . $plugin['TextDomain'] . '.png';
+        $bundled_svg   = dirname( __FILE__, 2 ) . '/assets/' . $plugin['TextDomain'] . '.svg';
+
         if (file_exists($icon_path)) {
           $icon_version = filemtime($icon_path);
           $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
+        } elseif (file_exists($icon_png_path)) {
+          $icon_version = filemtime($icon_png_path);
+          $plugins[$p]['icon'] = "{$plugin_dir}/icon.png?v={$icon_version}";
+        } elseif (file_exists($bundled_png)) {
+          $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.png', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
+        } elseif (file_exists($bundled_svg)) {
+          $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.svg', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
         } else {
-          $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.png', dirname( __FILE__ ) ) );
+          $owner = ( strpos( $plugin['TextDomain'], 'super-nerd-bros' ) !== false || strpos( $plugin['TextDomain'], 'nook-phone' ) !== false ) ? 'SuperNerdBros' : 'HalloftheGods';
+          $plugins[$p]['icon'] = "https://raw.githubusercontent.com/{$owner}/{$plugin['TextDomain']}/main/icon.svg";
         }
-      }
       
       // Fallback approach if WP's native plugins caching hides Category
       if (empty($plugin['Category'])) {

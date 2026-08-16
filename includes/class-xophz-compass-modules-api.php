@@ -473,11 +473,21 @@ class Xophz_Compass_Modules_API {
 
 		foreach ( $modules as $slug => &$module ) {
 			if ( empty( $module['icon'] ) ) {
-				$icon_path = WP_PLUGIN_DIR . '/' . $slug . '/icon.svg';
+				$icon_path     = WP_PLUGIN_DIR . '/' . $slug . '/icon.svg';
+				$icon_png_path = WP_PLUGIN_DIR . '/' . $slug . '/icon.png';
+				$bundled_png   = dirname( __FILE__, 2 ) . '/assets/' . $slug . '.png';
+				$bundled_svg   = dirname( __FILE__, 2 ) . '/assets/' . $slug . '.svg';
+
 				if ( file_exists( $icon_path ) ) {
 					$module['icon'] = wp_make_link_relative( plugins_url( $slug . '/icon.svg' ) );
-				} else {
+				} elseif ( file_exists( $icon_png_path ) ) {
+					$module['icon'] = wp_make_link_relative( plugins_url( $slug . '/icon.png' ) );
+				} elseif ( file_exists( $bundled_png ) ) {
 					$module['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $slug . '.png', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
+				} elseif ( file_exists( $bundled_svg ) ) {
+					$module['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $slug . '.svg', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
+				} else {
+					$module['icon'] = self::get_github_module_icon_url( $slug, $module );
 				}
 			}
 
@@ -508,6 +518,28 @@ class Xophz_Compass_Modules_API {
 		}
 
 		return rest_ensure_response( array( 'modules' => $modules ) );
+	}
+
+	/**
+	 * Get the raw GitHub icon URL for a module.
+	 *
+	 * @param string $slug
+	 * @param array $module
+	 * @return string
+	 */
+	public static function get_github_module_icon_url( $slug, $module = array() ) {
+		$owner = 'HalloftheGods';
+		$repo  = $slug;
+
+		if ( ! empty( $module['download_url'] ) && preg_match( '#github\.com/([^/]+)/([^/]+)#i', $module['download_url'], $matches ) ) {
+			$owner = $matches[1];
+			$repo  = $matches[2];
+		} elseif ( strpos( $slug, 'super-nerd-bros' ) !== false || strpos( $slug, 'nook-phone' ) !== false ) {
+			$owner = 'SuperNerdBros';
+		}
+
+		$filename = ( $slug === 'super-nerd-bros-dodo-air' || $repo === 'wp-dodo-air' ) ? 'icon.png' : 'icon.svg';
+		return "https://raw.githubusercontent.com/{$owner}/{$repo}/main/{$filename}";
 	}
 
 	/**

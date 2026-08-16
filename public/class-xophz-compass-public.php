@@ -100,22 +100,64 @@ class Xophz_Compass_Public {
 
 	}
 
+  public static function isBotRequest() {
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : '';
+    if (empty($user_agent)) {
+      return true;
+    }
+    $bots = array('bot', 'crawler', 'spider', 'slurp', 'lighthouse', 'gtmetrix', 'pingdom', 'headless', 'python', 'curl', 'wget');
+    foreach ($bots as $bot) {
+      if (strpos($user_agent, $bot) !== false) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static function incrementPostViews($postID) {
+    $postID = (int) $postID;
+    if ( ! $postID || get_post_status($postID) !== 'publish' ) {
+      return false;
+    }
+    if ( self::isBotRequest() ) {
+      return false;
+    }
+
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '127.0.0.1';
+    $transient_key = 'compass_vlock_' . md5($ip . '_' . $postID);
+    if ( get_transient($transient_key) ) {
+      return false;
+    }
+    set_transient($transient_key, 1, HOUR_IN_SECONDS);
+
+    global $wpdb;
+    $count_key = 'post_views_count';
+    $existing = get_post_meta($postID, $count_key, true);
+
+    if ( '' === $existing || false === $existing ) {
+      add_post_meta($postID, $count_key, 1, true);
+    } else {
+      $wpdb->query(
+        $wpdb->prepare(
+          "UPDATE {$wpdb->postmeta} SET meta_value = meta_value + 1 WHERE post_id = %d AND meta_key = %s",
+          $postID,
+          $count_key
+        )
+      );
+      wp_cache_delete($postID, 'post_meta');
+    }
+    return true;
+  }
+
   public function setPostViews() {
+    if ( ! is_single() && ! is_page() ) {
+      return;
+    }
     global $wp_query;
     if ( ! isset( $wp_query->post ) || ! is_object( $wp_query->post ) ) {
       return;
     }
-    $postID = $wp_query->post->ID;
-    $count_key = 'post_views_count';
-    $count = get_post_meta($postID, $count_key, true);
-    if($count==''){
-        $count = 0;
-        delete_post_meta($postID, $count_key);
-        add_post_meta($postID, $count_key, '0');
-    }else{
-        $count++;
-        update_post_meta($postID, $count_key, $count);
-    }
+    self::incrementPostViews( $wp_query->post->ID );
   }
 
   public function enable_rest_api() {
