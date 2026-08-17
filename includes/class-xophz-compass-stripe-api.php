@@ -136,29 +136,50 @@ class Xophz_Compass_Stripe_API {
 		}
 
 		// Perform real Stripe checkout session creation
+		$session_args = array(
+			'payment_method_types' => array( 'card' ),
+			'line_items' => array(
+				array(
+					'price_data' => array(
+						'currency' => 'usd',
+						'product_data' => array(
+							'name' => $product_name
+						),
+						'unit_amount' => $price * 100 // convert to cents
+					),
+					'quantity' => 1
+				)
+			),
+			'mode' => 'payment',
+			'phone_number_collection' => array(
+				'enabled' => 'true'
+			),
+			'custom_fields' => array(
+				array(
+					'key' => 'website_url',
+					'label' => array(
+						'type' => 'custom',
+						'custom' => 'Current Website or Target Domain'
+					),
+					'type' => 'text',
+					'optional' => 'false'
+				)
+			),
+			'custom_text' => array(
+				'submit' => array(
+					'message' => 'Our systems engineering team will directly contact you via phone and email to coordinate your white glove setup.'
+				)
+			),
+			'success_url' => $success_url,
+			'cancel_url' => $cancel_url
+		);
+
 		$response = wp_remote_post( 'https://api.stripe.com/v1/checkout/sessions', array(
 			'headers' => array(
 				'Authorization' => 'Bearer ' . $secret_key,
 				'Content-Type'  => 'application/x-www-form-urlencoded'
 			),
-			'body' => http_build_query( array(
-				'payment_method_types' => array( 'card' ),
-				'line_items' => array(
-					array(
-						'price_data' => array(
-							'currency' => 'usd',
-							'product_data' => array(
-								'name' => $product_name
-							),
-							'unit_amount' => $price * 100 // convert to cents
-						),
-						'quantity' => 1
-					)
-				),
-				'mode' => 'payment',
-				'success_url' => $success_url,
-				'cancel_url' => $cancel_url
-			) )
+			'body' => http_build_query( $session_args )
 		) );
 
 		if ( is_wp_error( $response ) ) {
