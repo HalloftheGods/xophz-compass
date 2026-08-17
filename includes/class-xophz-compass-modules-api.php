@@ -17,6 +17,19 @@ class Xophz_Compass_Modules_API {
 	 * Register the REST API routes for the Modules system.
 	 */
 	public function register_routes() {
+		add_filter( 'rest_authentication_errors', function( $result ) {
+			if ( is_wp_error( $result ) && $result->get_error_code() === 'rest_cookie_invalid_nonce' ) {
+				$rest_route = isset( $GLOBALS['wp']->query_vars['rest_route'] ) ? $GLOBALS['wp']->query_vars['rest_route'] : '';
+				if ( empty( $rest_route ) && isset( $_SERVER['REQUEST_URI'] ) ) {
+					$rest_route = $_SERVER['REQUEST_URI'];
+				}
+				if ( strpos( $rest_route, '/xophz/v1/stripe/checkout' ) !== false ) {
+					return true;
+				}
+			}
+			return $result;
+		}, 101 );
+
 		register_rest_route( 'xophz/v1', '/modules', array(
 			array(
 				'methods'  => WP_REST_Server::READABLE,
@@ -166,9 +179,14 @@ class Xophz_Compass_Modules_API {
 		$mode = $is_subscription ? 'subscription' : 'payment';
 
 		// Clean product title formatting for Stripe Checkout
-		$product_name = 'My Compass';
-		if ( ! empty( $license ) ) {
-			$product_name .= ' (' . $license . ')';
+		$custom_product_name = sanitize_text_field( $request->get_param( 'product_name' ) );
+		if ( ! empty( $custom_product_name ) ) {
+			$product_name = $custom_product_name;
+		} else {
+			$product_name = 'My Compass';
+			if ( ! empty( $license ) ) {
+				$product_name .= ' (' . $license . ')';
+			}
 		}
 
 		$price_data = array(
@@ -197,9 +215,12 @@ class Xophz_Compass_Modules_API {
 			'cancel_url'            => $cancel_url,
 		);
 
-		if ( $is_castle ) {
-			// Automatically stop recurring billing after 6 months for Enterprise engagements
-			$payload['subscription_data[cancel_at]'] = strtotime( '+6 months' );
+		if ( $is_castle && $is_subscription ) {
+			$payload['subscription_data'] = array(
+				'metadata' => array(
+					'engagement_term' => '6_months_enterprise'
+				)
+			);
 		}
 
 		// Make request to Stripe API

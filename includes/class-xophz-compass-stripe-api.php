@@ -17,6 +17,8 @@ class Xophz_Compass_Stripe_API {
 	 * Register the REST API routes for Stripe.
 	 */
 	public function register_routes() {
+		add_filter( 'rest_authentication_errors', array( $this, 'bypass_cookie_check_for_checkout' ), 101 );
+
 		register_rest_route( 'xophz/v1', '/stripe/checkout', array(
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -38,10 +40,33 @@ class Xophz_Compass_Stripe_API {
 					'cancel_url' => array(
 						'required' => false,
 						'type'     => 'string',
+					),
+					'product_name' => array(
+						'required' => false,
+						'type'     => 'string',
 					)
 				),
 			)
 		) );
+	}
+
+	/**
+	 * Bypass rest_cookie_invalid_nonce for public Stripe checkout endpoints.
+	 *
+	 * @param WP_Error|null|bool $result
+	 * @return WP_Error|null|bool
+	 */
+	public function bypass_cookie_check_for_checkout( $result ) {
+		if ( is_wp_error( $result ) && $result->get_error_code() === 'rest_cookie_invalid_nonce' ) {
+			$rest_route = isset( $GLOBALS['wp']->query_vars['rest_route'] ) ? $GLOBALS['wp']->query_vars['rest_route'] : '';
+			if ( empty( $rest_route ) && isset( $_SERVER['REQUEST_URI'] ) ) {
+				$rest_route = $_SERVER['REQUEST_URI'];
+			}
+			if ( strpos( $rest_route, '/xophz/v1/stripe/checkout' ) !== false ) {
+				return true;
+			}
+		}
+		return $result;
 	}
 
 	/**
@@ -70,8 +95,17 @@ class Xophz_Compass_Stripe_API {
 	public function create_checkout_session( $request ) {
 		$price = intval( $request->get_param( 'price' ) );
 		$license = sanitize_text_field( $request->get_param( 'license' ) );
+		$product_name = sanitize_text_field( $request->get_param( 'product_name' ) );
 		$success_url = esc_url_raw( $request->get_param( 'success_url' ) );
 		$cancel_url = esc_url_raw( $request->get_param( 'cancel_url' ) );
+
+		if ( empty( $product_name ) ) {
+			if ( strpos( $license, 'Tesseract' ) === 0 || strpos( $license, 'YouMeOS' ) === 0 ) {
+				$product_name = $license;
+			} else {
+				$product_name = 'My Compass - ' . $license;
+			}
+		}
 
 		if ( empty( $success_url ) ) {
 			$success_url = home_url( '/' );
@@ -90,6 +124,7 @@ class Xophz_Compass_Stripe_API {
 						'mock_checkout' => '1',
 						'price'         => $price,
 						'license'       => urlencode( $license ),
+						'product_name'  => urlencode( $product_name ),
 						'success_url'   => urlencode( $success_url ),
 						'cancel_url'    => urlencode( $cancel_url )
 					),
@@ -113,7 +148,7 @@ class Xophz_Compass_Stripe_API {
 						'price_data' => array(
 							'currency' => 'usd',
 							'product_data' => array(
-								'name' => 'My Compass - ' . $license
+								'name' => $product_name
 							),
 							'unit_amount' => $price * 100 // convert to cents
 						),

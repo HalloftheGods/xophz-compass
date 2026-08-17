@@ -183,6 +183,9 @@ class Xophz_Compass_Admin {
           'eventHorizonVersion' => $ehVersion,
           'vapidPublicKey' => class_exists( 'Xophz_Compass_Push_API' ) ? Xophz_Compass_Push_API::get_public_key() : '',
           'branding' => class_exists( 'Xophz_Compass_Branding' ) ? Xophz_Compass_Branding::get_config() : null,
+          'pluginUrl' => plugin_dir_url( dirname( __FILE__ ) ),
+          'assetsUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/',
+          'texturesUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/textures/planets/',
       ];
 
       if ( $this->isDevServer() ) {
