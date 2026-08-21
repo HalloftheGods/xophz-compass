@@ -27,7 +27,6 @@ class Xophz_Compass_Stripe_API {
 				'args'                => array(
 					'price' => array(
 						'required' => true,
-						'type'     => 'integer',
 					),
 					'license' => array(
 						'required' => true,
@@ -44,7 +43,11 @@ class Xophz_Compass_Stripe_API {
 					'product_name' => array(
 						'required' => false,
 						'type'     => 'string',
-					)
+					),
+					'tier' => array(
+						'required' => false,
+						'type'     => 'string',
+					),
 				),
 			)
 		) );
@@ -87,17 +90,18 @@ class Xophz_Compass_Stripe_API {
 	}
 
 	/**
-	 * Create a Stripe Checkout Session or returns a mock redirect.
+	 * Create a Stripe Checkout Session.
 	 *
 	 * @param WP_REST_Request $request
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function create_checkout_session( $request ) {
-		$price = intval( $request->get_param( 'price' ) );
-		$license = sanitize_text_field( $request->get_param( 'license' ) );
-		$product_name = sanitize_text_field( $request->get_param( 'product_name' ) );
-		$success_url = esc_url_raw( $request->get_param( 'success_url' ) );
-		$cancel_url = esc_url_raw( $request->get_param( 'cancel_url' ) );
+		$price = (float) $request->get_param( 'price' );
+		$license = sanitize_text_field( (string) $request->get_param( 'license' ) );
+		$product_name = sanitize_text_field( (string) $request->get_param( 'product_name' ) );
+		$success_url = esc_url_raw( (string) $request->get_param( 'success_url' ) );
+		$cancel_url = esc_url_raw( (string) $request->get_param( 'cancel_url' ) );
+		$tier = sanitize_text_field( (string) $request->get_param( 'tier' ) );
 
 		if ( empty( $product_name ) ) {
 			if ( strpos( $license, 'Tesseract' ) === 0 || strpos( $license, 'YouMeOS' ) === 0 ) {
@@ -108,32 +112,23 @@ class Xophz_Compass_Stripe_API {
 		}
 
 		if ( empty( $success_url ) ) {
-			$success_url = home_url( '/' );
+			$success_url = home_url( '/callback/stripe?status=success' . ( ! empty( $tier ) ? '&tier=' . urlencode( $tier ) : '' ) . '&session_id={CHECKOUT_SESSION_ID}' );
 		}
 		if ( empty( $cancel_url ) ) {
-			$cancel_url = home_url( '/' );
+			$cancel_url = home_url( '/callback/stripe?status=cancel' . ( ! empty( $tier ) ? '&tier=' . urlencode( $tier ) : '' ) );
 		}
 
 		$secret_key = $this->get_secret_key();
 
-		// Fallback to mock session if Stripe Secret Key is not configured
 		if ( empty( $secret_key ) || strpos( $secret_key, 'sk_test_Mock' ) === 0 ) {
-			return rest_ensure_response( array(
-				'url'      => add_query_arg(
-					array(
-						'mock_checkout' => '1',
-						'price'         => $price,
-						'license'       => urlencode( $license ),
-						'product_name'  => urlencode( $product_name ),
-						'success_url'   => urlencode( $success_url ),
-						'cancel_url'    => urlencode( $cancel_url )
-					),
-					home_url( '/' )
-				),
-				'is_mock'  => true,
-				'message'  => 'Stripe API key not configured. Redirecting to mock checkout page.'
-			) );
+			return new WP_Error( 'missing_stripe_key', 'Stripe Secret Key is not configured on the server.', array( 'status' => 500 ) );
 		}
+
+		$unit_amount = (int) round( $price * 100 );
+		$license_lower = strtolower( $product_name . ' ' . $license );
+		$is_white_glove = ( strpos( $license_lower, 'white glove' ) !== false || strpos( $license_lower, 'concierge' ) !== false );
+		$is_subscription = ( strpos( $license_lower, 'month' ) !== false || strpos( $license_lower, '/mo' ) !== false || strpos( $license_lower, 'subscription' ) !== false || strpos( $license_lower, 'engine' ) !== false || strpos( $license_lower, 'sovereign' ) !== false || $price >= 99 );
+		$mode = $is_subscription ? 'subscription' : 'payment';
 
 		// Perform real Stripe checkout session creation
 		$session_args = array(
@@ -145,16 +140,34 @@ class Xophz_Compass_Stripe_API {
 						'product_data' => array(
 							'name' => $product_name
 						),
-						'unit_amount' => $price * 100 // convert to cents
+						'unit_amount' => $unit_amount
 					),
 					'quantity' => 1
 				)
 			),
-			'mode' => 'payment',
-			'phone_number_collection' => array(
+			'mode' => $mode,
+			'allow_promotion_codes' => 'true',
+			'success_url' => $success_url,
+			'cancel_url' => $cancel_url
+		);
+
+		if ( $is_subscription ) {
+			$session_args['line_items'][0]['price_data']['recurring'] = array(
+				'interval' => 'month'
+			);
+		}
+
+		if ( ! empty( $tier ) ) {
+			$session_args['metadata'] = array(
+				'tier' => $tier
+			);
+		}
+
+		if ( $is_white_glove ) {
+			$session_args['phone_number_collection'] = array(
 				'enabled' => 'true'
-			),
-			'custom_fields' => array(
+			);
+			$session_args['custom_fields'] = array(
 				array(
 					'key' => 'website_url',
 					'label' => array(
@@ -164,22 +177,21 @@ class Xophz_Compass_Stripe_API {
 					'type' => 'text',
 					'optional' => 'false'
 				)
-			),
-			'custom_text' => array(
+			);
+			$session_args['custom_text'] = array(
 				'submit' => array(
 					'message' => 'Our systems engineering team will directly contact you via phone and email to coordinate your white glove setup.'
 				)
-			),
-			'success_url' => $success_url,
-			'cancel_url' => $cancel_url
-		);
+			);
+		}
 
 		$response = wp_remote_post( 'https://api.stripe.com/v1/checkout/sessions', array(
 			'headers' => array(
-				'Authorization' => 'Bearer ' . $secret_key,
+				'Authorization' => 'Bearer ' . trim( $secret_key ),
 				'Content-Type'  => 'application/x-www-form-urlencoded'
 			),
-			'body' => http_build_query( $session_args )
+			'body' => http_build_query( $session_args ),
+			'timeout' => 15
 		) );
 
 		if ( is_wp_error( $response ) ) {
