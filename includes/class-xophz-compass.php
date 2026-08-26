@@ -154,8 +154,10 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-performance-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-twilio-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-push-api.php';
-		require_once $plugin_dir . 'includes/class-xophz-compass-cafeteria-cpt.php';
-		Xophz_Compass_Cafeteria_CPT::init();
+		if ( ! class_exists( 'Xophz_Compass_Bulletin_Board_CPT' ) ) {
+			require_once $plugin_dir . 'includes/class-xophz-compass-cafeteria-cpt.php';
+			Xophz_Compass_Cafeteria_CPT::init();
+		}
 
 		require_once $plugin_dir . 'includes/class-xophz-compass-3d-block.php';
 
