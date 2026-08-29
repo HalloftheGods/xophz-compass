@@ -37,6 +37,7 @@ class Xophz_Compass_Connectors {
 			'xophz-kitchen-synk/xophz-kitchen-synk.php',
 			'xophz-nook-phone/xophz-nook-phone.php',
 			'xophz-thoth-reader-wp/xophz-thoth-reader-wp.php',
+			'xophz-compass-diego-lawfirm/xophz-compass-diego-lawfirm.php',
 		);
 		$connectors = array( 'google', 'openai', 'anthropic' );
 
@@ -495,6 +496,42 @@ class Xophz_Compass_Connectors {
 				'color'        => '#62c9ff',
 				'description'  => 'Contact email or URI for Web Push services',
 			),
+			array(
+				'id'           => 'diego_lawfirm_advfinder',
+				'name'         => 'Diego Lawfirm AdvFinder API',
+				'setting_name' => 'diego_lawfirm_advfinder_api_key',
+				'type'         => 'intelligence',
+				'icon'         => 'fad fa-gavel',
+				'color'        => '#2563eb',
+				'description'  => 'AdvFinder API key for Brazilian OAB and legal lawsuit indexing',
+			),
+			array(
+				'id'           => 'diego_lawfirm_email_service',
+				'name'         => 'Diego Lawfirm Email Service',
+				'setting_name' => 'diego_lawfirm_email_service_api_key',
+				'type'         => 'communication',
+				'icon'         => 'fad fa-envelope-open-text',
+				'color'        => '#3b82f6',
+				'description'  => 'Transactional email service key for client alerts and schedule notifications',
+			),
+			array(
+				'id'           => 'diego_lawfirm_webhook_secret',
+				'name'         => 'Diego Lawfirm Webhook Secret',
+				'setting_name' => 'diego_lawfirm_webhook_secret',
+				'type'         => 'webhook',
+				'icon'         => 'fad fa-link',
+				'color'        => '#62c9ff',
+				'description'  => 'Secret token for validating inbound billing and CRM webhooks',
+			),
+			array(
+				'id'           => 'diego_lawfirm_plans_token',
+				'name'         => 'Diego Lawfirm Plans Token',
+				'setting_name' => 'diego_lawfirm_plans_lp_token',
+				'type'         => 'payment',
+				'icon'         => 'fad fa-credit-card',
+				'color'        => '#10b981',
+				'description'  => 'Authorization token for subscription tier sync and upgrades',
+			),
 		);
 	}
 
@@ -503,6 +540,8 @@ class Xophz_Compass_Connectors {
 	 */
 	private static function get_connector_icon( $id, $name ) {
 		$str = strtolower( $id . ' ' . $name );
+		if ( strpos( $str, 'advfinder' ) !== false || strpos( $str, 'gavel' ) !== false ) return 'fad fa-gavel';
+		if ( strpos( $str, 'email_service' ) !== false || strpos( $str, 'lawfirm' ) !== false ) return 'fad fa-envelope-open-text';
 		if ( strpos( $str, 'google' ) !== false || strpos( $str, 'gemini' ) !== false ) return 'fab fa-google';
 		if ( strpos( $str, 'anthropic' ) !== false || strpos( $str, 'claude' ) !== false ) return 'fad fa-brain';
 		if ( strpos( $str, 'openai' ) !== false || strpos( $str, 'gpt' ) !== false ) return 'fad fa-robot';
@@ -522,6 +561,8 @@ class Xophz_Compass_Connectors {
 	 */
 	private static function get_connector_color( $id, $type ) {
 		$str = strtolower( $id . ' ' . $type );
+		if ( strpos( $str, 'advfinder' ) !== false ) return '#2563eb';
+		if ( strpos( $str, 'lawfirm' ) !== false ) return '#3b82f6';
 		if ( strpos( $str, 'google' ) !== false || strpos( $str, 'gemini' ) !== false ) return '#ea4335';
 		if ( strpos( $str, 'anthropic' ) !== false ) return '#d97706';
 		if ( strpos( $str, 'openai' ) !== false ) return '#10a37f';
