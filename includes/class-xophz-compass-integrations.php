@@ -69,8 +69,6 @@ class Xophz_Compass_Integrations {
 			return;
 		}
 
-		$this->define_hustle_classes();
-
 		if ( class_exists( 'Hustle_Bomb_Bag' ) ) {
 			Hustle_Providers::get_instance()->register( 'Hustle_Bomb_Bag' );
 		}
@@ -88,526 +86,12 @@ class Xophz_Compass_Integrations {
 			return;
 		}
 
-		$this->define_forminator_classes();
-
 		if ( class_exists( 'Forminator_Integration_Bomb_Bag' ) ) {
 			Forminator_Integration_Loader::get_instance()->register( 'Forminator_Integration_Bomb_Bag' );
 		}
 
 		if ( class_exists( 'Forminator_Integration_Questbook' ) ) {
 			Forminator_Integration_Loader::get_instance()->register( 'Forminator_Integration_Questbook' );
-		}
-	}
-
-	/**
-	 * Define Hustle Provider Classes dynamically.
-	 */
-	private function define_hustle_classes() {
-		if ( ! class_exists( 'Hustle_Bomb_Bag' ) && class_exists( 'Hustle_Provider_Abstract' ) ) {
-			/**
-			 * Hustle_Bomb_Bag class
-			 */
-			class Hustle_Bomb_Bag extends Hustle_Provider_Abstract {
-				const SLUG = 'bomb_bag';
-				protected static $instance = null;
-				protected $slug = 'bomb_bag';
-				protected $version = '1.0';
-				protected $class = __CLASS__;
-				protected $title = 'Bomb Bag News Drip';
-				protected $is_multi_on_global = false;
-				protected $form_settings = 'Hustle_Bomb_Bag_Form_Settings';
-				protected $form_hooks = 'Hustle_Bomb_Bag_Form_Hooks';
-				protected $completion_options = array( 'active' );
-
-				public function __construct() {
-					$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
-					$this->icon_2x   = $asset_url . 'xophz-compass-bomb-bag.svg';
-					$this->logo_2x   = $asset_url . 'xophz-compass-bomb-bag.svg';
-					$this->banner_1x = $asset_url . 'xophz-compass-bomb-bag.svg';
-					$this->banner_2x = $asset_url . 'xophz-compass-bomb-bag.svg';
-					$this->short_description = esc_html__( 'Connect your Hustle popups, slide-ins, and embeds directly to Bomb Bag subscriber lists, email drip journeys, and broadcasts.', 'xophz-compass' );
-				}
-
-				public static function get_instance() {
-					if ( null === self::$instance ) {
-						self::$instance = new self();
-					}
-					return self::$instance;
-				}
-
-				public function active() {
-					$settings = $this->get_settings_values();
-					return ! empty( $settings['active'] ) || true; // Active by default when COMPASS is present
-				}
-
-				public function settings_wizards() {
-					return array(
-						array(
-							'callback'     => array( $this, 'configure_bomb_bag' ),
-							'is_completed' => array( $this, 'settings_are_completed' ),
-						),
-					);
-				}
-
-				public function configure_bomb_bag( $submitted_data ) {
-					$is_submit = isset( $submitted_data['hustle_is_submit'] );
-					if ( $is_submit ) {
-						if ( ! Hustle_Provider_Utils::is_provider_active( $this->slug ) ) {
-							Hustle_Providers::get_instance()->activate_addon( $this->slug );
-						}
-						$this->save_settings_values( array( 'active' => 1 ) );
-
-						return array(
-							'html'         => Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Bomb Bag Connected', 'xophz-compass' ), __( 'You can now assign any Hustle popup, slide-in, or embed to Bomb Bag subscriber lists.', 'xophz-compass' ) ),
-							'buttons'      => array(
-								'close' => array(
-									'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Close', 'xophz-compass' ), 'sui-button-ghost', 'close' ),
-								),
-							),
-							'redirect'     => false,
-							'has_errors'   => false,
-							'notification' => array(
-								'type' => 'success',
-								'text' => '<strong>' . $this->get_title() . '</strong> ' . esc_html__( 'Successfully connected to COMPASS engine', 'xophz-compass' ),
-							),
-						);
-					}
-
-					$options = array(
-						array(
-							'type'  => 'hidden',
-							'name'  => 'active',
-							'value' => 1,
-						),
-					);
-
-					$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Connect Bomb Bag', 'xophz-compass' ), __( 'Activate Bomb Bag to send leads straight to your COMPASS email marketing lists.', 'xophz-compass' ) );
-					$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
-
-					$buttons = array(
-						'connect' => array(
-							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Activate Bomb Bag', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
-						),
-					);
-
-					return array(
-						'html'       => $step_html,
-						'buttons'    => $buttons,
-						'has_errors' => false,
-					);
-				}
-			}
-
-			/**
-			 * Hustle_Bomb_Bag_Form_Settings class
-			 */
-			class Hustle_Bomb_Bag_Form_Settings extends Hustle_Provider_Form_Settings_Abstract {
-				protected $form_completion_options = array( 'list_id' );
-
-				public function form_settings_wizards() {
-					return array(
-						array(
-							'callback'     => array( $this, 'first_step_callback' ),
-							'is_completed' => array( $this, 'first_step_is_completed' ),
-						),
-					);
-				}
-
-				public function first_step_is_completed() {
-					$settings = $this->get_form_settings_values();
-					return ! empty( $settings['list_id'] );
-				}
-
-				public function first_step_callback( $submitted_data ) {
-					$this->addon_form_settings = $this->get_form_settings_values();
-					$current_data = array(
-						'list_id'  => '',
-						'tag_name' => '',
-					);
-					$current_data = $this->get_current_data( $current_data, $submitted_data );
-					$is_submit    = ! empty( $submitted_data['hustle_is_submit'] );
-
-					global $wpdb;
-					$lists_table = $wpdb->prefix . 'bomb_bag_lists';
-					$lists = array( '' => __( '-- Select Bomb Bag List --', 'xophz-compass' ) );
-					if ( $wpdb->get_var( "SHOW TABLES LIKE '$lists_table'" ) === $lists_table ) {
-						$results = $wpdb->get_results( "SELECT id, name FROM $lists_table ORDER BY name ASC" );
-						if ( ! empty( $results ) ) {
-							foreach ( $results as $l ) {
-								$lists[ $l->id ] = esc_html( $l->name );
-							}
-						}
-					}
-
-					$selected_list = ! empty( $current_data['list_id'] ) ? $current_data['list_id'] : '';
-
-					$options = array(
-						array(
-							'type'     => 'wrapper',
-							'style'    => 'margin-bottom: 0;',
-							'elements' => array(
-								array(
-									'type'  => 'label',
-									'for'   => 'list_id',
-									'value' => __( 'Bomb Bag Subscriber List', 'xophz-compass' ),
-								),
-								array(
-									'type'     => 'select',
-									'id'       => 'list_id',
-									'name'     => 'list_id',
-									'class'    => 'sui-select',
-									'value'    => $selected_list,
-									'selected' => $selected_list,
-									'options'  => $lists,
-								),
-								array(
-									'type'  => 'label',
-									'for'   => 'tag_name',
-									'value' => __( 'Optional Tag', 'xophz-compass' ),
-								),
-								array(
-									'type'        => 'text',
-									'id'          => 'tag_name',
-									'name'        => 'tag_name',
-									'value'       => ! empty( $current_data['tag_name'] ) ? $current_data['tag_name'] : '',
-									'placeholder' => __( 'e.g. Website Lead, VIP Waitlist', 'xophz-compass' ),
-								),
-							),
-						),
-					);
-
-					$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Bomb Bag List Setup', 'xophz-compass' ), __( 'Choose which Bomb Bag list newly collected emails should be saved to.', 'xophz-compass' ) );
-					$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
-
-					$buttons = array(
-						'disconnect' => array(
-							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Disconnect', 'xophz-compass' ), 'sui-button-ghost', 'disconnect_form', true ),
-						),
-						'save'       => array(
-							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Save', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
-						),
-					);
-
-					if ( $is_submit ) {
-						$this->save_form_settings_values( $current_data );
-					}
-
-					return array(
-						'html'       => $step_html,
-						'buttons'    => $buttons,
-						'has_errors' => false,
-					);
-				}
-			}
-
-			/**
-			 * Hustle_Bomb_Bag_Form_Hooks class
-			 */
-			class Hustle_Bomb_Bag_Form_Hooks extends Hustle_Provider_Form_Hooks_Abstract {
-				public function on_form_submit( $submitted_data, $allow_subscribed = true ) {
-					return true;
-				}
-			}
-		}
-
-		if ( ! class_exists( 'Hustle_Questbook' ) && class_exists( 'Hustle_Provider_Abstract' ) ) {
-			/**
-			 * Hustle_Questbook class
-			 */
-			class Hustle_Questbook extends Hustle_Provider_Abstract {
-				const SLUG = 'questbook';
-				protected static $instance = null;
-				protected $slug = 'questbook';
-				protected $version = '1.0';
-				protected $class = __CLASS__;
-				protected $title = 'Questbook CRM';
-				protected $is_multi_on_global = false;
-				protected $form_settings = 'Hustle_Questbook_Form_Settings';
-				protected $form_hooks = 'Hustle_Questbook_Form_Hooks';
-				protected $completion_options = array( 'active' );
-
-				public function __construct() {
-					$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
-					$this->icon_2x   = $asset_url . 'xophz-compass-quests.svg';
-					$this->logo_2x   = $asset_url . 'xophz-compass-quests.svg';
-					$this->banner_1x = $asset_url . 'xophz-compass-quests.svg';
-					$this->banner_2x = $asset_url . 'xophz-compass-quests.svg';
-					$this->short_description = esc_html__( 'Capture opt-ins into your Questbook CRM pipeline, track customer journey history, and trigger automated sales workflows.', 'xophz-compass' );
-				}
-
-				public static function get_instance() {
-					if ( null === self::$instance ) {
-						self::$instance = new self();
-					}
-					return self::$instance;
-				}
-
-				public function active() {
-					return true;
-				}
-
-				public function settings_wizards() {
-					return array(
-						array(
-							'callback'     => array( $this, 'configure_questbook' ),
-							'is_completed' => array( $this, 'settings_are_completed' ),
-						),
-					);
-				}
-
-				public function configure_questbook( $submitted_data ) {
-					$is_submit = isset( $submitted_data['hustle_is_submit'] );
-					if ( $is_submit ) {
-						if ( ! Hustle_Provider_Utils::is_provider_active( $this->slug ) ) {
-							Hustle_Providers::get_instance()->activate_addon( $this->slug );
-						}
-						$this->save_settings_values( array( 'active' => 1 ) );
-
-						return array(
-							'html'         => Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Questbook CRM Connected', 'xophz-compass' ), __( 'You can now route form submissions straight into your Questbook CRM directory and pipeline.', 'xophz-compass' ) ),
-							'buttons'      => array(
-								'close' => array(
-									'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Close', 'xophz-compass' ), 'sui-button-ghost', 'close' ),
-								),
-							),
-							'redirect'     => false,
-							'has_errors'   => false,
-							'notification' => array(
-								'type' => 'success',
-								'text' => '<strong>' . $this->get_title() . '</strong> ' . esc_html__( 'Successfully connected to COMPASS CRM', 'xophz-compass' ),
-							),
-						);
-					}
-
-					$options = array(
-						array(
-							'type'  => 'hidden',
-							'name'  => 'active',
-							'value' => 1,
-						),
-					);
-
-					$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Connect Questbook CRM', 'xophz-compass' ), __( 'Activate Questbook CRM to automatically capture leads and log interactions.', 'xophz-compass' ) );
-					$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
-
-					$buttons = array(
-						'connect' => array(
-							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Activate Questbook CRM', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
-						),
-					);
-
-					return array(
-						'html'       => $step_html,
-						'buttons'    => $buttons,
-						'has_errors' => false,
-					);
-				}
-			}
-
-			/**
-			 * Hustle_Questbook_Form_Settings class
-			 */
-			class Hustle_Questbook_Form_Settings extends Hustle_Provider_Form_Settings_Abstract {
-				protected $form_completion_options = array( 'lead_status' );
-
-				public function form_settings_wizards() {
-					return array(
-						array(
-							'callback'     => array( $this, 'first_step_callback' ),
-							'is_completed' => array( $this, 'first_step_is_completed' ),
-						),
-					);
-				}
-
-				public function first_step_is_completed() {
-					$settings = $this->get_form_settings_values();
-					return ! empty( $settings['lead_status'] );
-				}
-
-				public function first_step_callback( $submitted_data ) {
-					$this->addon_form_settings = $this->get_form_settings_values();
-					$current_data = array(
-						'lead_status' => 'New Lead',
-						'stage'       => 'New',
-					);
-					$current_data = $this->get_current_data( $current_data, $submitted_data );
-					$is_submit    = ! empty( $submitted_data['hustle_is_submit'] );
-
-					$status_options = array(
-						'New Lead'   => __( 'New Lead', 'xophz-compass' ),
-						'Prospect'   => __( 'Prospect', 'xophz-compass' ),
-						'Qualified'  => __( 'Qualified', 'xophz-compass' ),
-						'Customer'   => __( 'Customer', 'xophz-compass' ),
-					);
-
-					$options = array(
-						array(
-							'type'     => 'wrapper',
-							'style'    => 'margin-bottom: 0;',
-							'elements' => array(
-								array(
-									'type'  => 'label',
-									'for'   => 'lead_status',
-									'value' => __( 'Default Lead Status', 'xophz-compass' ),
-								),
-								array(
-									'type'     => 'select',
-									'id'       => 'lead_status',
-									'name'     => 'lead_status',
-									'class'    => 'sui-select',
-									'value'    => $current_data['lead_status'],
-									'selected' => $current_data['lead_status'],
-									'options'  => $status_options,
-								),
-							),
-						),
-					);
-
-					$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Questbook CRM Setup', 'xophz-compass' ), __( 'Configure lead status when visitors submit this module.', 'xophz-compass' ) );
-					$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
-
-					$buttons = array(
-						'disconnect' => array(
-							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Disconnect', 'xophz-compass' ), 'sui-button-ghost', 'disconnect_form', true ),
-						),
-						'save'       => array(
-							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Save', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
-						),
-					);
-
-					if ( $is_submit ) {
-						$this->save_form_settings_values( $current_data );
-					}
-
-					return array(
-						'html'       => $step_html,
-						'buttons'    => $buttons,
-						'has_errors' => false,
-					);
-				}
-			}
-
-			/**
-			 * Hustle_Questbook_Form_Hooks class
-			 */
-			class Hustle_Questbook_Form_Hooks extends Hustle_Provider_Form_Hooks_Abstract {
-				public function on_form_submit( $submitted_data, $allow_subscribed = true ) {
-					return true;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Define Forminator Addon Classes dynamically.
-	 */
-	private function define_forminator_classes() {
-		if ( ! class_exists( 'Forminator_Integration_Bomb_Bag' ) && class_exists( 'Forminator_Integration' ) ) {
-			/**
-			 * Forminator_Integration_Bomb_Bag class
-			 */
-			class Forminator_Integration_Bomb_Bag extends Forminator_Integration {
-				protected $_slug = 'bomb_bag';
-				protected $_version = '1.0';
-				protected $_min_forminator_version = '1.1';
-				protected $_short_title = 'Bomb Bag';
-				protected $_title = 'Bomb Bag News Drip';
-
-				public function __construct() {
-					$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
-					$this->_image       = $asset_url . 'xophz-compass-bomb-bag.svg';
-					$this->_icon        = 'bomb_bag';
-					$this->_description = esc_html__( 'Send form submissions directly into your Bomb Bag marketing lists and email journeys.', 'xophz-compass' );
-				}
-
-				public function is_connected() {
-					return true;
-				}
-
-				public function is_authorized() {
-					return true;
-				}
-
-				public function is_module_connected( $module_id, $module_slug = 'form', $check_lead = false ) {
-					return true;
-				}
-
-				public function settings_wizards() {
-					return array(
-						array(
-							'callback'     => array( $this, 'setup_connect' ),
-							'is_completed' => array( $this, 'is_connected' ),
-						),
-					);
-				}
-
-				public function setup_connect( $submitted_data, $form_id = 0 ) {
-					return array(
-						'html'       => '<p>' . esc_html__( 'Bomb Bag is active and automatically linked to your COMPASS suite.', 'xophz-compass' ) . '</p>',
-						'buttons'    => array(
-							'submit' => array(
-								'markup' => self::get_button_markup( esc_html__( 'Connected', 'xophz-compass' ), 'sui-button-primary forminator-addon-close' ),
-							),
-						),
-						'redirect'   => false,
-						'has_errors' => false,
-					);
-				}
-			}
-		}
-
-		if ( ! class_exists( 'Forminator_Integration_Questbook' ) && class_exists( 'Forminator_Integration' ) ) {
-			/**
-			 * Forminator_Integration_Questbook class
-			 */
-			class Forminator_Integration_Questbook extends Forminator_Integration {
-				protected $_slug = 'questbook';
-				protected $_version = '1.0';
-				protected $_min_forminator_version = '1.1';
-				protected $_short_title = 'Questbook CRM';
-				protected $_title = 'Questbook CRM';
-
-				public function __construct() {
-					$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
-					$this->_image       = $asset_url . 'xophz-compass-quests.svg';
-					$this->_icon        = 'questbook';
-					$this->_description = esc_html__( 'Route leads from Forminator forms into your Questbook CRM pipeline, directory, and contact activity logs.', 'xophz-compass' );
-				}
-
-				public function is_connected() {
-					return true;
-				}
-
-				public function is_authorized() {
-					return true;
-				}
-
-				public function is_module_connected( $module_id, $module_slug = 'form', $check_lead = false ) {
-					return true;
-				}
-
-				public function settings_wizards() {
-					return array(
-						array(
-							'callback'     => array( $this, 'setup_connect' ),
-							'is_completed' => array( $this, 'is_connected' ),
-						),
-					);
-				}
-
-				public function setup_connect( $submitted_data, $form_id = 0 ) {
-					return array(
-						'html'       => '<p>' . esc_html__( 'Questbook CRM is connected and automatically ready to receive form leads.', 'xophz-compass' ) . '</p>',
-						'buttons'    => array(
-							'submit' => array(
-								'markup' => self::get_button_markup( esc_html__( 'Connected', 'xophz-compass' ), 'sui-button-primary forminator-addon-close' ),
-							),
-						),
-						'redirect'   => false,
-						'has_errors' => false,
-					);
-				}
-			}
 		}
 	}
 
@@ -1120,5 +604,515 @@ class Xophz_Compass_Integrations {
 				'questbook'  => true,
 			),
 		) );
+	}
+}
+
+// --------------------------------------------------------------------------
+// Hustle Pro Integration Provider Classes
+// --------------------------------------------------------------------------
+
+if ( class_exists( 'Hustle_Provider_Abstract' ) && ! class_exists( 'Hustle_Bomb_Bag' ) ) {
+	/**
+	 * Hustle_Bomb_Bag class
+	 */
+	class Hustle_Bomb_Bag extends Hustle_Provider_Abstract {
+		const SLUG = 'bomb_bag';
+		protected static $instance = null;
+		protected $slug = 'bomb_bag';
+		protected $version = '1.0';
+		protected $class = __CLASS__;
+		protected $title = 'Bomb Bag News Drip';
+		protected $is_multi_on_global = false;
+		protected $form_settings = 'Hustle_Bomb_Bag_Form_Settings';
+		protected $form_hooks = 'Hustle_Bomb_Bag_Form_Hooks';
+		protected $completion_options = array( 'active' );
+
+		public function __construct() {
+			$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+			$this->icon_2x   = $asset_url . 'xophz-compass-bomb-bag.svg';
+			$this->logo_2x   = $asset_url . 'xophz-compass-bomb-bag.svg';
+			$this->banner_1x = $asset_url . 'xophz-compass-bomb-bag.svg';
+			$this->banner_2x = $asset_url . 'xophz-compass-bomb-bag.svg';
+			$this->short_description = esc_html__( 'Connect your Hustle popups, slide-ins, and embeds directly to Bomb Bag subscriber lists, email drip journeys, and broadcasts.', 'xophz-compass' );
+		}
+
+		public static function get_instance() {
+			if ( null === self::$instance ) {
+				self::$instance = new self();
+			}
+			return self::$instance;
+		}
+
+		public function active() {
+			$settings = $this->get_settings_values();
+			return ! empty( $settings['active'] ) || true;
+		}
+
+		public function settings_wizards() {
+			return array(
+				array(
+					'callback'     => array( $this, 'configure_bomb_bag' ),
+					'is_completed' => array( $this, 'settings_are_completed' ),
+				),
+			);
+		}
+
+		public function configure_bomb_bag( $submitted_data ) {
+			$is_submit = isset( $submitted_data['hustle_is_submit'] );
+			if ( $is_submit ) {
+				if ( ! Hustle_Provider_Utils::is_provider_active( $this->slug ) ) {
+					Hustle_Providers::get_instance()->activate_addon( $this->slug );
+				}
+				$this->save_settings_values( array( 'active' => 1 ) );
+
+				return array(
+					'html'         => Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Bomb Bag Connected', 'xophz-compass' ), __( 'You can now assign any Hustle popup, slide-in, or embed to Bomb Bag subscriber lists.', 'xophz-compass' ) ),
+					'buttons'      => array(
+						'close' => array(
+							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Close', 'xophz-compass' ), 'sui-button-ghost', 'close' ),
+						),
+					),
+					'redirect'     => false,
+					'has_errors'   => false,
+					'notification' => array(
+						'type' => 'success',
+						'text' => '<strong>' . $this->get_title() . '</strong> ' . esc_html__( 'Successfully connected to COMPASS engine', 'xophz-compass' ),
+					),
+				);
+			}
+
+			$options = array(
+				array(
+					'type'  => 'hidden',
+					'name'  => 'active',
+					'value' => 1,
+				),
+			);
+
+			$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Connect Bomb Bag', 'xophz-compass' ), __( 'Activate Bomb Bag to send leads straight to your COMPASS email marketing lists.', 'xophz-compass' ) );
+			$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
+
+			$buttons = array(
+				'connect' => array(
+					'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Activate Bomb Bag', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
+				),
+			);
+
+			return array(
+				'html'       => $step_html,
+				'buttons'    => $buttons,
+				'has_errors' => false,
+			);
+		}
+	}
+
+	/**
+	 * Hustle_Bomb_Bag_Form_Settings class
+	 */
+	class Hustle_Bomb_Bag_Form_Settings extends Hustle_Provider_Form_Settings_Abstract {
+		protected $form_completion_options = array( 'list_id' );
+
+		public function form_settings_wizards() {
+			return array(
+				array(
+					'callback'     => array( $this, 'first_step_callback' ),
+					'is_completed' => array( $this, 'first_step_is_completed' ),
+				),
+			);
+		}
+
+		public function first_step_is_completed() {
+			$settings = $this->get_form_settings_values();
+			return ! empty( $settings['list_id'] );
+		}
+
+		public function first_step_callback( $submitted_data ) {
+			$this->addon_form_settings = $this->get_form_settings_values();
+			$current_data = array(
+				'list_id'  => '',
+				'tag_name' => '',
+			);
+			$current_data = $this->get_current_data( $current_data, $submitted_data );
+			$is_submit    = ! empty( $submitted_data['hustle_is_submit'] );
+
+			global $wpdb;
+			$lists_table = $wpdb->prefix . 'bomb_bag_lists';
+			$lists = array( '' => __( '-- Select Bomb Bag List --', 'xophz-compass' ) );
+			if ( $wpdb->get_var( "SHOW TABLES LIKE '$lists_table'" ) === $lists_table ) {
+				$results = $wpdb->get_results( "SELECT id, name FROM $lists_table ORDER BY name ASC" );
+				if ( ! empty( $results ) ) {
+					foreach ( $results as $l ) {
+						$lists[ $l->id ] = esc_html( $l->name );
+					}
+				}
+			}
+
+			$selected_list = ! empty( $current_data['list_id'] ) ? $current_data['list_id'] : '';
+
+			$options = array(
+				array(
+					'type'     => 'wrapper',
+					'style'    => 'margin-bottom: 0;',
+					'elements' => array(
+						array(
+							'type'  => 'label',
+							'for'   => 'list_id',
+							'value' => __( 'Bomb Bag Subscriber List', 'xophz-compass' ),
+						),
+						array(
+							'type'     => 'select',
+							'id'       => 'list_id',
+							'name'     => 'list_id',
+							'class'    => 'sui-select',
+							'value'    => $selected_list,
+							'selected' => $selected_list,
+							'options'  => $lists,
+						),
+						array(
+							'type'  => 'label',
+							'for'   => 'tag_name',
+							'value' => __( 'Optional Tag', 'xophz-compass' ),
+						),
+						array(
+							'type'        => 'text',
+							'id'          => 'tag_name',
+							'name'        => 'tag_name',
+							'value'       => ! empty( $current_data['tag_name'] ) ? $current_data['tag_name'] : '',
+							'placeholder' => __( 'e.g. Website Lead, VIP Waitlist', 'xophz-compass' ),
+						),
+					),
+				),
+			);
+
+			$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Bomb Bag List Setup', 'xophz-compass' ), __( 'Choose which Bomb Bag list newly collected emails should be saved to.', 'xophz-compass' ) );
+			$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
+
+			$buttons = array(
+				'disconnect' => array(
+					'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Disconnect', 'xophz-compass' ), 'sui-button-ghost', 'disconnect_form', true ),
+				),
+				'save'       => array(
+					'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Save', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
+				),
+			);
+
+			if ( $is_submit ) {
+				$this->save_form_settings_values( $current_data );
+			}
+
+			return array(
+				'html'       => $step_html,
+				'buttons'    => $buttons,
+				'has_errors' => false,
+			);
+		}
+	}
+
+	/**
+	 * Hustle_Bomb_Bag_Form_Hooks class
+	 */
+	class Hustle_Bomb_Bag_Form_Hooks extends Hustle_Provider_Form_Hooks_Abstract {
+		public function on_form_submit( $submitted_data, $allow_subscribed = true ) {
+			return true;
+		}
+	}
+}
+
+if ( class_exists( 'Hustle_Provider_Abstract' ) && ! class_exists( 'Hustle_Questbook' ) ) {
+	/**
+	 * Hustle_Questbook class
+	 */
+	class Hustle_Questbook extends Hustle_Provider_Abstract {
+		const SLUG = 'questbook';
+		protected static $instance = null;
+		protected $slug = 'questbook';
+		protected $version = '1.0';
+		protected $class = __CLASS__;
+		protected $title = 'Questbook CRM';
+		protected $is_multi_on_global = false;
+		protected $form_settings = 'Hustle_Questbook_Form_Settings';
+		protected $form_hooks = 'Hustle_Questbook_Form_Hooks';
+		protected $completion_options = array( 'active' );
+
+		public function __construct() {
+			$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+			$this->icon_2x   = $asset_url . 'xophz-compass-quests.svg';
+			$this->logo_2x   = $asset_url . 'xophz-compass-quests.svg';
+			$this->banner_1x = $asset_url . 'xophz-compass-quests.svg';
+			$this->banner_2x = $asset_url . 'xophz-compass-quests.svg';
+			$this->short_description = esc_html__( 'Capture opt-ins into your Questbook CRM pipeline, track customer journey history, and trigger automated sales workflows.', 'xophz-compass' );
+		}
+
+		public static function get_instance() {
+			if ( null === self::$instance ) {
+				self::$instance = new self();
+			}
+			return self::$instance;
+		}
+
+		public function active() {
+			return true;
+		}
+
+		public function settings_wizards() {
+			return array(
+				array(
+					'callback'     => array( $this, 'configure_questbook' ),
+					'is_completed' => array( $this, 'settings_are_completed' ),
+				),
+			);
+		}
+
+		public function configure_questbook( $submitted_data ) {
+			$is_submit = isset( $submitted_data['hustle_is_submit'] );
+			if ( $is_submit ) {
+				if ( ! Hustle_Provider_Utils::is_provider_active( $this->slug ) ) {
+					Hustle_Providers::get_instance()->activate_addon( $this->slug );
+				}
+				$this->save_settings_values( array( 'active' => 1 ) );
+
+				return array(
+					'html'         => Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Questbook CRM Connected', 'xophz-compass' ), __( 'You can now route form submissions straight into your Questbook CRM directory and pipeline.', 'xophz-compass' ) ),
+					'buttons'      => array(
+						'close' => array(
+							'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Close', 'xophz-compass' ), 'sui-button-ghost', 'close' ),
+						),
+					),
+					'redirect'     => false,
+					'has_errors'   => false,
+					'notification' => array(
+						'type' => 'success',
+						'text' => '<strong>' . $this->get_title() . '</strong> ' . esc_html__( 'Successfully connected to COMPASS CRM', 'xophz-compass' ),
+					),
+				);
+			}
+
+			$options = array(
+				array(
+					'type'  => 'hidden',
+					'name'  => 'active',
+					'value' => 1,
+				),
+			);
+
+			$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Connect Questbook CRM', 'xophz-compass' ), __( 'Activate Questbook CRM to automatically capture leads and log interactions.', 'xophz-compass' ) );
+			$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
+
+			$buttons = array(
+				'connect' => array(
+					'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Activate Questbook CRM', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
+				),
+			);
+
+			return array(
+				'html'       => $step_html,
+				'buttons'    => $buttons,
+				'has_errors' => false,
+			);
+		}
+	}
+
+	/**
+	 * Hustle_Questbook_Form_Settings class
+	 */
+	class Hustle_Questbook_Form_Settings extends Hustle_Provider_Form_Settings_Abstract {
+		protected $form_completion_options = array( 'lead_status' );
+
+		public function form_settings_wizards() {
+			return array(
+				array(
+					'callback'     => array( $this, 'first_step_callback' ),
+					'is_completed' => array( $this, 'first_step_is_completed' ),
+				),
+			);
+		}
+
+		public function first_step_is_completed() {
+			$settings = $this->get_form_settings_values();
+			return ! empty( $settings['lead_status'] );
+		}
+
+		public function first_step_callback( $submitted_data ) {
+			$this->addon_form_settings = $this->get_form_settings_values();
+			$current_data = array(
+				'lead_status' => 'New Lead',
+				'stage'       => 'New',
+			);
+			$current_data = $this->get_current_data( $current_data, $submitted_data );
+			$is_submit    = ! empty( $submitted_data['hustle_is_submit'] );
+
+			$status_options = array(
+				'New Lead'   => __( 'New Lead', 'xophz-compass' ),
+				'Prospect'   => __( 'Prospect', 'xophz-compass' ),
+				'Qualified'  => __( 'Qualified', 'xophz-compass' ),
+				'Customer'   => __( 'Customer', 'xophz-compass' ),
+			);
+
+			$options = array(
+				array(
+					'type'     => 'wrapper',
+					'style'    => 'margin-bottom: 0;',
+					'elements' => array(
+						array(
+							'type'  => 'label',
+							'for'   => 'lead_status',
+							'value' => __( 'Default Lead Status', 'xophz-compass' ),
+						),
+						array(
+							'type'     => 'select',
+							'id'       => 'lead_status',
+							'name'     => 'lead_status',
+							'class'    => 'sui-select',
+							'value'    => $current_data['lead_status'],
+							'selected' => $current_data['lead_status'],
+							'options'  => $status_options,
+						),
+					),
+				),
+			);
+
+			$step_html  = Hustle_Provider_Utils::get_integration_modal_title_markup( __( 'Questbook CRM Setup', 'xophz-compass' ), __( 'Configure lead status when visitors submit this module.', 'xophz-compass' ) );
+			$step_html .= Hustle_Provider_Utils::get_html_for_options( $options );
+
+			$buttons = array(
+				'disconnect' => array(
+					'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Disconnect', 'xophz-compass' ), 'sui-button-ghost', 'disconnect_form', true ),
+				),
+				'save'       => array(
+					'markup' => Hustle_Provider_Utils::get_provider_button_markup( __( 'Save', 'xophz-compass' ), 'sui-button-primary', 'connect', true ),
+				),
+			);
+
+			if ( $is_submit ) {
+				$this->save_form_settings_values( $current_data );
+			}
+
+			return array(
+				'html'       => $step_html,
+				'buttons'    => $buttons,
+				'has_errors' => false,
+			);
+		}
+	}
+
+	/**
+	 * Hustle_Questbook_Form_Hooks class
+	 */
+	class Hustle_Questbook_Form_Hooks extends Hustle_Provider_Form_Hooks_Abstract {
+		public function on_form_submit( $submitted_data, $allow_subscribed = true ) {
+			return true;
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
+// Forminator Pro Integration Addon Classes
+// --------------------------------------------------------------------------
+
+if ( class_exists( 'Forminator_Integration' ) && ! class_exists( 'Forminator_Integration_Bomb_Bag' ) ) {
+	/**
+	 * Forminator_Integration_Bomb_Bag class
+	 */
+	class Forminator_Integration_Bomb_Bag extends Forminator_Integration {
+		protected $_slug = 'bomb_bag';
+		protected $_version = '1.0';
+		protected $_min_forminator_version = '1.1';
+		protected $_short_title = 'Bomb Bag';
+		protected $_title = 'Bomb Bag News Drip';
+
+		public function __construct() {
+			$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+			$this->_image       = $asset_url . 'xophz-compass-bomb-bag.svg';
+			$this->_icon        = 'bomb_bag';
+			$this->_description = esc_html__( 'Send form submissions directly into your Bomb Bag marketing lists and email journeys.', 'xophz-compass' );
+		}
+
+		public function is_connected() {
+			return true;
+		}
+
+		public function is_authorized() {
+			return true;
+		}
+
+		public function is_module_connected( $module_id, $module_slug = 'form', $check_lead = false ) {
+			return true;
+		}
+
+		public function settings_wizards() {
+			return array(
+				array(
+					'callback'     => array( $this, 'setup_connect' ),
+					'is_completed' => array( $this, 'is_connected' ),
+				),
+			);
+		}
+
+		public function setup_connect( $submitted_data, $form_id = 0 ) {
+			return array(
+				'html'       => '<p>' . esc_html__( 'Bomb Bag is active and automatically linked to your COMPASS suite.', 'xophz-compass' ) . '</p>',
+				'buttons'    => array(
+					'submit' => array(
+						'markup' => self::get_button_markup( esc_html__( 'Connected', 'xophz-compass' ), 'sui-button-primary forminator-addon-close' ),
+					),
+				),
+				'redirect'   => false,
+				'has_errors' => false,
+			);
+		}
+	}
+}
+
+if ( class_exists( 'Forminator_Integration' ) && ! class_exists( 'Forminator_Integration_Questbook' ) ) {
+	/**
+	 * Forminator_Integration_Questbook class
+	 */
+	class Forminator_Integration_Questbook extends Forminator_Integration {
+		protected $_slug = 'questbook';
+		protected $_version = '1.0';
+		protected $_min_forminator_version = '1.1';
+		protected $_short_title = 'Questbook CRM';
+		protected $_title = 'Questbook CRM';
+
+		public function __construct() {
+			$asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+			$this->_image       = $asset_url . 'xophz-compass-quests.svg';
+			$this->_icon        = 'questbook';
+			$this->_description = esc_html__( 'Route leads from Forminator forms into your Questbook CRM pipeline, directory, and contact activity logs.', 'xophz-compass' );
+		}
+
+		public function is_connected() {
+			return true;
+		}
+
+		public function is_authorized() {
+			return true;
+		}
+
+		public function is_module_connected( $module_id, $module_slug = 'form', $check_lead = false ) {
+			return true;
+		}
+
+		public function settings_wizards() {
+			return array(
+				array(
+					'callback'     => array( $this, 'setup_connect' ),
+					'is_completed' => array( $this, 'is_connected' ),
+				),
+			);
+		}
+
+		public function setup_connect( $submitted_data, $form_id = 0 ) {
+			return array(
+				'html'       => '<p>' . esc_html__( 'Questbook CRM is connected and automatically ready to receive form leads.', 'xophz-compass' ) . '</p>',
+				'buttons'    => array(
+					'submit' => array(
+						'markup' => self::get_button_markup( esc_html__( 'Connected', 'xophz-compass' ), 'sui-button-primary forminator-addon-close' ),
+					),
+				),
+				'redirect'   => false,
+				'has_errors' => false,
+			);
+		}
 	}
 }
