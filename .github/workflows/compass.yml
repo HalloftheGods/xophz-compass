@@ -6,6 +6,9 @@ on:
     - cron: "59 23 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   pipeline:
-    uses: HalloftheGods/.github-xophz-compass/.github/workflows/master.yml@main
+    uses: HalloftheGods/.github/.github/workflows/master.yml@main
