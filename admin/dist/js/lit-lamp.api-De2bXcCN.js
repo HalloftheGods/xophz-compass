@@ -1,0 +1,1 @@
+import{e as t}from"./index-C-4QXlNQ.js";const o=async()=>t.get("get_system_info"),r=async()=>t.get("get_wp_info"),g=async s=>t.post("get_logs",s||{}),a=async()=>t.get("get_files"),c=async()=>t.get("get_cron_jobs"),_=async(s,n=[])=>t.post("run_cron_job",{hook:s,cron_args:n});export{r as a,g as b,a as c,c as d,o as g,_ as r};
