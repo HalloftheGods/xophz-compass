@@ -776,7 +776,11 @@ class Xophz_Compass_Admin {
         unset($plugins[$p]);
         continue;
       }
-      $plugin_dir = wp_make_link_relative( plugins_url( $plugin['TextDomain'] ) );
+      $plugin_folder = dirname( $p );
+      if ( $plugin_folder === '.' || empty( $plugin_folder ) ) {
+        $plugin_folder = $plugin['TextDomain'];
+      }
+      $plugin_dir = wp_make_link_relative( plugins_url( $plugin_folder ) );
 
       // Extract slug from text domain (e.g., 'xophz-compass-bomb-bag' -> 'bomb-bag')
       $slug = str_replace('xophz-compass-', '', $plugin['TextDomain']);
@@ -796,25 +800,25 @@ class Xophz_Compass_Admin {
       $plugins[$p]['Name'] = Xophz_Compass_Branding::get_plugin_name($slug, $default_name);
       $plugins[$p]['Description'] = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
       
-        $icon_path     = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
-        $icon_png_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.png';
-        $bundled_png   = dirname( __FILE__, 2 ) . '/assets/' . $plugin['TextDomain'] . '.png';
-        $bundled_svg   = dirname( __FILE__, 2 ) . '/assets/' . $plugin['TextDomain'] . '.svg';
+      $icon_path     = WP_PLUGIN_DIR . '/' . $plugin_folder . '/icon.svg';
+      $icon_png_path = WP_PLUGIN_DIR . '/' . $plugin_folder . '/icon.png';
+      $bundled_png   = dirname( __FILE__, 2 ) . '/assets/' . $plugin['TextDomain'] . '.png';
+      $bundled_svg   = dirname( __FILE__, 2 ) . '/assets/' . $plugin['TextDomain'] . '.svg';
 
-        if (file_exists($icon_path)) {
-          $icon_version = filemtime($icon_path);
-          $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
-        } elseif (file_exists($icon_png_path)) {
-          $icon_version = filemtime($icon_png_path);
-          $plugins[$p]['icon'] = "{$plugin_dir}/icon.png?v={$icon_version}";
-        } elseif (file_exists($bundled_png)) {
-          $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.png', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
-        } elseif (file_exists($bundled_svg)) {
-          $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.svg', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
-        } else {
-          $owner = ( strpos( $plugin['TextDomain'], 'super-nerd-bros' ) !== false || strpos( $plugin['TextDomain'], 'nook-phone' ) !== false ) ? 'SuperNerdBros' : 'HalloftheGods';
-          $plugins[$p]['icon'] = "https://raw.githubusercontent.com/{$owner}/{$plugin['TextDomain']}/main/icon.svg";
-        }
+      if (file_exists($icon_path)) {
+        $icon_version = filemtime($icon_path);
+        $plugins[$p]['icon'] = "{$plugin_dir}/icon.svg?v={$icon_version}";
+      } elseif (file_exists($icon_png_path)) {
+        $icon_version = filemtime($icon_png_path);
+        $plugins[$p]['icon'] = "{$plugin_dir}/icon.png?v={$icon_version}";
+      } elseif (file_exists($bundled_png)) {
+        $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.png', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
+      } elseif (file_exists($bundled_svg)) {
+        $plugins[$p]['icon'] = wp_make_link_relative( plugins_url( 'assets/' . $plugin['TextDomain'] . '.svg', dirname( __FILE__, 2 ) . '/xophz-compass.php' ) );
+      } else {
+        $owner = ( strpos( $plugin['TextDomain'], 'super-nerd-bros' ) !== false || strpos( $plugin['TextDomain'], 'nook-phone' ) !== false ) ? 'SuperNerdBros' : 'HalloftheGods';
+        $plugins[$p]['icon'] = "https://raw.githubusercontent.com/{$owner}/{$plugin['TextDomain']}/main/icon.svg";
+      }
       
       // Fallback approach if WP's native plugins caching hides Category
       if (empty($plugin['Category'])) {
@@ -1245,12 +1249,16 @@ class Xophz_Compass_Admin {
       $name = Xophz_Compass_Branding::get_plugin_name($slug, $default_name);
       $description = Xophz_Compass_Branding::get_plugin_description($slug, $plugin['Description']);
 
-      $plugin_dir = wp_make_link_relative( plugins_url( $plugin['TextDomain'] ) );
+      $plugin_folder = dirname( $p );
+      if ( $plugin_folder === '.' || empty( $plugin_folder ) ) {
+        $plugin_folder = $plugin['TextDomain'];
+      }
+      $plugin_dir = wp_make_link_relative( plugins_url( $plugin_folder ) );
       if ($slug === 'magic-formula') {
         $icon_version = time();
         $icon = wp_make_link_relative( plugins_url('xophz-compass/assets/magic-formula.svg') ) . "?v={$icon_version}";
       } else {
-        $icon_path = WP_PLUGIN_DIR . '/' . $plugin['TextDomain'] . '/icon.svg';
+        $icon_path = WP_PLUGIN_DIR . '/' . $plugin_folder . '/icon.svg';
         $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
         $icon = "{$plugin_dir}/icon.svg?v={$icon_version}";
       }

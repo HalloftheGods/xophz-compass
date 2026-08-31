@@ -461,6 +461,13 @@ class Xophz_Compass_Modules_API {
 				'description'  => 'Standalone WordPress backend and router for the Dodo Air SvelteKit app.',
 				'download_url' => 'https://github.com/SuperNerdBros/wp-dodo-air/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
+			),
+			'xophz-compass-fresh-mints' => array(
+				'slug'         => 'xophz-compass-fresh-mints',
+				'name'         => 'Fresh Mints',
+				'description'  => 'Turnkey lead discovery, license registry audit, skip-tracing, and practice website launcher platform integrated with Questbook CRM and WP Connectors API.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-fresh-mints/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
 			)
 		);
 
