@@ -147,10 +147,10 @@ class Xophz_Compass_Admin {
       wp_dequeue_script( 'wp-core-commands' );
       wp_dequeue_style( 'wp-commands' );
       
-      // Prevent blackbox smoke script from loading in compass admin page since compass handles its own
-      if ( class_exists( '\BlackBOX\Core' ) ) {
-        remove_action( 'admin_footer', [ \BlackBOX\Core::class, 'inject_canvas_script' ], 9999 );
-      }
+      // Check if Bedrock Lifestream interface and canvas are active in the host environment
+      $isBedrockActive = empty( get_option( 'blackbox_bedrock_disabled' ) ) && ( ! defined( 'BLACKBOX_BEDROCK_DISABLE' ) || ! BLACKBOX_BEDROCK_DISABLE );
+      $isLifestreamActive = empty( get_option( 'xophz_compass_disable_mu_styles' ) );
+      $hasBedrockLifestream = class_exists( '\BlackBOX\Core' ) && $isBedrockActive && $isLifestreamActive;
 
       // Prepare data for injection
       global $_wp_admin_css_colors, $menu, $submenu;
@@ -181,6 +181,7 @@ class Xophz_Compass_Admin {
           'siteUrl' => get_bloginfo('url'),
           'compassVersion' => XOPHZ_COMPASS_VERSION,
           'eventHorizonVersion' => $ehVersion,
+          'hasBedrockLifestream' => $hasBedrockLifestream,
           'vapidPublicKey' => class_exists( 'Xophz_Compass_Push_API' ) ? Xophz_Compass_Push_API::get_public_key() : '',
           'branding' => class_exists( 'Xophz_Compass_Branding' ) ? Xophz_Compass_Branding::get_config() : null,
           'pluginUrl' => plugin_dir_url( dirname( __FILE__ ) ),
