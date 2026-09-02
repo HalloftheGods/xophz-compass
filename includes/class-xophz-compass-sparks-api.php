@@ -50,7 +50,12 @@ class Xophz_Compass_Sparks_API {
 	public function get_sparks( $request ) {
 		// Use a filter so other plugins can push their sparks to the payload
 		$sparks = apply_filters( 'xophz_register_sparks', array() );
-		return rest_ensure_response( $sparks );
+		$spark_list = is_array( $sparks ) ? array_values( $sparks ) : array();
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'data'    => $spark_list,
+		) );
 	}
 
 	/**
@@ -64,9 +69,25 @@ class Xophz_Compass_Sparks_API {
 		$manifest = apply_filters( 'xophz_get_spark_manifest', null, $id );
 
 		if ( empty( $manifest ) ) {
-			return new WP_Error( 'rest_spark_not_found', 'No spark manifest found for this ID.', array( 'status' => 404 ) );
+			return new WP_Error(
+				'rest_spark_not_found',
+				'No spark manifest found for this ID.',
+				array(
+					'status' => 404,
+					'data'   => array(
+						'success' => false,
+						'error'   => array(
+							'code'    => 'rest_spark_not_found',
+							'message' => 'No spark manifest found for this ID.',
+						),
+					),
+				)
+			);
 		}
 
-		return rest_ensure_response( $manifest );
+		return rest_ensure_response( array(
+			'success' => true,
+			'data'    => $manifest,
+		) );
 	}
 }
