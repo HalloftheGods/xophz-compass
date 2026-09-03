@@ -160,6 +160,9 @@ class Xophz_Compass_Admin {
         ? XOPHZ_COMPASS_EVENT_HORIZON_VERSION
         : '0.0.0';
 
+      // Trigger third-party admin plugin registration hook
+      do_action( 'xophz_compass_register_plugins' );
+
       $settings = [
           'adminColors' => $_wp_admin_css_colors,
           'currentUser' => [
@@ -187,6 +190,7 @@ class Xophz_Compass_Admin {
           'pluginUrl' => plugin_dir_url( dirname( __FILE__ ) ),
           'assetsUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/',
           'texturesUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/textures/planets/',
+          'externalPlugins' => apply_filters( 'xophz_compass_registered_plugins', Xophz_Compass::get_registered_admin_plugins() ),
       ];
 
       if ( $this->isDevServer() ) {
@@ -373,6 +377,15 @@ class Xophz_Compass_Admin {
       'href'   => 'https://mycompassconsulting.com/support',
       'meta'   => array( 'target' => '_blank' ),
     ) );
+  }
+
+  /**
+   * Trigger third-party plugin registration hook.
+   *
+   * @since    1.0.0
+   */
+  public function trigger_register_plugins() {
+    do_action( 'xophz_compass_register_plugins' );
   }
 
   /**

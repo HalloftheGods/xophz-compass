@@ -42,6 +42,12 @@ define( 'XOPHZ_COMPASS_VERSION', '26.9.3-237' );
 define( 'XOPHZ_COMPASS_PATH', plugin_dir_path( __FILE__ ) );
 
 /**
+ * Register Core Helper Suite autoloader for Xophz_Compass_* classes.
+ */
+require_once XOPHZ_COMPASS_PATH . 'includes/core/class-compass-autoloader.php';
+Xophz_Compass_Autoloader::register();
+
+/**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-xophz-compass-activator.php
  */
@@ -87,3 +93,18 @@ function run_xophz_compass() {
   $plugin->run();
 }
 add_action( 'plugins_loaded', 'run_xophz_compass' );
+
+function xophz_compass_action_links( $links ) {
+  foreach ( $links as $link ) {
+    if ( stripos( $link, '>Settings<' ) !== false ) {
+      return $links;
+    }
+  }
+  $settings_link = '<a href="options-general.php?page=w4-my-compass">' . __( 'Settings', 'xophz-compass' ) . '</a>';
+  $new_links = array( 'settings' => $settings_link );
+  foreach ( $links as $key => $value ) {
+    $new_links[ $key ] = $value;
+  }
+  return $new_links;
+}
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'xophz_compass_action_links' );

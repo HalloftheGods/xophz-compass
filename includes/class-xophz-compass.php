@@ -201,6 +201,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles', 999999 );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
     $this->loader->add_filter( 'script_loader_tag', $plugin_admin, 'add_module_type', 10, 3 );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'trigger_register_plugins', 5 );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_w4_my_compass_menu');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_my_compass_settings');
@@ -526,6 +527,92 @@ class Xophz_Compass {
 		return wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 	}
 
+	/**
+	 * Registry of external third-party admin plugins registered with Compass.
+	 *
+	 * @var array
+	 */
+	public static $registered_admin_plugins = array();
+
+	/**
+	 * Register an external third-party plugin with the Compass admin portal.
+	 *
+	 * @param array $args Plugin configuration arguments.
+	 * @return bool True if registered successfully, false otherwise.
+	 */
+	public static function register_admin_plugin( $args ) {
+		if ( empty( $args['slug'] ) ) {
+			return false;
+		}
+
+		$slug = sanitize_key( $args['slug'] );
+		$defaults = array(
+			'slug'        => $slug,
+			'name'        => ucwords( str_replace( '-', ' ', $slug ) ),
+			'title'       => ucwords( str_replace( '-', ' ', $slug ) ),
+			'description' => '',
+			'icon'        => 'fal fa-puzzle-piece',
+			'color'       => '#62c9ff',
+			'category'    => 'Command Deck',
+			'script_url'  => '',
+			'style_url'   => '',
+			'version'     => '1.0.0',
+			'capability'  => 'manage_options',
+			'navigation'  => array(),
+			'mount_mode'  => 'component',
+		);
+
+		$plugin_data = wp_parse_args( $args, $defaults );
+		if ( empty( $plugin_data['name'] ) && ! empty( $plugin_data['title'] ) ) {
+			$plugin_data['name'] = $plugin_data['title'];
+		}
+
+		self::$registered_admin_plugins[ $slug ] = $plugin_data;
+
+		// Add WordPress submenu under Compass
+		$register_submenu = function() use ( $slug, $plugin_data ) {
+			global $submenu;
+			$compass = 'xophz-compass';
+			$cap = ! empty( $plugin_data['capability'] ) ? $plugin_data['capability'] : 'manage_options';
+			$title = $plugin_data['name'];
+
+			if ( ! isset( $submenu[ $compass ] ) ) {
+				$submenu[ $compass ] = array();
+			}
+
+			// Prevent duplicate submenu entries
+			$target_url = "admin.php?page={$compass}#/plugin/{$slug}";
+			foreach ( $submenu[ $compass ] as $item ) {
+				if ( isset( $item[2] ) && ( $item[2] === $target_url || $item[2] === "admin.php?page={$compass}#/{$slug}" ) ) {
+					return;
+				}
+			}
+
+			$submenu[ $compass ][] = array(
+				__( $title, 'xophz-compass' ),
+				$cap,
+				$target_url,
+			);
+		};
+
+		if ( did_action( 'admin_menu' ) ) {
+			$register_submenu();
+		} else {
+			add_action( 'admin_menu', $register_submenu, 12 );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get all registered external admin plugins.
+	 *
+	 * @return array
+	 */
+	public static function get_registered_admin_plugins() {
+		return self::$registered_admin_plugins;
+	}
+
   public static function add_submenu($plugin, $args=[]){
       global $submenu;
 
@@ -613,8 +700,7 @@ class Xophz_Compass {
 	 * @return    string    HTTP Method.
 	 */
   public static function get_http_method(){
-    // Retrieve HTTP method
-    return filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_SANITIZE_STRING);
+    return Xophz_Compass_Sanitization::get_http_method();
   }
 
   public static function update_post_meta($id, $key, $payload){
