@@ -18,33 +18,39 @@ class Xophz_Compass_Dev_Proxy {
 	 * Configuration properties.
 	 */
 	protected string $slug;
+	protected string $default_slug;
 	protected int $dev_port;
 	protected string $query_var;
 	protected string $plugin_path;
 	protected string $plugin_url;
 	protected string $version;
 	protected array $candidate_dist_paths;
+	protected array $extra_settings = array();
 
 	/**
 	 * Constructor.
 	 *
 	 * @param array{
 	 *   slug: string,
+	 *   default_slug?: string,
 	 *   dev_port: int,
 	 *   query_var: string,
 	 *   plugin_path: string,
 	 *   plugin_url: string,
 	 *   version: string,
-	 *   candidate_dist_paths?: array<int, string>
+	 *   candidate_dist_paths?: array<int, string>,
+	 *   extra_settings?: array<string, mixed>
 	 * } $config Configuration array.
 	 */
 	public function __construct( array $config ) {
-		$this->slug        = $config['slug'];
-		$this->dev_port    = $config['dev_port'];
-		$this->query_var   = $config['query_var'];
-		$this->plugin_path = rtrim( $config['plugin_path'], '/' ) . '/';
-		$this->plugin_url  = rtrim( $config['plugin_url'], '/' ) . '/';
-		$this->version     = $config['version'];
+		$this->slug           = $config['slug'];
+		$this->default_slug   = $config['default_slug'] ?? $this->slug;
+		$this->dev_port       = $config['dev_port'];
+		$this->query_var      = $config['query_var'];
+		$this->plugin_path    = rtrim( $config['plugin_path'], '/' ) . '/';
+		$this->plugin_url     = rtrim( $config['plugin_url'], '/' ) . '/';
+		$this->version        = $config['version'];
+		$this->extra_settings = $config['extra_settings'] ?? array();
 
 		$this->candidate_dist_paths = $config['candidate_dist_paths'] ?? array(
 			$this->plugin_path . 'public/dist/index.html',
@@ -56,6 +62,61 @@ class Xophz_Compass_Dev_Proxy {
 	}
 
 	/**
+	 * Extract and normalize host from HTTP Host header or host configuration string,
+	 * safely stripping port and scheme while preserving IPv4, hostname, and bracketed IPv6.
+	 *
+	 * @param string $raw_host Raw Host header or host string.
+	 * @return string Normalized host suitable for URL authority.
+	 */
+	public static function extract_host( string $raw_host ): string {
+		$raw_host = trim( $raw_host );
+		if ( empty( $raw_host ) ) {
+			return 'localhost';
+		}
+
+		// Strip scheme if present (e.g. http:// or https://)
+		$raw_host = preg_replace( '#^https?://#i', '', $raw_host );
+
+		// Strip trailing slashes and path components
+		$raw_host = explode( '/', $raw_host )[0];
+		$raw_host = trim( $raw_host );
+
+		if ( empty( $raw_host ) ) {
+			return 'localhost';
+		}
+
+		// 1. Bracketed IPv6 with optional port: [::1] or [::1]:8080 -> [::1]
+		if ( str_starts_with( $raw_host, '[' ) ) {
+			$close_bracket = strpos( $raw_host, ']' );
+			if ( false !== $close_bracket ) {
+				return substr( $raw_host, 0, $close_bracket + 1 );
+			}
+		}
+
+		// 2. Raw unbracketed IPv6 without port: ::1 or 2001:db8::1 -> [::1] or [2001:db8::1]
+		if ( filter_var( $raw_host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) !== false ) {
+			return '[' . $raw_host . ']';
+		}
+
+		// 3. Standard IPv4 or hostname with optional port: localhost:8080 -> localhost
+		$parsed_host = function_exists( 'wp_parse_url' )
+			? wp_parse_url( 'http://' . $raw_host, PHP_URL_HOST )
+			: parse_url( 'http://' . $raw_host, PHP_URL_HOST );
+
+		if ( ! empty( $parsed_host ) && is_string( $parsed_host ) ) {
+			return $parsed_host;
+		}
+
+		// 4. Fallback port strip by splitting on colon
+		if ( strpos( $raw_host, ':' ) !== false ) {
+			$parts = explode( ':', $raw_host );
+			return ! empty( $parts[0] ) ? $parts[0] : 'localhost';
+		}
+
+		return $raw_host;
+	}
+
+	/**
 	 * Probe whether a dev server is actively listening on given port and host.
 	 *
 	 * @param int    $port    Dev server port.
@@ -64,6 +125,7 @@ class Xophz_Compass_Dev_Proxy {
 	 * @return bool
 	 */
 	public static function is_dev_active( int $port, string $host = '127.0.0.1', float $timeout = 0.15 ): bool {
+		$host       = self::extract_host( $host );
 		$connection = @fsockopen( $host, $port, $errno, $errstr, $timeout );
 		if ( is_resource( $connection ) ) {
 			fclose( $connection );
@@ -73,16 +135,56 @@ class Xophz_Compass_Dev_Proxy {
 	}
 
 	/**
+	 * Get prioritized list of candidate dev hosts.
+	 * Checks getenv('COMPASS_DEV_HOST') first, falling back to $_ENV, $_SERVER, and constant COMPASS_DEV_HOST.
+	 * Trims whitespace, eliminates duplicates, and prioritizes custom host to index 0.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function get_candidate_hosts(): array {
+		$candidates = array( 'compass', '127.0.0.1', 'localhost', 'host.docker.internal' );
+
+		$raw_host = getenv( 'COMPASS_DEV_HOST' );
+		if ( false === $raw_host || '' === trim( (string) $raw_host ) ) {
+			if ( defined( 'COMPASS_DEV_HOST' ) && ! empty( COMPASS_DEV_HOST ) && is_string( COMPASS_DEV_HOST ) && '' !== trim( COMPASS_DEV_HOST ) ) {
+				$raw_host = COMPASS_DEV_HOST;
+			} elseif ( ! empty( $_ENV['COMPASS_DEV_HOST'] ) && is_string( $_ENV['COMPASS_DEV_HOST'] ) && '' !== trim( $_ENV['COMPASS_DEV_HOST'] ) ) {
+				$raw_host = $_ENV['COMPASS_DEV_HOST'];
+			} elseif ( ! empty( $_SERVER['COMPASS_DEV_HOST'] ) && is_string( $_SERVER['COMPASS_DEV_HOST'] ) && '' !== trim( $_SERVER['COMPASS_DEV_HOST'] ) ) {
+				$raw_host = $_SERVER['COMPASS_DEV_HOST'];
+			} else {
+				$raw_host = null;
+			}
+		}
+
+		$configured = array();
+		if ( null !== $raw_host && '' !== trim( (string) $raw_host ) ) {
+			foreach ( explode( ',', (string) $raw_host ) as $part ) {
+				$trimmed = trim( $part );
+				if ( '' !== $trimmed ) {
+					$clean = self::extract_host( $trimmed );
+					if ( '' !== $clean ) {
+						$configured[] = $clean;
+					}
+				}
+			}
+		}
+
+		if ( ! empty( $configured ) ) {
+			$candidates = array_values( array_unique( array_merge( $configured, $candidates ) ) );
+		}
+
+		return $candidates;
+	}
+
+	/**
 	 * Probe candidate dev hosts and return the first active host, or null.
 	 *
 	 * @param int $port Dev server port.
 	 * @return string|null
 	 */
 	public static function resolve_host( int $port ): ?string {
-		$candidates = array( 'compass', '127.0.0.1', 'localhost' );
-		if ( defined( 'COMPASS_DEV_HOST' ) && ! empty( COMPASS_DEV_HOST ) ) {
-			array_unshift( $candidates, COMPASS_DEV_HOST );
-		}
+		$candidates = self::get_candidate_hosts();
 
 		foreach ( $candidates as $host ) {
 			if ( self::is_dev_active( $port, $host, 0.15 ) ) {
@@ -125,7 +227,7 @@ class Xophz_Compass_Dev_Proxy {
 	 * Register rewrite rules for the slug.
 	 */
 	public function register_rewrites(): void {
-		$slug = get_option( 'xophz_compass_' . str_replace( '-', '_', $this->slug ) . '_custom_slug', $this->slug );
+		$slug = get_option( 'xophz_compass_' . str_replace( '-', '_', $this->slug ) . '_custom_slug', $this->default_slug );
 		if ( empty( $slug ) ) {
 			return;
 		}
@@ -139,6 +241,13 @@ class Xophz_Compass_Dev_Proxy {
 	 * Check if current environment is in development mode.
 	 */
 	public function is_dev_mode(): bool {
+		$env_wp = getenv( 'WP_ENV' );
+		if ( false !== $env_wp && 'development' === trim( (string) $env_wp ) ) {
+			return true;
+		}
+		if ( function_exists( 'wp_get_environment_type' ) && 'development' === wp_get_environment_type() ) {
+			return true;
+		}
 		return ( defined( 'WP_ENV' ) && 'development' === WP_ENV ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG );
 	}
 
@@ -204,7 +313,8 @@ class Xophz_Compass_Dev_Proxy {
 			return false;
 		}
 
-		$wp_host = isset( $_SERVER['HTTP_HOST'] ) ? explode( ':', sanitize_text_field( $_SERVER['HTTP_HOST'] ) )[0] : 'localhost';
+		$raw_host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : 'localhost';
+		$wp_host  = self::extract_host( $raw_host );
 		$vite_url = '//' . $wp_host . ':' . $this->dev_port;
 
 		// Rewrite relative asset imports to Vite dev server
@@ -260,6 +370,10 @@ class Xophz_Compass_Dev_Proxy {
 		$html = str_replace( '"/assets/', '"' . $dist_url . 'assets/', $html );
 		$html = str_replace( "'/assets/", "'" . $dist_url . "assets/", $html );
 		$html = str_replace( '"/vite.svg"', '"' . $dist_url . 'vite.svg"', $html );
+		$html = str_replace( '"/registerSW.js"', '"' . $dist_url . 'registerSW.js"', $html );
+		$html = str_replace( '"/manifest.webmanifest"', '"' . $dist_url . 'manifest.webmanifest"', $html );
+		$html = str_replace( '"/_nuxt/', '"' . $dist_url . '_nuxt/', $html );
+		$html = str_replace( "'/_nuxt/", "'" . $dist_url . "_nuxt/", $html );
 
 		// Inject window.wpApiSettings
 		$settings_script = $this->build_api_settings_script();
@@ -298,6 +412,13 @@ class Xophz_Compass_Dev_Proxy {
 			'userId'      => $user_id,
 			'currentUser' => $user_data,
 		);
+
+		if ( ! empty( $this->extra_settings ) && is_array( $this->extra_settings ) ) {
+			$payload = array_merge( $payload, $this->extra_settings );
+		}
+
+		$payload = apply_filters( 'xophz_compass_dev_proxy_settings', $payload, $this->slug, $this );
+		$payload = apply_filters( "xophz_compass_dev_proxy_{$this->slug}_api_settings", $payload, $this->slug, $this );
 
 		return '<script>window.wpApiSettings = ' . wp_json_encode( $payload ) . ';</script>';
 	}

@@ -27,6 +27,7 @@ abstract class Xophz_Compass_Plugin_Base implements Xophz_Compass_Plugin_Interfa
 	 */
 	protected string $version;
 
+
 	/**
 	 * Main plugin entry file path.
 	 */
@@ -252,6 +253,15 @@ abstract class Xophz_Compass_Plugin_Base implements Xophz_Compass_Plugin_Interfa
 	 */
 	public function get_url(): string {
 		return $this->plugin_url;
+	}
+
+	/**
+	 * Get the loader instance (backwards-compatibility bridge for child plugins).
+	 *
+	 * @return self
+	 */
+	public function get_loader(): self {
+		return $this;
 	}
 
 	/**

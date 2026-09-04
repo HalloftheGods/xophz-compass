@@ -25,9 +25,17 @@
  * @since      0.0.0
  * @package    Xophz_Compass
  * @subpackage Xophz_Compass/includes
- * @author     Xoph <x@mycompassconsulting.com>
  */
+
+if ( ! trait_exists( 'Xophz_Compass_Hookable_Trait' ) ) {
+	$trait_file = dirname( __DIR__ ) . '/includes/core/trait-compass-hookable.php';
+	if ( file_exists( $trait_file ) ) {
+		require_once $trait_file;
+	}
+}
+
 class Xophz_Compass {
+	use Xophz_Compass_Hookable_Trait;
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -100,18 +108,6 @@ class Xophz_Compass {
 		$plugin_dir = defined( 'XOPHZ_COMPASS_PATH' ) ? XOPHZ_COMPASS_PATH : plugin_dir_path( __DIR__ );
 
 		/**
-		 * The class responsible for orchestrating the actions and filters of the
-		 * core plugin.
-		 */
-		require_once $plugin_dir . 'includes/class-xophz-compass-loader.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once $plugin_dir . 'includes/class-xophz-compass-i18n.php';
-
-		/**
 		 * The class responsible for centralized branding configuration.
 		 */
 		require_once $plugin_dir . 'includes/class-xophz-compass-branding.php';
@@ -163,7 +159,7 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-integrations.php';
 		Xophz_Compass_Integrations::get_instance();
 
-		$this->loader = new Xophz_Compass_Loader();
+		$this->loader = $this;
 
 		
 
@@ -180,11 +176,11 @@ class Xophz_Compass {
 	 * @access   private
 	 */
 	private function set_locale() {
-
-		$plugin_i18n = new Xophz_Compass_i18n();
-
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-
+		load_plugin_textdomain(
+			'xophz-compass',
+			false,
+			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
+		);
 	}
 
 	/**
@@ -346,7 +342,7 @@ class Xophz_Compass {
 	 * @since    0.0.0
 	 */
 	public function run() {
-		$this->loader->run();
+		$this->run_hooks();
 	}
 
 	/**

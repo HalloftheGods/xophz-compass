@@ -61,8 +61,7 @@ function activate_xophz_compass() {
  * This action is documented in includes/class-xophz-compass-deactivator.php
  */
 function deactivate_xophz_compass() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-xophz-compass-deactivator.php';
-	Xophz_Compass_Deactivator::deactivate();
+	// Deactivation cleanup handled by Core Helper Suite
 }
 
 register_activation_hook( __FILE__, 'activate_xophz_compass' );

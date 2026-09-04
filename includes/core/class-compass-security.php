@@ -136,13 +136,14 @@ class Xophz_Compass_Security {
 	 */
 	public static function check_rate_limit( string $rate_key, int $max_requests = 60, int $window_seconds = 60 ): bool {
 		$transient_name = 'compass_rl_' . md5( $rate_key );
-		$current = (int) get_transient( $transient_name );
+		$current        = get_transient( $transient_name );
 
 		if ( false === $current ) {
 			set_transient( $transient_name, 1, $window_seconds );
 			return true;
 		}
 
+		$current = (int) $current;
 		if ( $current >= $max_requests ) {
 			return false;
 		}
