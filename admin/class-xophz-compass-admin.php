@@ -174,6 +174,8 @@ class Xophz_Compass_Admin {
               'admin_color' => get_user_option('admin_color', $current_user->ID),
               'roles' => $current_user->roles,
               'avatar' => get_user_meta($current_user->ID, 'youmeos_avatar_url', true) ?: get_avatar_url($current_user->ID, ['size' => 96]),
+              'global_variant' => get_user_meta($current_user->ID, 'youmeos_global_variant', true) ?: 'luna',
+              'global_blur' => get_user_meta($current_user->ID, 'youmeos_global_blur', true) ?: 20,
           ],
           'adminMenu' => $menu,
           'adminSubmenu' => $submenu,
