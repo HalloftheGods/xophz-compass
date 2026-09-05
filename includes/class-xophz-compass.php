@@ -642,10 +642,28 @@ class Xophz_Compass {
           $default_name = trim(str_replace('Xophz', '', $plugin_data['Name']));
           $plugin_name = Xophz_Compass_Branding::get_plugin_name($page, $default_name);
 
+          if ( ! isset( $submenu[ $compass ] ) ) {
+              $submenu[ $compass ] = array();
+          }
+
+          $target_url = "admin.php?page={$compass}#/{$route_slug}";
+
+          // Prevent duplicate submenu entries
+          foreach ( $submenu[ $compass ] as $item ) {
+              if ( isset( $item[2] ) && (
+                  $item[2] === $target_url ||
+                  $item[2] === "admin.php?page={$compass}#/plugin/{$page}" ||
+                  $item[2] === "admin.php?page={$compass}#/plugin/{$route_slug}" ||
+                  $item[2] === "admin.php?page={$compass}#/{$page}"
+              ) ) {
+                  return;
+              }
+          }
+
           $submenu[ $compass ][] = [
               __( $plugin_name, $compass ),
               $cap,
-              "admin.php?page={$compass}#/{$route_slug}"
+              $target_url
           ];
       };
 

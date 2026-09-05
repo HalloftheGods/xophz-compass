@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-09-04]
+
+### Fixed
+- Menu Duplication: Added deduplication checks in `Xophz_Compass::add_submenu()` and `Xophz_Compass_Admin::sort_xophz_submenu_alphabetically()` to prevent child plugins and hooks from registering duplicate entries in the WordPress admin menu.
+
 ## [2026-05-01]
 
 ### Added

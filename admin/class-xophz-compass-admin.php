@@ -728,14 +728,29 @@ class Xophz_Compass_Admin {
       global $submenu;
       $parent_slug = 'xophz-compass';
 
-      if ( isset( $submenu[ $parent_slug ] ) ) {
+      if ( isset( $submenu[ $parent_slug ] ) && is_array( $submenu[ $parent_slug ] ) ) {
           $first_item = array_shift( $submenu[ $parent_slug ] );
 
-          usort( $submenu[ $parent_slug ], function( $a, $b ) {
+          $deduped = [];
+          $seen = [];
+          foreach ( $submenu[ $parent_slug ] as $item ) {
+              $url = $item[2] ?? '';
+              $norm_url = preg_replace( '#/plugin/#', '/', $url );
+              $title = wp_strip_all_tags( $item[0] ?? '' );
+              $key = $norm_url . '|' . $title;
+              if ( isset( $seen[ $key ] ) ) {
+                  continue;
+              }
+              $seen[ $key ] = true;
+              $deduped[] = $item;
+          }
+
+          usort( $deduped, function( $a, $b ) {
               return strcmp( $a[0], $b[0] );
           } );
 
-          array_unshift( $submenu[ $parent_slug ], $first_item );
+          array_unshift( $deduped, $first_item );
+          $submenu[ $parent_slug ] = $deduped;
       }
   }
 

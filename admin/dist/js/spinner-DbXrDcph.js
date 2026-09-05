@@ -1,0 +1,1 @@
+import{cd as e,m as c,ca as n}from"./vendor-BVn3J3rq.js";import{a as r}from"./index-BgLe04fg.js";const i={},t={class:"trinity-rings-spinner"};function a(l,s){return n(),e("div",t,[...s[0]||(s[0]=[c("div",{class:"circle"},null,-1),c("div",{class:"circle"},null,-1),c("div",{class:"circle"},null,-1)])])}const _=r(i,[["render",a],["__scopeId","data-v-ad2d5cce"]]);export{_ as t};
