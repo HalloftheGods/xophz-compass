@@ -320,4 +320,105 @@ describe('Tier 2: Boundary & Corner Cases', () => {
     assert.strictEqual(res.dedupedOccurrences, 1, 'Prioritized existing candidate must not be duplicated');
     assert.strictEqual(res.whitespaceFirst, 'compass', 'Whitespace-only COMPASS_DEV_HOST must fall back to default');
   });
+
+  it('B18: Dev Proxy strictly rejects dev mode and socket probing under production environments', () => {
+    const res = runPhpJson(`
+      // Bind a test listener on loopback port 48191
+      $socket = stream_socket_server('tcp://127.0.0.1:48191', $errno, $errstr);
+
+      // Baseline: with dev mode explicitly active, resolve_host returns 127.0.0.1
+      putenv('WP_ENV=development');
+      $devResult = Xophz_Compass_Dev_Proxy::resolve_host(48191);
+      $isDevTrue = Xophz_Compass_Dev_Proxy::is_dev_mode();
+
+      // Test 1: WP_ENV=production strictly disables dev mode and returns null from resolve_host
+      putenv('WP_ENV=production');
+      $prodResult = Xophz_Compass_Dev_Proxy::resolve_host(48191);
+      $isDevProd = Xophz_Compass_Dev_Proxy::is_dev_mode();
+
+      // Test 2: WP_DEBUG=true with WP_ENV=production still returns false
+      define('WP_DEBUG', true);
+      $isDevWithDebug = Xophz_Compass_Dev_Proxy::is_dev_mode();
+      $prodWithDebug = Xophz_Compass_Dev_Proxy::resolve_host(48191);
+
+      // Test 3: ?prod=1 query parameter override forces dev mode off
+      putenv('WP_ENV=development');
+      $_GET['prod'] = '1';
+      $prodQueryParam = Xophz_Compass_Dev_Proxy::is_dev_mode();
+      $resolveWithProdParam = Xophz_Compass_Dev_Proxy::resolve_host(48191);
+      unset($_GET['prod']);
+
+      if ($socket) {
+        fclose($socket);
+      }
+      putenv('WP_ENV'); // Clean up
+
+      echo json_encode([
+        'isDevTrue'            => $isDevTrue,
+        'devResult'            => $devResult,
+        'isDevProd'            => $isDevProd,
+        'prodResult'           => $prodResult,
+        'isDevWithDebug'       => $isDevWithDebug,
+        'prodWithDebug'        => $prodWithDebug,
+        'prodQueryParam'       => $prodQueryParam,
+        'resolveWithProdParam' => $resolveWithProdParam
+      ]);
+    `);
+
+    assert.strictEqual(res.isDevTrue, true, 'Dev mode must be true when WP_ENV=development');
+    assert.strictEqual(res.devResult, '127.0.0.1', 'resolve_host must find active listener in dev');
+    assert.strictEqual(res.isDevProd, false, 'Dev mode must be false when WP_ENV=production');
+    assert.strictEqual(res.prodResult, null, 'resolve_host must return null in production despite active socket');
+    assert.strictEqual(res.isDevWithDebug, false, 'Dev mode must stay false in production even if WP_DEBUG is true');
+    assert.strictEqual(res.prodWithDebug, null, 'resolve_host must return null in production even if WP_DEBUG is true');
+    assert.strictEqual(res.prodQueryParam, false, '?prod=1 must force dev mode off');
+    assert.strictEqual(res.resolveWithProdParam, null, 'resolve_host must return null when ?prod=1 is set');
+  });
+
+  it('B19: Dev Proxy inject_or_enqueue serves production dist and never injects Vite client in production', () => {
+    const res = runPhpJson(`
+      // Mock wp_enqueue_script calls
+      global $test_enqueued_scripts;
+      $test_enqueued_scripts = [];
+      if (!function_exists('plugins_url')) {
+        function plugins_url($path = '') {
+          return 'https://example.com/wp-content/plugins/' . ltrim($path, '/');
+        }
+      }
+      if (!function_exists('wp_enqueue_script')) {
+        function wp_enqueue_script($handle, $src = '', $deps = [], $ver = false, $in_footer = false) {
+          global $test_enqueued_scripts;
+          $test_enqueued_scripts[] = [
+            'handle' => $handle,
+            'src'    => $src
+          ];
+        }
+      }
+
+      putenv('WP_ENV=production');
+      $distPath = '/var/www/html/wp-content/plugins/xophz-compass/tests/harness/test-framework.mjs'; // Existing file
+      Xophz_Compass_Dev_Proxy::inject_or_enqueue('test-handle', 9000, $distPath);
+
+      global $test_enqueued_scripts;
+      $scripts = $test_enqueued_scripts;
+      putenv('WP_ENV');
+
+      $injectedVite = false;
+      foreach ($scripts as $s) {
+        if (strpos($s['src'], ':9000') !== false || strpos($s['src'], '@vite') !== false) {
+          $injectedVite = true;
+        }
+      }
+
+      echo json_encode([
+        'enqueuedCount' => count($scripts),
+        'injectedVite'  => $injectedVite,
+        'firstHandle'   => $scripts[0]['handle'] ?? null
+      ]);
+    `);
+
+    assert.strictEqual(res.enqueuedCount, 1, 'Exactly one script must be enqueued');
+    assert.strictEqual(res.injectedVite, false, 'Must never inject Vite client or port 9000 in production');
+    assert.strictEqual(res.firstHandle, 'test-handle', 'Enqueued script must be production dist handle');
+  });
 }, { tier: 2 });

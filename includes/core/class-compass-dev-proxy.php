@@ -184,6 +184,10 @@ class Xophz_Compass_Dev_Proxy {
 	 * @return string|null
 	 */
 	public static function resolve_host( int $port ): ?string {
+		if ( ! self::is_dev_mode() ) {
+			return null;
+		}
+
 		$candidates = self::get_candidate_hosts();
 
 		foreach ( $candidates as $host ) {
@@ -203,12 +207,27 @@ class Xophz_Compass_Dev_Proxy {
 	 * @param string $dist_path Relative or absolute path to production dist.
 	 */
 	public static function inject_or_enqueue( string $handle, int $port, string $dist_path ): void {
+		if ( ! self::is_dev_mode() ) {
+			if ( file_exists( $dist_path ) ) {
+				$url = function_exists( 'plugins_url' ) ? plugins_url( $dist_path ) : $dist_path;
+				if ( function_exists( 'wp_enqueue_script' ) ) {
+					wp_enqueue_script( $handle, $url, array(), null, true );
+				}
+			}
+			return;
+		}
+
 		$host = self::resolve_host( $port );
 		if ( $host ) {
 			$vite_client = 'http://' . $host . ':' . $port . '/@vite/client';
-			wp_enqueue_script( $handle . '-vite-client', $vite_client, array(), null, false );
+			if ( function_exists( 'wp_enqueue_script' ) ) {
+				wp_enqueue_script( $handle . '-vite-client', $vite_client, array(), null, false );
+			}
 		} elseif ( file_exists( $dist_path ) ) {
-			wp_enqueue_script( $handle, plugins_url( $dist_path ), array(), null, true );
+			$url = function_exists( 'plugins_url' ) ? plugins_url( $dist_path ) : $dist_path;
+			if ( function_exists( 'wp_enqueue_script' ) ) {
+				wp_enqueue_script( $handle, $url, array(), null, true );
+			}
 		}
 	}
 
@@ -240,15 +259,82 @@ class Xophz_Compass_Dev_Proxy {
 	/**
 	 * Check if current environment is in development mode.
 	 */
-	public function is_dev_mode(): bool {
+	public static function is_dev_mode(): bool {
+		// 1. Explicit production overrides and killswitches: always false in production
+		if ( isset( $_GET['prod'] ) ) {
+			return false;
+		}
+
+		if ( defined( 'COMPASS_FORCE_PROD' ) && COMPASS_FORCE_PROD ) {
+			return false;
+		}
+
 		$env_wp = getenv( 'WP_ENV' );
-		if ( false !== $env_wp && 'development' === trim( (string) $env_wp ) ) {
+		if ( false !== $env_wp && in_array( strtolower( trim( (string) $env_wp ) ), array( 'production', 'staging' ), true ) ) {
+			return false;
+		}
+
+		if ( defined( 'WP_ENV' ) && in_array( strtolower( (string) WP_ENV ), array( 'production', 'staging' ), true ) ) {
+			return false;
+		}
+
+		if ( ! empty( $_ENV['WP_ENV'] ) && in_array( strtolower( trim( (string) $_ENV['WP_ENV'] ) ), array( 'production', 'staging' ), true ) ) {
+			return false;
+		}
+
+		if ( ! empty( $_SERVER['WP_ENV'] ) && in_array( strtolower( trim( (string) $_SERVER['WP_ENV'] ) ), array( 'production', 'staging' ), true ) ) {
+			return false;
+		}
+
+		$env_type = getenv( 'WP_ENVIRONMENT_TYPE' );
+		if ( false !== $env_type && in_array( strtolower( trim( (string) $env_type ) ), array( 'production', 'staging' ), true ) ) {
+			return false;
+		}
+
+		if ( defined( 'WP_ENVIRONMENT_TYPE' ) && in_array( strtolower( (string) WP_ENVIRONMENT_TYPE ), array( 'production', 'staging' ), true ) ) {
+			return false;
+		}
+
+		if ( function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'production', 'staging' ), true ) ) {
+			if ( defined( 'WP_ENVIRONMENT_TYPE' ) || false !== $env_type || ! ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ) {
+				return false;
+			}
+		}
+
+		// 2. Explicit development indicators
+		if ( isset( $_GET['dev'] ) || isset( $_GET['vite'] ) ) {
 			return true;
 		}
+
+		if ( false !== $env_wp && 'development' === strtolower( trim( (string) $env_wp ) ) ) {
+			return true;
+		}
+
+		if ( defined( 'WP_ENV' ) && 'development' === strtolower( (string) WP_ENV ) ) {
+			return true;
+		}
+
+		if ( ! empty( $_ENV['WP_ENV'] ) && 'development' === strtolower( trim( (string) $_ENV['WP_ENV'] ) ) ) {
+			return true;
+		}
+
+		if ( ! empty( $_SERVER['WP_ENV'] ) && 'development' === strtolower( trim( (string) $_SERVER['WP_ENV'] ) ) ) {
+			return true;
+		}
+
 		if ( function_exists( 'wp_get_environment_type' ) && 'development' === wp_get_environment_type() ) {
 			return true;
 		}
-		return ( defined( 'WP_ENV' ) && 'development' === WP_ENV ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG );
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			return true;
+		}
+
+		if ( defined( 'COMPASS_DEV_HOST' ) || ( false !== getenv( 'COMPASS_DEV_HOST' ) && '' !== trim( (string) getenv( 'COMPASS_DEV_HOST' ) ) ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
