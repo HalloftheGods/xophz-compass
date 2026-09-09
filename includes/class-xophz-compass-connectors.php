@@ -214,13 +214,24 @@ class Xophz_Compass_Connectors {
 		// Stripe Configuration
 		// ---------------------------------------------------------
 		$registry->register( 'stripe_secret_key', array(
-			'name'           => __( 'Stripe Secret Key', 'xophz-compass' ),
-			'description'    => __( 'Secret key for Stripe Checkout and billing integrations.', 'xophz-compass' ),
+			'name'           => __( 'Stripe Secret Key (Live)', 'xophz-compass' ),
+			'description'    => __( 'Live secret key for Stripe Checkout and billing integrations.', 'xophz-compass' ),
 			'type'           => 'payment',
 			'authentication' => array(
 				'method'          => 'api_key',
 				'credentials_url' => 'https://dashboard.stripe.com/apikeys',
 				'setting_name'    => 'compass_stripe_secret_key',
+			),
+		) );
+
+		$registry->register( 'stripe_test_secret_key', array(
+			'name'           => __( 'Stripe Test Secret Key (Sandbox)', 'xophz-compass' ),
+			'description'    => __( 'Test secret key (sk_test_...) for local development and sandbox checkouts.', 'xophz-compass' ),
+			'type'           => 'payment',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => 'https://dashboard.stripe.com/test/apikeys',
+				'setting_name'    => 'compass_stripe_test_secret_key',
 			),
 		) );
 
@@ -326,12 +337,21 @@ class Xophz_Compass_Connectors {
 		return array(
 			array(
 				'id'           => 'stripe',
-				'name'         => 'Stripe Payments Bridge',
+				'name'         => 'Stripe Payments Bridge (Live)',
 				'setting_name' => 'compass_stripe_secret_key',
 				'type'         => 'payment',
 				'icon'         => 'fab fa-stripe-s',
 				'color'        => '#635bff',
-				'description'  => 'Sync e-commerce transactions, customer billing, and subscriptions',
+				'description'  => 'Sync e-commerce transactions, customer billing, and live subscriptions',
+			),
+			array(
+				'id'           => 'stripe_test',
+				'name'         => 'Stripe Test Payments Bridge',
+				'setting_name' => 'compass_stripe_test_secret_key',
+				'type'         => 'payment',
+				'icon'         => 'fab fa-stripe-s',
+				'color'        => '#00d4ff',
+				'description'  => 'Test sandbox secret key (sk_test_...) for local dev testing and checkout simulation',
 			),
 			array(
 				'id'           => 'hookshot',
