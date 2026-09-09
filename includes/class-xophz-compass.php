@@ -601,11 +601,91 @@ class Xophz_Compass {
 	}
 
 	/**
+	 * Discover installed child or external COMPASS plugins providing an admin script or bridge.
+	 */
+	public static function discover_installed_admin_plugins() {
+		if ( ! defined( 'WP_PLUGIN_DIR' ) ) {
+			return;
+		}
+
+		$plugin_dirs = glob( WP_PLUGIN_DIR . '/xophz-compass-*', GLOB_ONLYDIR );
+		if ( empty( $plugin_dirs ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'get_file_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		foreach ( $plugin_dirs as $dir ) {
+			$folder = basename( $dir );
+			$slug = str_replace( 'xophz-compass-', '', $folder );
+
+			if ( isset( self::$registered_admin_plugins[ $slug ] ) ) {
+				continue;
+			}
+
+			$admin_script = $dir . '/admin/js/' . $slug . '-admin.js';
+			if ( ! file_exists( $admin_script ) ) {
+				continue;
+			}
+
+			$main_file = $dir . '/' . $folder . '.php';
+			if ( ! file_exists( $main_file ) ) {
+				continue;
+			}
+
+			$plugin_data = get_file_data( $main_file, array(
+				'name'        => 'Plugin Name',
+				'title'       => 'Title',
+				'description' => 'Description',
+				'version'     => 'Version',
+				'category'    => 'Category',
+			) );
+
+			$name = ! empty( $plugin_data['name'] ) ? trim( str_replace( 'Xophz', '', $plugin_data['name'] ) ) : ucwords( str_replace( '-', ' ', $slug ) );
+			$title = ! empty( $plugin_data['title'] ) ? $plugin_data['title'] : $name;
+			$desc = ! empty( $plugin_data['description'] ) ? $plugin_data['description'] : '';
+			$cat = ! empty( $plugin_data['category'] ) ? $plugin_data['category'] : 'Command Deck';
+			$ver = ! empty( $plugin_data['version'] ) ? $plugin_data['version'] : '1.0.0';
+
+			$icon_url = file_exists( $dir . '/icon.svg' )
+				? plugins_url( 'icon.svg', $main_file )
+				: ( file_exists( $dir . '/icon.png' ) ? plugins_url( 'icon.png', $main_file ) : '' );
+
+			$navigation = array();
+			if ( $slug === 'card-vault' ) {
+				$navigation = array(
+					array( 'path' => '', 'title' => 'Dealer HQ', 'icon' => 'fal fa-tachometer-alt' ),
+					array( 'path' => 'consignors', 'title' => 'Consignors', 'icon' => 'fal fa-users' ),
+					array( 'path' => 'payouts', 'title' => 'Payouts Ledger', 'icon' => 'fal fa-file-invoice-dollar' ),
+					array( 'path' => 'settings', 'title' => 'Settings & Sync', 'icon' => 'fal fa-sliders-h' ),
+				);
+			}
+
+			self::register_admin_plugin( array(
+				'slug'        => $slug,
+				'name'        => $name,
+				'title'       => $title,
+				'description' => $desc,
+				'icon'        => $icon_url,
+				'color'       => '#62c9ff',
+				'category'    => $cat,
+				'script_url'  => plugins_url( 'admin/js/' . $slug . '-admin.js', $main_file ),
+				'version'     => $ver,
+				'capability'  => 'manage_options',
+				'navigation'  => $navigation,
+			) );
+		}
+	}
+
+	/**
 	 * Get all registered external admin plugins.
 	 *
 	 * @return array
 	 */
 	public static function get_registered_admin_plugins() {
+		self::discover_installed_admin_plugins();
 		return self::$registered_admin_plugins;
 	}
 

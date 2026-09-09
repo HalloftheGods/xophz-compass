@@ -825,6 +825,11 @@ class Xophz_Compass_Admin {
       }
       $plugins[$p]['isActivated'] = ( $slug === 'magic-formula' ) || in_array( $p, $active_plugins );
       $plugins[$p]['isInstalled'] = true;
+
+      $admin_js_slug = WP_PLUGIN_DIR . '/' . $plugin_folder . '/admin/js/' . $slug . '-admin.js';
+      if ( file_exists( $admin_js_slug ) ) {
+        $plugins[$p]['isUniversalPlugin'] = true;
+      }
       
       // Use branding helper for customizable plugin names
       $default_name = trim(str_replace('Xophz', '', $plugin['Name']));
