@@ -99,7 +99,11 @@ class Xophz_Compass_Stripe_API {
 		$price = (float) $request->get_param( 'price' );
 		$license = sanitize_text_field( (string) $request->get_param( 'license' ) );
 		$product_name = sanitize_text_field( (string) $request->get_param( 'product_name' ) );
-		$success_url = esc_url_raw( (string) $request->get_param( 'success_url' ) );
+		$raw_success_url = (string) $request->get_param( 'success_url' );
+		$success_url = esc_url_raw( $raw_success_url );
+		if ( ! empty( $success_url ) && strpos( $success_url, '{CHECKOUT_SESSION_ID}' ) === false && strpos( $success_url, 'CHECKOUT_SESSION_ID' ) !== false ) {
+			$success_url = str_replace( 'CHECKOUT_SESSION_ID', '{CHECKOUT_SESSION_ID}', $success_url );
+		}
 		$cancel_url = esc_url_raw( (string) $request->get_param( 'cancel_url' ) );
 		$tier = sanitize_text_field( (string) $request->get_param( 'tier' ) );
 
