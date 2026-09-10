@@ -334,6 +334,8 @@ class Xophz_Compass {
     $this->loader->add_filter( 'wp_mail_from', $this, 'modify_mail_from' );
     $this->loader->add_filter( 'wp_mail_from_name', $this, 'modify_mail_from_name' );
 
+    // Dynamic /buy/... route resolver for Compass plugins and themes
+    $this->loader->add_filter( 'xophz_resolve_buy_request', $this, 'resolve_compass_buy_request', 10, 3 );
 	}
 
 	/**
@@ -521,6 +523,71 @@ class Xophz_Compass {
 
 		// Default to SITENAME
 		return wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+	}
+
+	/**
+	 * Resolve dynamic /buy/... requests for Compass ecosystem plugins and themes.
+	 *
+	 * @param array|null $resolved
+	 * @param array      $segments Path segments (e.g. ['xophz-magic-hat'] or ['my-compass', 'xophz-magic-hat']).
+	 * @param array      $query    Query string params ($_GET).
+	 * @return array|null
+	 */
+	public function resolve_compass_buy_request( $resolved, $segments, $query = array() ) {
+		if ( ! empty( $resolved['handled'] ) ) {
+			return $resolved;
+		}
+
+		if ( empty( $segments ) || ! is_array( $segments ) ) {
+			return $resolved;
+		}
+
+		// Handle /buy/my-compass/{slug}
+		if ( $segments[0] === 'my-compass' ) {
+			array_shift( $segments );
+			if ( empty( $segments ) ) {
+				return $resolved;
+			}
+		}
+
+		$raw_slug = $segments[0];
+		$tier_from_path = $segments[1] ?? '';
+
+		$module = class_exists( 'Xophz_Compass_Modules_API' ) ? Xophz_Compass_Modules_API::find_module( $raw_slug ) : null;
+		if ( ! $module ) {
+			return $resolved;
+		}
+
+		$tier = sanitize_key( $query['tier'] ?? ( $tier_from_path ?: 'personal' ) );
+		if ( in_array( $tier, array( 'annual', 'lifetime' ), true ) ) {
+			$billing = $tier;
+			$tier    = 'personal';
+		} else {
+			$billing = sanitize_key( $query['billing'] ?? ( $segments[2] ?? 'annual' ) );
+		}
+
+		$pricing = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, $tier, $billing );
+		$mode = ( $pricing['billing'] === 'lifetime' ) ? 'payment' : 'subscription';
+
+		$metadata = array(
+			'source'      => 'compass_modules_registry',
+			'plugin_slug' => $module['slug'],
+			'tier'        => $pricing['tier'],
+			'billing'     => $pricing['billing'],
+			'sites'       => $pricing['sites'],
+			'route'       => implode( '/', $segments ),
+		);
+
+		return array(
+			'handled'      => true,
+			'price'        => $pricing['price'],
+			'product_name' => $pricing['name'],
+			'license'      => $pricing['name'],
+			'mode'         => $mode,
+			'interval'     => ( $mode === 'subscription' ? 'year' : '' ),
+			'tier'         => $pricing['tier'],
+			'metadata'     => $metadata,
+		);
 	}
 
 	/**

@@ -173,4 +173,115 @@ class Xophz_Compass_Security {
 
 		return $clean;
 	}
+
+	/**
+	 * Retrieve all allowed redirect domains for the Compass ecosystem.
+	 *
+	 * @return array
+	 */
+	public static function get_allowed_redirect_hosts(): array {
+		$default_hosts = array(
+			'xophz.com',
+			'mycompassconsulting.com',
+			'blackboxwhiteglove.com',
+			'youmeos.com',
+			'forthexp.com',
+			'glowitheflow.com',
+			'sacredrealm.org',
+			'hallofthegods.com',
+			'localhost',
+			'127.0.0.1',
+			'mycompass-localhost',
+			'mycompass.localhost',
+		);
+
+		// Include current site host
+		$current_host = wp_parse_url( home_url(), PHP_URL_HOST );
+		if ( ! empty( $current_host ) && ! in_array( $current_host, $default_hosts, true ) ) {
+			$default_hosts[] = $current_host;
+		}
+
+		// Include admin-configured ecosystem domains
+		$custom_domains = get_option( 'compass_trusted_redirect_domains', array() );
+		if ( is_string( $custom_domains ) ) {
+			$custom_domains = array_filter( array_map( 'trim', explode( "\n", $custom_domains ) ) );
+		}
+		if ( is_array( $custom_domains ) && ! empty( $custom_domains ) ) {
+			foreach ( $custom_domains as $d ) {
+				$clean_d = strtolower( trim( (string) $d ) );
+				if ( ! empty( $clean_d ) && ! in_array( $clean_d, $default_hosts, true ) ) {
+					$default_hosts[] = $clean_d;
+				}
+			}
+		}
+
+		// Include verified Hookshot client domains
+		$hookshot_domains = get_option( 'xophz_hookshot_client_domains', array() );
+		if ( is_array( $hookshot_domains ) && ! empty( $hookshot_domains ) ) {
+			foreach ( $hookshot_domains as $hd ) {
+				$clean_hd = strtolower( trim( (string) $hd ) );
+				if ( ! empty( $clean_hd ) && ! in_array( $clean_hd, $default_hosts, true ) ) {
+					$default_hosts[] = $clean_hd;
+				}
+			}
+		}
+
+		return apply_filters( 'compass_allowed_redirect_hosts', $default_hosts );
+	}
+
+	/**
+	 * Verify whether a redirect URL belongs to an authorized ecosystem host.
+	 *
+	 * @param string $url The destination URL.
+	 * @return bool True if destination is authorized, false otherwise.
+	 */
+	public static function is_allowed_redirect_url( string $url ): bool {
+		if ( empty( $url ) ) {
+			return false;
+		}
+
+		$parsed_scheme = wp_parse_url( $url, PHP_URL_SCHEME );
+		if ( empty( $parsed_scheme ) || ! in_array( strtolower( $parsed_scheme ), array( 'http', 'https' ), true ) ) {
+			return false;
+		}
+
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		if ( empty( $host ) ) {
+			return false;
+		}
+
+		$allowed_hosts = self::get_allowed_redirect_hosts();
+
+		foreach ( $allowed_hosts as $allowed ) {
+			$allowed = strtolower( trim( $allowed ) );
+			if ( empty( $allowed ) ) {
+				continue;
+			}
+
+			// Exact match or local dev match
+			if ( $host === $allowed || $host === 'localhost' || $host === '127.0.0.1' ) {
+				return true;
+			}
+
+			// Subdomain match (e.g. *.xophz.com or xophz.com matches app.xophz.com)
+			if ( str_starts_with( $allowed, '*.' ) ) {
+				$root_pattern = substr( $allowed, 2 );
+				if ( $host === $root_pattern || str_ends_with( $host, '.' . $root_pattern ) ) {
+					return true;
+				}
+			} elseif ( str_ends_with( $host, '.' . $allowed ) ) {
+				return true;
+			}
+
+			// Localhost development pattern (*.local, *.test, *.localhost)
+			if ( in_array( $allowed, array( '*.local', '*.test', '*.localhost' ), true ) ) {
+				$suffix = substr( $allowed, 1 );
+				if ( str_ends_with( $host, $suffix ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 }

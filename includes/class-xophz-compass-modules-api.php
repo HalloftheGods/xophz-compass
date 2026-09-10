@@ -72,6 +72,84 @@ class Xophz_Compass_Modules_API {
 				'permission_callback' => '__return_true',
 			)
 		) );
+
+		register_rest_route( 'xophz/v1', '/license/verify', array(
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'verify_license_session' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'session_id' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		) );
+	}
+
+	/**
+	 * Verify Stripe Checkout Session and issue/activate client license key.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function verify_license_session( $request ) {
+		$session_id = sanitize_text_field( (string) $request->get_param( 'session_id' ) );
+		if ( empty( $session_id ) ) {
+			return new WP_Error( 'missing_session', 'Stripe checkout session ID is required.', array( 'status' => 400 ) );
+		}
+
+		$records = get_option( '_xophz_bazaar_adhoc_ledger', array() );
+		$tx = $records[ $session_id ] ?? null;
+
+		$slug     = 'xophz-magic-hat';
+		$tier     = 'personal';
+		$billing  = 'annual';
+		$sites    = 1;
+
+		if ( is_array( $tx ) && ! empty( $tx['metadata'] ) ) {
+			$meta    = $tx['metadata'];
+			$slug    = $meta['plugin_slug'] ?? ( $meta['route'] ?? 'xophz-magic-hat' );
+			$tier    = $meta['tier'] ?? 'personal';
+			$billing = $meta['billing'] ?? 'annual';
+			$sites   = isset( $meta['sites'] ) ? (int) $meta['sites'] : ( $tier === 'business' ? 5 : ( $tier === 'agency' ? 0 : 1 ) );
+		}
+
+		$clean_slug = strtoupper( str_replace( array( 'xophz-compass-', 'xophz-', '-' ), '', $slug ) );
+		$hash_part  = strtoupper( substr( md5( $session_id . AUTH_SALT ), 0, 8 ) );
+		$license_key = sprintf( 'COMPASS-%s-%s-%s', $clean_slug, strtoupper( $tier ), $hash_part );
+
+		// Record issued license
+		$licenses = get_option( '_xophz_compass_issued_licenses', array() );
+		if ( ! is_array( $licenses ) ) {
+			$licenses = array();
+		}
+
+		if ( ! isset( $licenses[ $license_key ] ) ) {
+			$licenses[ $license_key ] = array(
+				'license_key' => $license_key,
+				'session_id'  => $session_id,
+				'slug'        => $slug,
+				'tier'        => $tier,
+				'billing'     => $billing,
+				'sites'       => $sites,
+				'created_at'  => current_time( 'mysql' ),
+				'domains'     => array(),
+			);
+			update_option( '_xophz_compass_issued_licenses', $licenses, false );
+		}
+
+		return rest_ensure_response( array(
+			'success'     => true,
+			'valid'       => true,
+			'license_key' => $license_key,
+			'product'     => $slug,
+			'tier'        => $tier,
+			'billing'     => $billing,
+			'sites'       => $sites,
+		) );
 	}
 
 	/**
@@ -480,7 +558,127 @@ class Xophz_Compass_Modules_API {
 			'category'     => 'Command Deck',
 		);
 
+		// Magic Hat Parent Theme & Circadian Rhythm Engine
+		$modules['xophz-magic-hat'] = array(
+			'slug'         => 'xophz-magic-hat',
+			'name'         => 'Magic Hat',
+			'description'  => 'Parent theme, 24-hour circadian rhythm engine, and design tokens.',
+			'download_url' => 'https://github.com/HalloftheGods/xophz-magic-hat/archive/refs/heads/main.zip',
+			'category'     => 'Command Deck',
+			'type'         => 'theme',
+			'price'        => 79.00,
+			'pricing'      => array(
+				'personal' => array( 'sites' => 1, 'annual' => 79.00, 'lifetime' => 169.00 ),
+				'business' => array( 'sites' => 5, 'annual' => 99.00, 'lifetime' => 239.00 ),
+				'agency'   => array( 'sites' => 0, 'annual' => 199.00, 'lifetime' => 449.00 ),
+			),
+		);
+
 		return apply_filters( 'xophz_compass_modules_registry', $modules );
+	}
+
+	/**
+	 * Find a module by slug or common alias.
+	 *
+	 * @param string $slug
+	 * @return array|null
+	 */
+	public static function find_module( $slug ) {
+		$modules = self::get_module_registry();
+		$slug = sanitize_key( $slug );
+
+		if ( isset( $modules[ $slug ] ) ) {
+			return $modules[ $slug ];
+		}
+
+		if ( isset( $modules[ 'xophz-compass-' . $slug ] ) ) {
+			return $modules[ 'xophz-compass-' . $slug ];
+		}
+
+		if ( isset( $modules[ 'xophz-' . $slug ] ) ) {
+			return $modules[ 'xophz-' . $slug ];
+		}
+
+		$stripped = str_replace( array( 'xophz-compass-', 'xophz-' ), '', $slug );
+		foreach ( $modules as $k => $mod ) {
+			$mod_stripped = str_replace( array( 'xophz-compass-', 'xophz-' ), '', $k );
+			if ( $mod_stripped === $stripped || $mod_stripped === $slug ) {
+				return $mod;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Calculate dynamic pricing for a plugin or theme tier.
+	 *
+	 * @param string $slug
+	 * @param string $tier
+	 * @param string $billing
+	 * @return array
+	 */
+	public static function get_plugin_pricing( $slug, $tier = 'personal', $billing = 'annual' ) {
+		$module  = self::find_module( $slug );
+		$tier    = sanitize_key( $tier ?: 'personal' );
+		$billing = sanitize_key( $billing ?: 'annual' );
+
+		// 1. Explicit module pricing matrix
+		if ( ! empty( $module['pricing'] ) && isset( $module['pricing'][ $tier ] ) ) {
+			$price = $module['pricing'][ $tier ][ $billing ] ?? ( $billing === 'lifetime' ? 169.00 : 79.00 );
+			$sites = $module['pricing'][ $tier ]['sites'] ?? 1;
+			$display_name = $module['name'] ?? 'Compass Product';
+
+			return array(
+				'price'   => (float) $price,
+				'billing' => $billing,
+				'tier'    => $tier,
+				'sites'   => $sites,
+				'name'    => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual)' ),
+			);
+		}
+
+		// 2. Derive dynamically from Bedrock valuations if available
+		$base_annual = 79.00;
+		$clean_key = str_replace( array( 'xophz-compass-', 'xophz-' ), '', sanitize_key( $slug ) );
+		$full_key  = 'xophz-compass-' . $clean_key;
+
+		if ( class_exists( '\BlackBOX\Admin\Dashboard' ) ) {
+			$vals = \BlackBOX\Admin\Dashboard::get_valuations();
+			if ( isset( $vals[ $full_key ][4] ) ) {
+				$base_annual = (float) $vals[ $full_key ][4];
+			} elseif ( isset( $vals[ $clean_key ][4] ) ) {
+				$base_annual = (float) $vals[ $clean_key ][4];
+			} elseif ( isset( $vals[ 'xophz-' . $clean_key ][4] ) ) {
+				$base_annual = (float) $vals[ 'xophz-' . $clean_key ][4];
+			}
+		} elseif ( ! empty( $module['price'] ) ) {
+			$base_annual = (float) $module['price'];
+		}
+
+		$price = $base_annual;
+		$sites = 1;
+		if ( $tier === 'business' ) {
+			$price = round( $base_annual * 1.25 );
+			$sites = 5;
+		} elseif ( $tier === 'agency' || $tier === 'unlimited' ) {
+			$price = round( $base_annual * 2.5 );
+			$sites = 0;
+		}
+
+		if ( $billing === 'lifetime' ) {
+			$price = round( $price * 2.15 );
+		}
+
+		$display_name = $module['name'] ?? ucwords( str_replace( '-', ' ', $clean_key ) );
+
+		return array(
+			'price'   => (float) $price,
+			'billing' => $billing,
+			'tier'    => $tier,
+			'sites'   => $sites,
+			'name'    => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual License)' ),
+		);
 	}
 
 	/**
