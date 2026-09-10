@@ -546,7 +546,81 @@ class Xophz_Compass_Modules_API {
 				'description'  => 'Turnkey lead discovery, license registry audit, skip-tracing, and practice website launcher platform integrated with Questbook CRM and WP Connectors API.',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-fresh-mints/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
-			)
+				'price'        => 79.00,
+			),
+			'xophz-compass' => array(
+				'slug'         => 'xophz-compass',
+				'name'         => 'My Compass Engine',
+				'description'  => 'The central framework powering all Xophz COMPASS extensions, routing, component registries, and atomic design system.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'is_core'      => true,
+				'price'        => 199.00,
+			),
+			'xophz-compass-card-vault' => array(
+				'slug'         => 'xophz-compass-card-vault',
+				'name'         => 'Card Vault',
+				'description'  => 'Offline-first trade desk, POS, optical grading, consignment accounting, and WooCommerce product synchronization.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-card-vault/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-compass-diego-lawfirm' => array(
+				'slug'         => 'xophz-compass-diego-lawfirm',
+				'name'         => 'Lawfirm Manager',
+				'description'  => 'Legal practice management and case tracking platform integrated with Xophz COMPASS connectors.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-diego-lawfirm/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-compass-glowitheflow' => array(
+				'slug'         => 'xophz-compass-glowitheflow',
+				'name'         => 'Glowitheflow Network',
+				'description'  => 'Flow economy engine, creator tributaries, cross-promotional click credit ledger, and viral sharing mechanics.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-glowitheflow/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-compass-produce' => array(
+				'slug'         => 'xophz-compass-produce',
+				'name'         => 'Local Produce Market',
+				'description'  => 'Universal EDVEX Data Royalty Engine & Farmer\'s Market for sovereign COMPASS and YouMeOS digital assets.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-produce/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-compass-yellow-links' => array(
+				'slug'         => 'xophz-compass-yellow-links',
+				'name'         => 'Yellow Links Hub',
+				'description'  => 'Municipal link directory, civic resources, verified business registry, and public web index portal.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-yellow-links/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-kitchen-synk' => array(
+				'slug'         => 'xophz-kitchen-synk',
+				'name'         => 'Kitchen Synk',
+				'description'  => 'Universal cross-app data synchronization engine and bidirectional state replication mesh.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-kitchen-synk/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-thoth-reader-wp' => array(
+				'slug'         => 'xophz-thoth-reader-wp',
+				'name'         => 'Thoth Reader',
+				'description'  => 'Narrative synthesizer and digital ebook reader portal with speed reading, audio narration, and knowledge graphing.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-thoth-reader-wp/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
+			'xophz-compass-bulletin-board' => array(
+				'slug'         => 'xophz-compass-bulletin-board',
+				'name'         => 'Bulletin Board',
+				'description'  => 'Civic notice board, localized community announcements, town hall dispatches, and public agenda alerts.',
+				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-bulletin-board/archive/refs/heads/main.zip',
+				'category'     => 'Command Deck',
+				'price'        => 79.00,
+			),
 		);
 
 		// Bundled natively, does not download via GitHub
@@ -556,6 +630,7 @@ class Xophz_Compass_Modules_API {
 			'description'  => 'The ultimate form, poll, and quiz builder.',
 			'download_url' => '', 
 			'category'     => 'Command Deck',
+			'price'        => 79.00,
 		);
 
 		// Magic Hat Parent Theme & Circadian Rhythm Engine
@@ -566,6 +641,7 @@ class Xophz_Compass_Modules_API {
 			'download_url' => 'https://github.com/HalloftheGods/xophz-magic-hat/archive/refs/heads/main.zip',
 			'category'     => 'Command Deck',
 			'type'         => 'theme',
+			'is_core'      => true,
 			'price'        => 79.00,
 			'pricing'      => array(
 				'personal' => array( 'sites' => 1, 'annual' => 79.00, 'lifetime' => 169.00 ),
@@ -741,6 +817,43 @@ class Xophz_Compass_Modules_API {
 					}
 				}
 			}
+
+			// Compute pricing data and matrix
+			$pricing_data = self::get_plugin_pricing( $slug, 'personal', 'annual' );
+			$module['price']         = $pricing_data['price'];
+			$module['price_display'] = '$' . (int) $pricing_data['price'] . '/yr';
+			$module['repo_url']      = 'https://github.com/HalloftheGods/' . $slug;
+			$module['github_repo']   = $slug;
+
+			// Valuation and market equivalent
+			if ( class_exists( '\BlackBOX\Admin\Dashboard' ) ) {
+				$vals = \BlackBOX\Admin\Dashboard::get_valuations();
+				$clean_key = str_replace( array( 'xophz-compass-', 'xophz-' ), '', sanitize_key( $slug ) );
+				$val_entry = $vals[ $slug ] ?? ( $vals[ 'xophz-compass-' . $clean_key ] ?? ( $vals[ $clean_key ] ?? null ) );
+				if ( ! empty( $val_entry ) ) {
+					$module['market_equivalent'] = $val_entry[1] ?? '';
+					$module['tier_badge']        = $val_entry[3] ?? 'silver';
+				}
+			}
+
+			// Complete pricing tiers for frontend consumption
+			$module['pricing'] = array(
+				'personal' => array(
+					'sites'    => 1,
+					'annual'   => self::get_plugin_pricing( $slug, 'personal', 'annual' )['price'],
+					'lifetime' => self::get_plugin_pricing( $slug, 'personal', 'lifetime' )['price'],
+				),
+				'business' => array(
+					'sites'    => 5,
+					'annual'   => self::get_plugin_pricing( $slug, 'business', 'annual' )['price'],
+					'lifetime' => self::get_plugin_pricing( $slug, 'business', 'lifetime' )['price'],
+				),
+				'agency'   => array(
+					'sites'    => 0,
+					'annual'   => self::get_plugin_pricing( $slug, 'agency', 'annual' )['price'],
+					'lifetime' => self::get_plugin_pricing( $slug, 'agency', 'lifetime' )['price'],
+				),
+			);
 		}
 
 		return rest_ensure_response( array( 'modules' => $modules ) );

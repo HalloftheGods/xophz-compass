@@ -5,13 +5,16 @@ All notable changes to this project will be documented in this file.
 ## [2026-09-09]
 
 ### Added
+- Ecosystem Module Registry Expansion: Registered 9 missing plugins in `Xophz_Compass_Modules_API::get_module_registry()` (`xophz-compass`, `card-vault`, `diego-lawfirm`, `glowitheflow`, `produce`, `yellow-links`, `kitchen-synk`, `thoth-reader-wp`, `bulletin-board`).
+- Bedrock Checkout Takeover: Implemented `checkout-takeover-template.php` featuring smoky canvas wave physics, Annual vs Lifetime toggle, and 3-tier license selector when navigating to `/buy/my-compass/{slug}` without tier parameters.
+- Enriched Modules REST API: Enhanced `GET /xophz/v1/modules` with live pricing matrix, market equivalent valuations, and repository metadata.
 - Magic Hat Theme Registration: Registered Magic Hat in `Xophz_Compass_Modules_API::get_module_registry()` with 1/5/Unlimited and Annual/Lifetime pricing tiers.
 - Pricing & Module Helpers: Added `find_module()` and `get_plugin_pricing()` to dynamically resolve module metadata and calculate tier pricing with Bedrock valuation fallbacks.
 - License Verification API: Added `GET /xophz/v1/license/verify` to exchange Stripe checkout session IDs for client license keys.
 - Return URL Security: Added `is_allowed_redirect_url()` and `get_allowed_redirect_hosts()` to `Xophz_Compass_Security` with ecosystem domain whitelisting.
 
 ### Changed
-- Dynamic Buy Resolver: Connected `resolve_compass_buy_request()` to the `xophz_resolve_buy_request` filter in `class-xophz-compass.php` supporting `/buy/my-compass/{slug}` and `/buy/{slug}`.
+- Dynamic Buy Resolver: Connected `resolve_compass_buy_request()` to the `xophz_resolve_buy_request` filter in `class-xophz-compass.php` supporting `/buy/my-compass/{slug}` and `/buy/{slug}`, with automatic Bedrock takeover interception and test mode propagation.
 
 ## [2026-09-04]
 

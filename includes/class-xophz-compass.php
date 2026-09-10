@@ -558,6 +558,16 @@ class Xophz_Compass {
 			return $resolved;
 		}
 
+		// If no tier was specified in path or query, render the Bedrock Smoky Canvas Checkout Takeover
+		$has_tier_param = ! empty( $query['tier'] ) || ( ! empty( $tier_from_path ) && in_array( $tier_from_path, array( 'personal', 'business', 'agency', 'annual', 'lifetime' ), true ) );
+		if ( ! $has_tier_param ) {
+			$takeover_template = dirname( __FILE__ ) . '/templates/checkout-takeover-template.php';
+			if ( file_exists( $takeover_template ) ) {
+				include $takeover_template;
+				exit;
+			}
+		}
+
 		$tier = sanitize_key( $query['tier'] ?? ( $tier_from_path ?: 'personal' ) );
 		if ( in_array( $tier, array( 'annual', 'lifetime' ), true ) ) {
 			$billing = $tier;
@@ -569,6 +579,11 @@ class Xophz_Compass {
 		$pricing = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, $tier, $billing );
 		$mode = ( $pricing['billing'] === 'lifetime' ) ? 'payment' : 'subscription';
 
+		$test_requested  = ! empty( $query['test'] ) || ! empty( $query['test_mode'] ) || ! empty( $query['sandbox'] );
+		$return_origin   = $query['return_origin'] ?? ( $query['return_url'] ?? '' );
+		$from_local      = ! empty( $return_origin ) && ( strpos( $return_origin, 'localhost' ) !== false || strpos( $return_origin, '127.0.0.1' ) !== false );
+		$force_test_mode = $test_requested || $from_local;
+
 		$metadata = array(
 			'source'      => 'compass_modules_registry',
 			'plugin_slug' => $module['slug'],
@@ -576,6 +591,7 @@ class Xophz_Compass {
 			'billing'     => $pricing['billing'],
 			'sites'       => $pricing['sites'],
 			'route'       => implode( '/', $segments ),
+			'env'         => $force_test_mode ? 'sandbox' : 'production',
 		);
 
 		return array(
@@ -586,6 +602,7 @@ class Xophz_Compass {
 			'mode'         => $mode,
 			'interval'     => ( $mode === 'subscription' ? 'year' : '' ),
 			'tier'         => $pricing['tier'],
+			'force_test'   => $force_test_mode,
 			'metadata'     => $metadata,
 		);
 	}
