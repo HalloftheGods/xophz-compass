@@ -705,12 +705,18 @@ class Xophz_Compass_Modules_API {
 			$sites = $module['pricing'][ $tier ]['sites'] ?? 1;
 			$display_name = $module['name'] ?? 'Compass Product';
 
+			$discount_matrix = array( 'personal' => 20, 'business' => 26, 'agency' => 30 );
+			$discount_pct    = ( $billing === 'lifetime' ) ? ( $discount_matrix[ $tier ] ?? 20 ) : 0;
+			$original_price  = ( $billing === 'lifetime' ) ? (float) ( $module['pricing'][ $tier ]['original'] ?? round( $price / ( 1 - ( $discount_pct / 100 ) ) ) ) : null;
+
 			return array(
-				'price'   => (float) $price,
-				'billing' => $billing,
-				'tier'    => $tier,
-				'sites'   => $sites,
-				'name'    => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual)' ),
+				'price'          => (float) $price,
+				'original_price' => $original_price ? (float) $original_price : null,
+				'discount_pct'   => $discount_pct,
+				'billing'        => $billing,
+				'tier'           => $tier,
+				'sites'          => $sites,
+				'name'           => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual)' ),
 			);
 		}
 
@@ -742,18 +748,38 @@ class Xophz_Compass_Modules_API {
 			$sites = 0;
 		}
 
+		$original_price = null;
+		$discount_pct   = 0;
+
 		if ( $billing === 'lifetime' ) {
-			$price = round( $price * 2.15 );
+			$discount_matrix = array(
+				'personal' => 20,
+				'business' => 26,
+				'agency'   => 30,
+			);
+			$discount_pct = $discount_matrix[ $tier ] ?? 20;
+
+			$multipliers = array(
+				'personal' => 2.688,
+				'business' => 2.904,
+				'agency'   => 3.072,
+			);
+			$mult = $multipliers[ $tier ] ?? 2.7;
+
+			$original_price = round( $price * $mult );
+			$price          = round( $original_price * ( 1 - ( $discount_pct / 100 ) ) );
 		}
 
 		$display_name = $module['name'] ?? ucwords( str_replace( '-', ' ', $clean_key ) );
 
 		return array(
-			'price'   => (float) $price,
-			'billing' => $billing,
-			'tier'    => $tier,
-			'sites'   => $sites,
-			'name'    => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual License)' ),
+			'price'          => (float) $price,
+			'original_price' => $original_price ? (float) $original_price : null,
+			'discount_pct'   => $discount_pct,
+			'billing'        => $billing,
+			'tier'           => $tier,
+			'sites'          => $sites,
+			'name'           => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual License)' ),
 		);
 	}
 

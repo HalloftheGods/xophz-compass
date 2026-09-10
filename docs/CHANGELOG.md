@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-09-10]
+
+### Added
+- Tiered Lifetime Discounts: Configured tiered lifetime deal discounts (Personal: 20% off, Business: 26% off, Agency: 30% off) modeled after OnePage Express pricing dynamics.
+- Special Offer & Strikethrough Pricing: Added strikethrough original valuation pricing (`original-price`) and dynamic "Special Offer - X% OFF" badges (`price-offer-tag`) on checkout takeover cards.
+
+### Changed
+- Active Lifetime Pill Contrast: Updated `.switch-btn.active .lifetime-pill` to use solid black styling (`#05070a`) with cyan text (`#62c9ff`) to ensure high contrast against the active cyan toggle button.
+
 ## [2026-09-09]
 
 ### Added

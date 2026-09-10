@@ -35,14 +35,26 @@ if ( class_exists( '\BlackBOX\Admin\Dashboard' ) ) {
 }
 
 // Compute prices for all tiers
-$p_annual   = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'personal', 'annual' )['price'];
-$p_lifetime = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'personal', 'lifetime' )['price'];
+$p_pricing_annual   = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'personal', 'annual' );
+$p_pricing_lifetime = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'personal', 'lifetime' );
 
-$b_annual   = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'business', 'annual' )['price'];
-$b_lifetime = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'business', 'lifetime' )['price'];
+$b_pricing_annual   = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'business', 'annual' );
+$b_pricing_lifetime = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'business', 'lifetime' );
 
-$a_annual   = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'agency', 'annual' )['price'];
-$a_lifetime = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'agency', 'lifetime' )['price'];
+$a_pricing_annual   = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'agency', 'annual' );
+$a_pricing_lifetime = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, 'agency', 'lifetime' );
+
+$p_annual   = $p_pricing_annual['price'];
+$p_lifetime = $p_pricing_lifetime['price'];
+
+$b_annual   = $b_pricing_annual['price'];
+$b_lifetime = $b_pricing_lifetime['price'];
+
+$a_annual   = $a_pricing_annual['price'];
+$a_lifetime = $a_pricing_lifetime['price'];
+
+$initial_billing     = ( ! empty( $query['billing'] ) && $query['billing'] === 'lifetime' ) ? 'lifetime' : 'annual';
+$is_initial_lifetime = ( $initial_billing === 'lifetime' );
 
 $return_url = ! empty( $query['return_origin'] )
 	? esc_url( $query['return_origin'] )
@@ -198,6 +210,14 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 			border-radius: 10px;
 			margin-left: 6px;
 			font-weight: 700;
+			transition: all 0.2s ease;
+		}
+
+		.switch-btn.active .lifetime-pill {
+			background: #05070a;
+			color: var(--hog-cyan);
+			border: 1px solid rgba(98, 201, 255, 0.35);
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 		}
 
 		/* Pricing Grid */
@@ -263,6 +283,44 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 
 		.card-price-box {
 			margin-bottom: 24px;
+		}
+
+		.price-offer-tag {
+			font-size: 11px;
+			font-weight: 800;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: #f87171;
+			min-height: 18px;
+			margin-bottom: 4px;
+			visibility: hidden;
+		}
+
+		.price-offer-tag.visible {
+			visibility: visible;
+		}
+
+		.pricing-card.featured .price-offer-tag {
+			color: var(--hog-gold);
+		}
+
+		.price-row {
+			display: flex;
+			align-items: baseline;
+			gap: 8px;
+		}
+
+		.original-price {
+			font-size: 20px;
+			font-weight: 700;
+			color: var(--text-muted);
+			text-decoration: line-through;
+			opacity: 0.65;
+			display: none;
+		}
+
+		.original-price.visible {
+			display: inline-block;
 		}
 
 		.price-val {
@@ -370,8 +428,8 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 
 			<!-- Toggle Switch -->
 			<div class="billing-switch-container">
-				<button type="button" class="switch-btn active" id="btn-annual" onclick="setBilling('annual')">Annual License</button>
-				<button type="button" class="switch-btn" id="btn-lifetime" onclick="setBilling('lifetime')">
+				<button type="button" class="switch-btn<?php echo ! $is_initial_lifetime ? ' active' : ''; ?>" id="btn-annual" onclick="setBilling('annual')">Annual License</button>
+				<button type="button" class="switch-btn<?php echo $is_initial_lifetime ? ' active' : ''; ?>" id="btn-lifetime" onclick="setBilling('lifetime')">
 					Lifetime Deal <span class="lifetime-pill">Pay Once</span>
 				</button>
 			</div>
@@ -384,8 +442,12 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 						<h2 class="card-tier-name">Personal</h2>
 						<div class="card-sites-label">1 Production Site License</div>
 						<div class="card-price-box">
-							<span class="price-val" id="price-personal">$<?php echo (int) $p_annual; ?></span>
-							<span class="price-period" id="period-personal">/yr</span>
+							<div class="price-offer-tag<?php echo $is_initial_lifetime ? ' visible' : ''; ?>" id="offer-tag-personal">Special Offer - <?php echo (int) ( $p_pricing_lifetime['discount_pct'] ?? 20 ); ?>% OFF</div>
+							<div class="price-row">
+								<span class="original-price<?php echo $is_initial_lifetime ? ' visible' : ''; ?>" id="orig-price-personal">$<?php echo (int) ( $p_pricing_lifetime['original_price'] ?? 535 ); ?></span>
+								<span class="price-val" id="price-personal">$<?php echo (int) ( $is_initial_lifetime ? $p_lifetime : $p_annual ); ?></span>
+								<span class="price-period" id="period-personal"><?php echo $is_initial_lifetime ? ' one-time' : '/yr'; ?></span>
+							</div>
 						</div>
 						<ul class="card-features">
 							<li>1 Active domain activation</li>
@@ -394,7 +456,7 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 							<li>Standard community support</li>
 						</ul>
 					</div>
-					<a id="cta-personal" href="<?php echo esc_url( add_query_arg( array( 'tier' => 'personal', 'billing' => 'annual', 'return_origin' => $return_url, 'test' => $is_test ? '1' : false ), $base_buy_url ) ); ?>" class="btn-checkout btn-standard">
+					<a id="cta-personal" href="<?php echo esc_url( add_query_arg( array( 'tier' => 'personal', 'billing' => $initial_billing, 'return_origin' => $return_url, 'test' => $is_test ? '1' : false ), $base_buy_url ) ); ?>" class="btn-checkout btn-standard">
 						Select Personal
 					</a>
 				</div>
@@ -406,8 +468,12 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 						<h2 class="card-tier-name">Business</h2>
 						<div class="card-sites-label">5 Production Site Licenses</div>
 						<div class="card-price-box">
-							<span class="price-val" id="price-business">$<?php echo (int) $b_annual; ?></span>
-							<span class="price-period" id="period-business">/yr</span>
+							<div class="price-offer-tag<?php echo $is_initial_lifetime ? ' visible' : ''; ?>" id="offer-tag-business">Special Offer - <?php echo (int) ( $b_pricing_lifetime['discount_pct'] ?? 26 ); ?>% OFF</div>
+							<div class="price-row">
+								<span class="original-price<?php echo $is_initial_lifetime ? ' visible' : ''; ?>" id="orig-price-business">$<?php echo (int) ( $b_pricing_lifetime['original_price'] ?? 723 ); ?></span>
+								<span class="price-val" id="price-business">$<?php echo (int) ( $is_initial_lifetime ? $b_lifetime : $b_annual ); ?></span>
+								<span class="price-period" id="period-business"><?php echo $is_initial_lifetime ? ' one-time' : '/yr'; ?></span>
+							</div>
 						</div>
 						<ul class="card-features">
 							<li>5 Active domain activations</li>
@@ -416,7 +482,7 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 							<li>Direct ticket support channel</li>
 						</ul>
 					</div>
-					<a id="cta-business" href="<?php echo esc_url( add_query_arg( array( 'tier' => 'business', 'billing' => 'annual', 'return_origin' => $return_url, 'test' => $is_test ? '1' : false ), $base_buy_url ) ); ?>" class="btn-checkout btn-highlight">
+					<a id="cta-business" href="<?php echo esc_url( add_query_arg( array( 'tier' => 'business', 'billing' => $initial_billing, 'return_origin' => $return_url, 'test' => $is_test ? '1' : false ), $base_buy_url ) ); ?>" class="btn-checkout btn-highlight">
 						Select Business
 					</a>
 				</div>
@@ -427,8 +493,12 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 						<h2 class="card-tier-name">Agency</h2>
 						<div class="card-sites-label">Unlimited Client Deployments</div>
 						<div class="card-price-box">
-							<span class="price-val" id="price-agency">$<?php echo (int) $a_annual; ?></span>
-							<span class="price-period" id="period-agency">/yr</span>
+							<div class="price-offer-tag<?php echo $is_initial_lifetime ? ' visible' : ''; ?>" id="offer-tag-agency">Special Offer - <?php echo (int) ( $a_pricing_lifetime['discount_pct'] ?? 30 ); ?>% OFF</div>
+							<div class="price-row">
+								<span class="original-price<?php echo $is_initial_lifetime ? ' visible' : ''; ?>" id="orig-price-agency">$<?php echo (int) ( $a_pricing_lifetime['original_price'] ?? 1530 ); ?></span>
+								<span class="price-val" id="price-agency">$<?php echo (int) ( $is_initial_lifetime ? $a_lifetime : $a_annual ); ?></span>
+								<span class="price-period" id="period-agency"><?php echo $is_initial_lifetime ? ' one-time' : '/yr'; ?></span>
+							</div>
 						</div>
 						<ul class="card-features">
 							<li>Unlimited client domain deployments</li>
@@ -437,7 +507,7 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 							<li>VIP Slack / priority support link</li>
 						</ul>
 					</div>
-					<a id="cta-agency" href="<?php echo esc_url( add_query_arg( array( 'tier' => 'agency', 'billing' => 'annual', 'return_origin' => $return_url, 'test' => $is_test ? '1' : false ), $base_buy_url ) ); ?>" class="btn-checkout btn-standard">
+					<a id="cta-agency" href="<?php echo esc_url( add_query_arg( array( 'tier' => 'agency', 'billing' => $initial_billing, 'return_origin' => $return_url, 'test' => $is_test ? '1' : false ), $base_buy_url ) ); ?>" class="btn-checkout btn-standard">
 						Select Agency
 					</a>
 				</div>
@@ -467,7 +537,17 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 				personal: <?php echo (int) $p_lifetime; ?>,
 				business: <?php echo (int) $b_lifetime; ?>,
 				agency:   <?php echo (int) $a_lifetime; ?>,
-				period:   " one-time"
+				period:   " one-time",
+				original: {
+					personal: <?php echo (int) ( $p_pricing_lifetime['original_price'] ?? 535 ); ?>,
+					business: <?php echo (int) ( $b_pricing_lifetime['original_price'] ?? 723 ); ?>,
+					agency:   <?php echo (int) ( $a_pricing_lifetime['original_price'] ?? 1530 ); ?>
+				},
+				discount: {
+					personal: <?php echo (int) ( $p_pricing_lifetime['discount_pct'] ?? 20 ); ?>,
+					business: <?php echo (int) ( $b_pricing_lifetime['discount_pct'] ?? 26 ); ?>,
+					agency:   <?php echo (int) ( $a_pricing_lifetime['discount_pct'] ?? 30 ); ?>
+				}
 			}
 		};
 
@@ -487,6 +567,23 @@ $base_buy_url = home_url( '/buy/my-compass/' . sanitize_key( $raw_slug ) );
 			['personal', 'business', 'agency'].forEach(tier => {
 				document.getElementById(`price-${tier}`).textContent = '$' + data[tier];
 				document.getElementById(`period-${tier}`).textContent = data.period;
+
+				const offerTag  = document.getElementById(`offer-tag-${tier}`);
+				const origPrice = document.getElementById(`orig-price-${tier}`);
+
+				if (mode === 'lifetime' && data.original && data.original[tier]) {
+					if (origPrice) {
+						origPrice.textContent = '$' + data.original[tier];
+						origPrice.classList.add('visible');
+					}
+					if (offerTag) {
+						offerTag.textContent = 'Special Offer - ' + data.discount[tier] + '% OFF';
+						offerTag.classList.add('visible');
+					}
+				} else {
+					if (origPrice) origPrice.classList.remove('visible');
+					if (offerTag)  offerTag.classList.remove('visible');
+				}
 
 				const testParam = isTestMode ? '&test=1' : '';
 				const targetUrl = `${baseBuyUrl}?tier=${tier}&billing=${mode}&return_origin=${encodeURIComponent(returnUrl)}${testParam}`;
