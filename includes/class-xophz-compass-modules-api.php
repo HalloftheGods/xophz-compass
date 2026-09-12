@@ -563,7 +563,12 @@ class Xophz_Compass_Modules_API {
 				'description'  => 'Offline-first trade desk, POS, optical grading, consignment accounting, and WooCommerce product synchronization.',
 				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-card-vault/archive/refs/heads/main.zip',
 				'category'     => 'Command Deck',
-				'price'        => 79.00,
+				'price'        => 99.00,
+				'pricing'      => array(
+					'personal' => array( 'sites' => 1, 'annual' => 99.00, 'lifetime' => 249.00, 'trial_days' => 3 ),
+					'business' => array( 'sites' => 5, 'annual' => 249.00, 'lifetime' => 599.00, 'trial_days' => 7 ),
+					'agency'   => array( 'sites' => 0, 'monthly' => 99.00, 'annual' => 999.00, 'trial_days' => 0 ),
+				),
 			),
 			'xophz-compass-diego-lawfirm' => array(
 				'slug'         => 'xophz-compass-diego-lawfirm',
@@ -709,6 +714,11 @@ class Xophz_Compass_Modules_API {
 			$discount_pct    = ( $billing === 'lifetime' ) ? ( $discount_matrix[ $tier ] ?? 20 ) : 0;
 			$original_price  = ( $billing === 'lifetime' ) ? (float) ( $module['pricing'][ $tier ]['original'] ?? round( $price / ( 1 - ( $discount_pct / 100 ) ) ) ) : null;
 
+			$trial_days = 0;
+			if ( $billing !== 'lifetime' && isset( $module['pricing'][ $tier ]['trial_days'] ) ) {
+				$trial_days = (int) $module['pricing'][ $tier ]['trial_days'];
+			}
+
 			return array(
 				'price'          => (float) $price,
 				'original_price' => $original_price ? (float) $original_price : null,
@@ -716,7 +726,8 @@ class Xophz_Compass_Modules_API {
 				'billing'        => $billing,
 				'tier'           => $tier,
 				'sites'          => $sites,
-				'name'           => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ' (Annual)' ),
+				'trial_days'     => $trial_days,
+				'name'           => $display_name . ' - ' . ucfirst( $tier ) . ( $billing === 'lifetime' ? ' (Lifetime Deal)' : ( $billing === 'monthly' ? ' (Monthly Subscription)' : ' (Annual Subscription)' ) ),
 			);
 		}
 

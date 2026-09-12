@@ -558,8 +558,39 @@ class Xophz_Compass {
 			return $resolved;
 		}
 
+		// Normalize tier and billing aliases (e.g. single -> personal, team -> business, single-annual -> tier=personal, billing=annual)
+		$parsed_tier    = '';
+		$parsed_billing = '';
+		if ( ! empty( $tier_from_path ) ) {
+			$raw_tier = sanitize_key( $tier_from_path );
+			if ( strpos( $raw_tier, '-' ) !== false ) {
+				$parts        = explode( '-', $raw_tier, 2 );
+				$tier_part    = $parts[0];
+				$billing_part = $parts[1];
+				if ( in_array( $billing_part, array( 'annual', 'lifetime', 'monthly' ), true ) ) {
+					$parsed_billing = $billing_part;
+				}
+				if ( in_array( $tier_part, array( 'single', 'personal' ), true ) ) {
+					$parsed_tier = 'personal';
+				} elseif ( in_array( $tier_part, array( 'team', 'business', 'shop' ), true ) ) {
+					$parsed_tier = 'business';
+				} elseif ( in_array( $tier_part, array( 'agency', 'fleet', 'unlimited', 'node', 'turnkey' ), true ) ) {
+					$parsed_tier = 'agency';
+				}
+			} elseif ( in_array( $raw_tier, array( 'single', 'personal' ), true ) ) {
+				$parsed_tier = 'personal';
+			} elseif ( in_array( $raw_tier, array( 'team', 'business', 'shop' ), true ) ) {
+				$parsed_tier = 'business';
+			} elseif ( in_array( $raw_tier, array( 'agency', 'fleet', 'unlimited', 'node', 'turnkey' ), true ) ) {
+				$parsed_tier = 'agency';
+			} elseif ( in_array( $raw_tier, array( 'annual', 'lifetime', 'monthly' ), true ) ) {
+				$parsed_tier    = 'personal';
+				$parsed_billing = $raw_tier;
+			}
+		}
+
 		// If no tier was specified in path or query, render the Bedrock Smoky Canvas Checkout Takeover
-		$has_tier_param = ! empty( $query['tier'] ) || ( ! empty( $tier_from_path ) && in_array( $tier_from_path, array( 'personal', 'business', 'agency', 'annual', 'lifetime' ), true ) );
+		$has_tier_param = ! empty( $query['tier'] ) || ! empty( $parsed_tier ) || ( ! empty( $tier_from_path ) && in_array( $tier_from_path, array( 'personal', 'business', 'agency', 'annual', 'lifetime', 'monthly' ), true ) );
 		if ( ! $has_tier_param ) {
 			$takeover_template = dirname( __FILE__ ) . '/templates/checkout-takeover-template.php';
 			if ( file_exists( $takeover_template ) ) {
@@ -568,12 +599,22 @@ class Xophz_Compass {
 			}
 		}
 
-		$tier = sanitize_key( $query['tier'] ?? ( $tier_from_path ?: 'personal' ) );
-		if ( in_array( $tier, array( 'annual', 'lifetime' ), true ) ) {
-			$billing = $tier;
-			$tier    = 'personal';
+		$raw_tier = sanitize_key( $query['tier'] ?? ( $parsed_tier ?: ( $tier_from_path ?: 'personal' ) ) );
+		if ( in_array( $raw_tier, array( 'single', 'personal' ), true ) ) {
+			$tier = 'personal';
+		} elseif ( in_array( $raw_tier, array( 'team', 'business', 'shop' ), true ) ) {
+			$tier = 'business';
+		} elseif ( in_array( $raw_tier, array( 'agency', 'fleet', 'unlimited', 'node', 'turnkey' ), true ) ) {
+			$tier = 'agency';
+		} elseif ( in_array( $raw_tier, array( 'annual', 'lifetime', 'monthly' ), true ) ) {
+			$billing  = $raw_tier;
+			$tier     = 'personal';
 		} else {
-			$billing = sanitize_key( $query['billing'] ?? ( $segments[2] ?? 'annual' ) );
+			$tier = $raw_tier;
+		}
+
+		if ( empty( $billing ) ) {
+			$billing = sanitize_key( $query['billing'] ?? ( $parsed_billing ?: ( $segments[2] ?? 'annual' ) ) );
 		}
 
 		$pricing = Xophz_Compass_Modules_API::get_plugin_pricing( $raw_slug, $tier, $billing );
@@ -584,12 +625,27 @@ class Xophz_Compass {
 		$from_local      = ! empty( $return_origin ) && ( strpos( $return_origin, 'localhost' ) !== false || strpos( $return_origin, '127.0.0.1' ) !== false );
 		$force_test_mode = $test_requested || $from_local;
 
+		$trial_days = 0;
+		if ( $mode === 'subscription' ) {
+			if ( isset( $query['trial_days'] ) ) {
+				$trial_days = intval( $query['trial_days'] );
+			} elseif ( isset( $pricing['trial_days'] ) ) {
+				$trial_days = intval( $pricing['trial_days'] );
+			}
+		}
+
+		$interval = ( $mode === 'subscription' )
+			? ( ( $pricing['billing'] ?? $billing ) === 'monthly' ? 'month' : 'year' )
+			: '';
+
 		$metadata = array(
 			'source'      => 'compass_modules_registry',
 			'plugin_slug' => $module['slug'],
 			'tier'        => $pricing['tier'],
 			'billing'     => $pricing['billing'],
 			'sites'       => $pricing['sites'],
+			'trial_days'  => $trial_days,
+			'interval'    => $interval,
 			'route'       => implode( '/', $segments ),
 			'env'         => $force_test_mode ? 'sandbox' : 'production',
 		);
@@ -600,7 +656,8 @@ class Xophz_Compass {
 			'product_name' => $pricing['name'],
 			'license'      => $pricing['name'],
 			'mode'         => $mode,
-			'interval'     => ( $mode === 'subscription' ? 'year' : '' ),
+			'interval'     => $interval,
+			'trial_days'   => $trial_days,
 			'tier'         => $pricing['tier'],
 			'force_test'   => $force_test_mode,
 			'metadata'     => $metadata,

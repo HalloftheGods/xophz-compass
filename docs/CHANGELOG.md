@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-09-12]
+
+### Added
+- Card Vault Tier Pricing Matrix: Configured Option C explicit pricing in `Xophz_Compass_Modules_API::get_module_registry()` for `xophz-compass-card-vault` (Personal: $99/yr or $249 Lifetime; Business: $249/yr or $599 Lifetime; Agency: $499/yr or $999 Lifetime).
+- Compound Tier Route Resolution: Enhanced `resolve_compass_buy_request()` in `class-xophz-compass.php` to normalize single and team aliases as well as compound slug formats (`single-annual`, `team-annual`, `single-lifetime`, `team-lifetime`).
+
 ## [2026-09-10]
 
 ### Added
