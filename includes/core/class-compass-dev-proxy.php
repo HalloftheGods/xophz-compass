@@ -243,17 +243,24 @@ class Xophz_Compass_Dev_Proxy {
 	}
 
 	/**
-	 * Register rewrite rules for the slug.
+	 * Register rewrite rules for the slug and optional homepage mode.
 	 */
 	public function register_rewrites(): void {
-		$slug = get_option( 'xophz_compass_' . str_replace( '-', '_', $this->slug ) . '_custom_slug', $this->default_slug );
-		if ( empty( $slug ) ) {
-			return;
+		$opt_prefix = 'xophz_compass_' . str_replace( '-', '_', $this->slug );
+		$slug       = get_option( $opt_prefix . '_custom_slug', $this->default_slug );
+		$load_mode  = get_option( $opt_prefix . '_load_mode', 'routes_only' );
+
+		if ( ! empty( $slug ) ) {
+			$quoted_slug = preg_quote( $slug, '/' );
+			add_rewrite_rule( '^' . $quoted_slug . '/?$', 'index.php?' . $this->query_var . '=1', 'top' );
+			add_rewrite_rule( '^' . $quoted_slug . '/(.*)?$', 'index.php?' . $this->query_var . '=1', 'top' );
 		}
 
-		$quoted_slug = preg_quote( $slug, '/' );
-		add_rewrite_rule( '^' . $quoted_slug . '/?$', 'index.php?' . $this->query_var . '=1', 'top' );
-		add_rewrite_rule( '^' . $quoted_slug . '/(.*)?$', 'index.php?' . $this->query_var . '=1', 'top' );
+		if ( 'homepage' === $load_mode ) {
+			add_rewrite_rule( '^sw\.js$', 'index.php?' . $this->query_var . '=1', 'top' );
+			add_rewrite_rule( '^manifest\.webmanifest$', 'index.php?' . $this->query_var . '=1', 'top' );
+			add_rewrite_rule( '^manifest\.json$', 'index.php?' . $this->query_var . '=1', 'top' );
+		}
 	}
 
 	/**
@@ -338,16 +345,281 @@ class Xophz_Compass_Dev_Proxy {
 	}
 
 	/**
+	 * Get candidate directories containing static app assets.
+	 *
+	 * @return array<int, string>
+	 */
+	protected function get_static_lookup_dirs(): array {
+		$dirs = array();
+
+		// 1. Monorepo app public folder (e.g. apps/my-card-vault/public/)
+		$monorepo_app_dir = dirname( $this->plugin_path, 3 ) . '/apps/my-' . $this->slug . '/public/';
+		if ( is_dir( $monorepo_app_dir ) ) {
+			$dirs[] = $monorepo_app_dir;
+		}
+		$monorepo_app_dir_alt = dirname( $this->plugin_path, 3 ) . '/apps/' . $this->slug . '/public/';
+		if ( is_dir( $monorepo_app_dir_alt ) ) {
+			$dirs[] = $monorepo_app_dir_alt;
+		}
+
+		// 2. Plugin dist folder (e.g. wp-content/plugins/.../public/dist/)
+		$plugin_dist_dir = $this->plugin_path . 'public/dist/';
+		if ( is_dir( $plugin_dist_dir ) ) {
+			$dirs[] = $plugin_dist_dir;
+		}
+
+		// 3. ABSPATH fallbacks
+		if ( defined( 'ABSPATH' ) ) {
+			$abs_app = ABSPATH . 'apps/my-' . $this->slug . '/public/';
+			if ( is_dir( $abs_app ) ) {
+				$dirs[] = $abs_app;
+			}
+			$abs_app_alt = ABSPATH . 'apps/' . $this->slug . '/public/';
+			if ( is_dir( $abs_app_alt ) ) {
+				$dirs[] = $abs_app_alt;
+			}
+		}
+
+		return array_unique( $dirs );
+	}
+
+	/**
+	 * Check whether subpath corresponds to a known static asset pattern.
+	 *
+	 * @param string $subpath Subpath to verify.
+	 * @return bool
+	 */
+	protected function is_static_asset_path( string $subpath ): bool {
+		if ( str_contains( $subpath, '..' ) ) {
+			return false;
+		}
+
+		$is_asset_folder = str_starts_with( $subpath, 'icons/' ) || str_starts_with( $subpath, 'assets/' );
+		$is_favicon      = (bool) preg_match( '#^favicon\.(ico|svg|png)$#i', $subpath );
+		$has_asset_ext   = (bool) preg_match( '#\.(ico|svg|png|jpe?g|webp|woff2?|ttf|json|css|js|map)$#i', $subpath );
+
+		return $is_asset_folder || $is_favicon || $has_asset_ext;
+	}
+
+	/**
+	 * Serve the Service Worker with permissive Service-Worker-Allowed header.
+	 */
+	protected function serve_service_worker(): void {
+		status_header( 200 );
+		header( 'Content-Type: application/javascript; charset=UTF-8' );
+		header( 'Service-Worker-Allowed: /' );
+		header( 'Cache-Control: no-cache, no-store, must-revalidate' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		// Check local disk directories first
+		foreach ( $this->get_static_lookup_dirs() as $dir ) {
+			$file = $dir . 'sw.js';
+			if ( file_exists( $file ) ) {
+				readfile( $file );
+				return;
+			}
+		}
+
+		// If in dev mode, attempt proxy from active Vite server
+		if ( $this->is_dev_mode() ) {
+			$active_host = self::resolve_host( $this->dev_port );
+			if ( $active_host ) {
+				$response = wp_remote_get( "http://{$active_host}:{$this->dev_port}/sw.js", array(
+					'headers' => array( 'Host' => 'localhost:' . $this->dev_port ),
+					'timeout' => 2,
+				) );
+				if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+					echo wp_remote_retrieve_body( $response );
+					return;
+				}
+			}
+		}
+
+		status_header( 404 );
+		echo '// Service worker not found';
+	}
+
+	/**
+	 * Serve Web App Manifest with correct manifest MIME type and CORS headers.
+	 *
+	 * @param string $filename Manifest filename.
+	 */
+	protected function serve_manifest( string $filename ): void {
+		status_header( 200 );
+		header( 'Content-Type: application/manifest+json; charset=UTF-8' );
+		header( 'Access-Control-Allow-Origin: *' );
+		header( 'Cache-Control: public, max-age=3600' );
+
+		// Check local disk directories first
+		foreach ( $this->get_static_lookup_dirs() as $dir ) {
+			$file = $dir . $filename;
+			if ( file_exists( $file ) ) {
+				readfile( $file );
+				return;
+			}
+		}
+
+		// If in dev mode, attempt proxy from active Vite server
+		if ( $this->is_dev_mode() ) {
+			$active_host = self::resolve_host( $this->dev_port );
+			if ( $active_host ) {
+				$response = wp_remote_get( "http://{$active_host}:{$this->dev_port}/{$filename}", array(
+					'headers' => array( 'Host' => 'localhost:' . $this->dev_port ),
+					'timeout' => 2,
+				) );
+				if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+					echo wp_remote_retrieve_body( $response );
+					return;
+				}
+			}
+		}
+
+		status_header( 404 );
+		echo '{"error":"Manifest not found"}';
+	}
+
+	/**
+	 * Serve static asset from disk or Vite dev server with appropriate Content-Type.
+	 *
+	 * @param string $subpath Subpath of static asset.
+	 * @return bool True if served, false otherwise.
+	 */
+	protected function serve_static_asset( string $subpath ): bool {
+		if ( str_contains( $subpath, '..' ) ) {
+			return false;
+		}
+
+		$mimes = array(
+			'ico'   => 'image/x-icon',
+			'svg'   => 'image/svg+xml',
+			'png'   => 'image/png',
+			'jpg'   => 'image/jpeg',
+			'jpeg'  => 'image/jpeg',
+			'webp'  => 'image/webp',
+			'woff2' => 'font/woff2',
+			'woff'  => 'font/woff',
+			'ttf'   => 'font/ttf',
+			'json'  => 'application/json; charset=UTF-8',
+			'css'   => 'text/css; charset=UTF-8',
+			'js'    => 'application/javascript; charset=UTF-8',
+			'map'   => 'application/json; charset=UTF-8',
+		);
+
+		$ext  = strtolower( pathinfo( $subpath, PATHINFO_EXTENSION ) );
+		$mime = $mimes[ $ext ] ?? 'application/octet-stream';
+
+		foreach ( $this->get_static_lookup_dirs() as $dir ) {
+			$file = $dir . $subpath;
+			if ( file_exists( $file ) && ! is_dir( $file ) ) {
+				status_header( 200 );
+				header( 'Content-Type: ' . $mime );
+				header( 'Access-Control-Allow-Origin: *' );
+				header( 'Cache-Control: public, max-age=86400' );
+				readfile( $file );
+				return true;
+			}
+		}
+
+		// Try Vite dev server in dev mode
+		if ( $this->is_dev_mode() ) {
+			$active_host = self::resolve_host( $this->dev_port );
+			if ( $active_host ) {
+				$response = wp_remote_get( "http://{$active_host}:{$this->dev_port}/{$subpath}", array(
+					'headers' => array( 'Host' => 'localhost:' . $this->dev_port ),
+					'timeout' => 2,
+				) );
+				if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+					$content_type = wp_remote_retrieve_header( $response, 'content-type' ) ?: $mime;
+					// If Vite returned HTML for a non-HTML asset request, treat as fallback 404
+					if ( str_contains( $content_type, 'text/html' ) && ! str_contains( $mime, 'text/html' ) ) {
+						return false;
+					}
+					status_header( 200 );
+					header( 'Content-Type: ' . $content_type );
+					header( 'Access-Control-Allow-Origin: *' );
+					echo wp_remote_retrieve_body( $response );
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Intercept front-end requests targeting this SPA.
 	 */
 	public function handle_template_redirect(): void {
-		$request_uri = $_SERVER['REQUEST_URI'] ?? '';
-		if ( strpos( $request_uri, '/wp-admin' ) === 0 || strpos( $request_uri, '/wp-login.php' ) === 0 ) {
+		$request_uri  = $_SERVER['REQUEST_URI'] ?? '';
+		$request_path = wp_parse_url( $request_uri, PHP_URL_PATH ) ?? '';
+
+		if ( strpos( $request_path, '/wp-admin' ) === 0 || strpos( $request_path, '/wp-login.php' ) === 0 ) {
 			return;
 		}
 
-		if ( ! get_query_var( $this->query_var ) ) {
+		$opt_prefix = 'xophz_compass_' . str_replace( '-', '_', $this->slug );
+		$slug       = get_option( $opt_prefix . '_custom_slug', $this->default_slug );
+		$load_mode  = get_option( $opt_prefix . '_load_mode', 'routes_only' );
+		$page_id    = (int) get_option( $opt_prefix . '_load_page_id', 0 );
+
+		$slug_prefix = ! empty( $slug ) ? '/' . trim( $slug, '/' ) : '';
+
+		$is_target = (bool) get_query_var( $this->query_var );
+
+		if ( ! $is_target ) {
+			if ( 'homepage' === $load_mode && ( is_front_page() || is_home() || '/' === $request_path || in_array( $request_path, array( '/sw.js', '/manifest.webmanifest', '/manifest.json' ), true ) ) ) {
+				$is_target = true;
+			} elseif ( 'specific_page' === $load_mode && $page_id > 0 && is_page( $page_id ) ) {
+				$is_target = true;
+			} elseif ( ! empty( $slug_prefix ) && ( $request_path === $slug_prefix || str_starts_with( $request_path, $slug_prefix . '/' ) ) ) {
+				$is_target = true;
+			}
+		}
+
+		if ( ! $is_target ) {
 			return;
+		}
+
+		// Ensure trailing slash on base directory to avoid broken relative URL resolution
+		if ( ! empty( $slug_prefix ) && $request_path === $slug_prefix ) {
+			$query_string = isset( $_SERVER['QUERY_STRING'] ) && '' !== $_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : '';
+			wp_safe_redirect( home_url( $slug_prefix . '/' . $query_string ), 301 );
+			exit;
+		}
+
+		// Determine requested subpath relative to app mount
+		$subpath = '';
+		if ( ! empty( $slug_prefix ) && str_starts_with( $request_path, $slug_prefix . '/' ) ) {
+			$subpath = substr( $request_path, strlen( $slug_prefix ) + 1 );
+		} elseif ( 'homepage' === $load_mode || empty( $slug_prefix ) || '/' === $request_path ) {
+			$subpath = ltrim( $request_path, '/' );
+		}
+		$subpath = ltrim( $subpath, '/' );
+
+		// Serve Service Worker with root-level Service-Worker-Allowed header
+		if ( 'sw.js' === $subpath ) {
+			$this->serve_service_worker();
+			exit;
+		}
+
+		// Serve Web App Manifest
+		if ( 'manifest.webmanifest' === $subpath || 'manifest.json' === $subpath ) {
+			$this->serve_manifest( $subpath );
+			exit;
+		}
+
+		// Serve static assets (icons, images, favicon)
+		if ( ! empty( $subpath ) && $this->is_static_asset_path( $subpath ) ) {
+			$served = $this->serve_static_asset( $subpath );
+			if ( $served ) {
+				exit;
+			}
+			// If a static asset file was requested but not found, return 404 instead of falling through to SPA HTML
+			status_header( 404 );
+			header( 'Content-Type: text/plain; charset=UTF-8' );
+			echo 'Asset not found: ' . esc_html( $subpath );
+			exit;
 		}
 
 		status_header( 200 );
@@ -410,6 +682,13 @@ class Xophz_Compass_Dev_Proxy {
 		$html = str_replace( 'from "/', 'from="' . $vite_url . '/', $html );
 		$html = str_replace( "from '/", "from '" . $vite_url . '/', $html );
 
+		// Preserve manifest, service worker, and icons on the local WordPress route
+		$html = preg_replace(
+			'#href="//' . preg_quote( $wp_host . ':' . $this->dev_port, '#' ) . '/(manifest\.(?:webmanifest|json)|sw\.js|favicon\.(?:ico|svg)|icons/[^"]+)"#',
+			'href="$1"',
+			$html
+		);
+
 		// Inject Vite client for HMR if missing
 		if ( strpos( $html, '/@vite/client' ) === false ) {
 			$client_tag = '<script type="module" src="' . esc_url( $vite_url ) . '/@vite/client"></script>';
@@ -450,14 +729,19 @@ class Xophz_Compass_Dev_Proxy {
 			return '<p>Error reading build file.</p>';
 		}
 
-		$dist_url = $this->plugin_url . 'public/dist/';
+		$relative_plugin_url = function_exists( 'wp_make_link_relative' ) ? wp_make_link_relative( $this->plugin_url ) : preg_replace( '#^https?://[^/]+#i', '', $this->plugin_url );
+		$dist_url            = rtrim( $relative_plugin_url, '/' ) . '/public/dist/';
 
-		// Rewrite absolute dist assets
+		// Rewrite absolute and relative dist assets
 		$html = str_replace( '"/assets/', '"' . $dist_url . 'assets/', $html );
 		$html = str_replace( "'/assets/", "'" . $dist_url . "assets/", $html );
+		$html = str_replace( '"./assets/', '"' . $dist_url . 'assets/', $html );
+		$html = str_replace( "'./assets/", "'" . $dist_url . "assets/", $html );
 		$html = str_replace( '"/vite.svg"', '"' . $dist_url . 'vite.svg"', $html );
+		$html = str_replace( '"./vite.svg"', '"' . $dist_url . 'vite.svg"', $html );
 		$html = str_replace( '"/registerSW.js"', '"' . $dist_url . 'registerSW.js"', $html );
-		$html = str_replace( '"/manifest.webmanifest"', '"' . $dist_url . 'manifest.webmanifest"', $html );
+		$html = str_replace( '"./registerSW.js"', '"' . $dist_url . 'registerSW.js"', $html );
+		$html = str_replace( '"/sw.js"', '"' . $dist_url . 'sw.js"', $html );
 		$html = str_replace( '"/_nuxt/', '"' . $dist_url . '_nuxt/', $html );
 		$html = str_replace( "'/_nuxt/", "'" . $dist_url . "_nuxt/", $html );
 
@@ -490,10 +774,13 @@ class Xophz_Compass_Dev_Proxy {
 			);
 		}
 
+		$root_url   = function_exists( 'wp_make_link_relative' ) ? wp_make_link_relative( rest_url() ) : '/wp-json/';
+		$plugin_url = function_exists( 'wp_make_link_relative' ) ? wp_make_link_relative( $this->plugin_url ) : preg_replace( '#^https?://[^/]+#i', '', $this->plugin_url );
+
 		$payload = array(
-			'root'        => esc_url_raw( rest_url() ),
+			'root'        => esc_url_raw( $root_url ),
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
-			'pluginUrl'   => esc_url_raw( $this->plugin_url ),
+			'pluginUrl'   => esc_url_raw( $plugin_url ),
 			'version'     => esc_js( $this->version ),
 			'userId'      => $user_id,
 			'currentUser' => $user_data,

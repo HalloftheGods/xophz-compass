@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [2026-09-13]
 
 ### Added
+- Dev Proxy Multi-Base & PWA Asset Serving: Enhanced `Xophz_Compass_Dev_Proxy` to intercept and serve `sw.js` with `Service-Worker-Allowed: /` header, web app manifests (`manifest.webmanifest`, `manifest.json`), and static assets (`icons/`, `favicon.*`) directly from candidate directories or Vite proxy with proper MIME types.
+- Homepage Deployment Routing: Added support for `xophz_compass_{slug}_load_mode === 'homepage'` in rewrite rules and template redirect interception, dynamically handling root `/`, `/sw.js`, and `/manifest.webmanifest`.
 - Universal Companion Plugins REST API: Implemented `Xophz_Compass_Plugins_Manager_REST` under `compass/v1/plugins` extending `Xophz_Compass_REST_Controller` to discover, inspect, toggle, and configure all companion plugins via REST.
 - Universal Plugin Registration: Added `compass_registered_plugins` filter and automatic `rest_api_init` routing to `Xophz_Compass_Plugin_Base` allowing all child plugins to be managed programmatically by external tools and AI agents.
 - Central Abilities Catalog: Added `GET /compass/v1/plugins/abilities` exposing the aggregate `compass_abilities_registry` for AI agent self-discovery.
