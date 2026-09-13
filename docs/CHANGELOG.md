@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-09-13]
+
+### Added
+- Universal Companion Plugins REST API: Implemented `Xophz_Compass_Plugins_Manager_REST` under `compass/v1/plugins` extending `Xophz_Compass_REST_Controller` to discover, inspect, toggle, and configure all companion plugins via REST.
+- Universal Plugin Registration: Added `compass_registered_plugins` filter and automatic `rest_api_init` routing to `Xophz_Compass_Plugin_Base` allowing all child plugins to be managed programmatically by external tools and AI agents.
+- Central Abilities Catalog: Added `GET /compass/v1/plugins/abilities` exposing the aggregate `compass_abilities_registry` for AI agent self-discovery.
+
 ## [2026-09-12]
 
 ### Added

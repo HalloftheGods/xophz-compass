@@ -146,6 +146,7 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-polls-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-updater.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-passport-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-auth-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-matrix-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-performance-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-twilio-api.php';
@@ -157,6 +158,7 @@ class Xophz_Compass {
 
 		require_once $plugin_dir . 'includes/class-xophz-compass-3d-block.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-integrations.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-plugins-manager-rest.php';
 		Xophz_Compass_Integrations::get_instance();
 
 		$this->loader = $this;
@@ -263,6 +265,10 @@ class Xophz_Compass {
     $plugin_passport = new Xophz_Compass_Passport_API();
     $this->loader->add_action( 'rest_api_init', $plugin_passport, 'register_routes' );
 
+    // Register Centralized Auth API
+    $plugin_auth = new Xophz_Compass_Auth_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_auth, 'register_routes' );
+
 		// Register Polls API
     $plugin_polls = new Xophz_Compass_Polls_API();
     $this->loader->add_action( 'rest_api_init', $plugin_polls, 'register_routes' );
@@ -285,6 +291,10 @@ class Xophz_Compass {
     // Register Performance Widget API
     $performance_api = new Xophz_Compass_Performance_API();
     $this->loader->add_action( 'rest_api_init', $performance_api, 'register_routes' );
+
+    // Register Universal Companion Plugins Manager REST API
+    $plugins_manager_api = new Xophz_Compass_Plugins_Manager_REST();
+    $this->loader->add_action( 'rest_api_init', $plugins_manager_api, 'register_routes' );
 
     // GitHub Plugin Updater (auto-discovers all xophz-compass-* plugins)
     Xophz_Compass_Updater::init();

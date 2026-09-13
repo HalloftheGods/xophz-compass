@@ -52,6 +52,7 @@ class Xophz_Compass_Autoloader {
 			'Xophz_Compass_Settings_Base'    => $core_dir . 'class-compass-settings-base.php',
 			'Xophz_Compass_Dev_Proxy'        => $core_dir . 'class-compass-dev-proxy.php',
 			'Xophz_Compass_Security'         => $core_dir . 'class-compass-security.php',
+			'Xophz_Compass_Auth_API'         => dirname( $core_dir ) . '/class-xophz-compass-auth-api.php',
 			'Xophz_Compass_HTTP'             => $core_dir . 'class-compass-http.php',
 			'Xophz_Compass_Sanitization'     => $core_dir . 'class-compass-sanitization.php',
 		);

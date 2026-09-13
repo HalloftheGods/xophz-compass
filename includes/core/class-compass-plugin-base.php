@@ -108,6 +108,10 @@ abstract class Xophz_Compass_Plugin_Base implements Xophz_Compass_Plugin_Interfa
 		add_filter( 'xophz_register_sparks', array( $this, 'filter_spark_registration' ) );
 		add_filter( 'xophz_get_spark_manifest', array( $this, 'filter_spark_manifest' ), 10, 2 );
 
+		// Automatic REST API registration and central plugin registry
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		add_filter( 'compass_registered_plugins', array( $this, 'filter_register_plugin' ) );
+
 		// Run child initialization
 		$this->init();
 	}
@@ -272,9 +276,44 @@ abstract class Xophz_Compass_Plugin_Base implements Xophz_Compass_Plugin_Interfa
 	}
 
 	/**
+	 * Register REST routes for the plugin. Child classes override this to register custom routes.
+	 */
+	public function register_rest_routes(): void {
+		// Override in child class to register REST routes
+	}
+
+	/**
+	 * Get structured metadata about the plugin for API inspection.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function get_plugin_metadata(): array {
+		return array(
+			'slug'        => $this->slug,
+			'version'     => $this->version,
+			'text_domain' => $this->text_domain,
+			'path'        => $this->plugin_path,
+			'url'         => $this->plugin_url,
+			'spark'       => $this->get_spark_definition(),
+		);
+	}
+
+	/**
+	 * Filter callback to register this plugin into the central COMPASS plugin registry.
+	 *
+	 * @param array<string, mixed> $plugins
+	 * @return array<string, mixed>
+	 */
+	public function filter_register_plugin( array $plugins ): array {
+		$plugins[ $this->slug ] = $this->get_plugin_metadata();
+		return $plugins;
+	}
+
+	/**
 	 * Default deactivation hook callback.
 	 */
 	public static function deactivate(): void {
 		// Override in child class if cleanup is required.
 	}
 }
+
