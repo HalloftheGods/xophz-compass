@@ -37,158 +37,164 @@
     href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Cairo:wght@200..1000&family=Noto+Color+Emoji&family=Rajdhani:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   >
-  <link
+  <!-- <link
     rel="icon"
-    type="image/x-icon"
-    href="./favicon.ico"
-  >
-  <link
-    rel="icon"
-    type="image/png"
-    href="./favicon.png"
-  >
-  <meta
-    name="description"
-    content="Xophz Compass is the sovereign systems interface and spatial web gateway. Explore the Youniverse, launch sparks, and navigate decentralized infrastructure."
-  >
-  <meta
-    name="keywords"
-    content="Xophz Compass, YouMeOS, Chemical X, Spatial Web, Web OS, Cloud Operating System, Decentralized Web, Sovereign Systems"
-  >
-  <meta
-    name="author"
-    content="Xophz / COMPASS"
-  >
-  <meta
-    name="robots"
-    content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
-  >
-  <link
-    rel="canonical"
-    href="https://youmeos.com/"
-  >
+    href="/favicon.ico"
+  > -->
 
   <!-- Open Graph / Facebook -->
   <meta
-    property="og:site_name"
-    content="Xophz Compass / YouMeOS"
-  >
-  <meta
     property="og:type"
     content="website"
-  >
+  />
   <meta
     property="og:url"
-    content="https://youmeos.com/"
-  >
+    content="https://youmeos.com"
+  />
   <meta
     property="og:title"
-    content="Xophz Compass | Planetary Balance &amp; Spatial Web Gateway"
-  >
+    content="Xophz Compass"
+  />
   <meta
     property="og:description"
-    content="Xophz Compass is the sovereign systems interface and spatial web gateway. Explore the Youniverse, launch sparks, and navigate decentralized infrastructure."
-  >
+    content="Xophz Compass - Planetary Balance"
+  />
   <meta
     property="og:image"
-    content="https://youmeos.com/og-comic-cover.jpg"
-  >
-  <meta
-    property="og:image:secure_url"
-    content="https://youmeos.com/og-comic-cover.jpg"
-  >
-  <meta
-    property="og:image:type"
-    content="image/jpeg"
-  >
-  <meta
-    property="og:image:width"
-    content="1200"
-  >
-  <meta
-    property="og:image:height"
-    content="630"
-  >
-  <meta
-    property="og:image:alt"
-    content="Chemical X: The Secret Sauce to Vibe Coding - Retro Superhero Comic Book Cover by XP Comics Group"
-  >
+    content="https://youmeos.com/wp-content/plugins/xophz-compass-event-horizon/public/images/gods-eye-view.jpg"
+  />
 
   <!-- Twitter -->
   <meta
-    name="twitter:card"
+    property="twitter:card"
     content="summary_large_image"
-  >
+  />
   <meta
-    name="twitter:url"
-    content="https://youmeos.com/"
-  >
+    property="twitter:url"
+    content="https://youmeos.com"
+  />
   <meta
-    name="twitter:title"
-    content="Xophz Compass | Planetary Balance &amp; Spatial Web Gateway"
-  >
+    property="twitter:title"
+    content="Xophz Compass"
+  />
   <meta
-    name="twitter:description"
-    content="Xophz Compass is the sovereign systems interface and spatial web gateway. Explore the Youniverse, launch sparks, and navigate decentralized infrastructure."
-  >
+    property="twitter:description"
+    content="Xophz Compass - Planetary Balance"
+  />
   <meta
-    name="twitter:image"
-    content="https://youmeos.com/og-comic-cover.jpg"
-  >
-  <meta
-    name="twitter:image:alt"
-    content="Chemical X: The Secret Sauce to Vibe Coding - Retro Superhero Comic Book Cover by XP Comics Group"
-  >
+    property="twitter:image"
+    content="https://youmeos.com/wp-content/plugins/xophz-compass-event-horizon/public/images/gods-eye-view.jpg"
+  />
 
-  <!-- Structured Data (JSON-LD) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebApplication",
-        "@id": "https://youmeos.com/#app",
-        "name": "Xophz Compass",
-        "alternateName": ["YouMeOS", "Compass Gateway", "Chemical X"],
-        "url": "https://youmeos.com/",
-        "description": "Sovereign systems interface, planetary balance, and spatial web operating system gateway.",
-        "applicationCategory": "BrowserApplication, OperatingSystem",
-        "operatingSystem": "All",
-        "browserRequirements": "Requires WebGL/WebGPU and modern JavaScript support",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "screenshot": "https://youmeos.com/og-comic-cover.jpg",
-        "image": "https://youmeos.com/og-comic-cover.jpg"
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://youmeos.com/#website",
-        "url": "https://youmeos.com/",
-        "name": "Xophz Compass",
-        "description": "Planetary Balance and Spatial Web Gateway",
-        "publisher": {
-          "@type": "Organization",
-          "name": "Hall of the Gods / COMPASS",
-          "url": "https://youmeos.com/"
-        }
-      }
-    ]
-  }
-  </script>
-
-  <title>Xophz Compass | Planetary Balance &amp; Spatial Web Gateway</title>
-  <script type="module" crossorigin src="./js/index-Beooe2lZ.js"></script>
+  <title>Xophz Compass</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #070a12;
+    }
+    #app:empty,
+    .compass-preloader {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #070a12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      font-family: 'Rajdhani', 'Orbitron', system-ui, -apple-system, sans-serif;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .compass-preloader__rings {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .compass-preloader__ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+    .compass-preloader__ring--outer {
+      inset: 0;
+      border-top-color: #62c9ff;
+      border-right-color: rgba(98, 201, 255, 0.2);
+      animation: compass-spin 2.2s linear infinite;
+      box-shadow: 0 0 20px rgba(98, 201, 255, 0.2);
+    }
+    .compass-preloader__ring--mid {
+      inset: 12px;
+      border-bottom-color: #38bdf8;
+      border-left-color: rgba(56, 189, 248, 0.2);
+      animation: compass-spin-rev 1.6s linear infinite;
+    }
+    .compass-preloader__ring--inner {
+      inset: 24px;
+      border-top-color: #93c5fd;
+      border-left-color: rgba(147, 197, 253, 0.3);
+      animation: compass-spin 1.1s linear infinite;
+    }
+    .compass-preloader__core {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: compass-pulse 2s ease-in-out infinite;
+    }
+    .compass-preloader__core svg {
+      width: 28px;
+      height: 28px;
+      fill: #62c9ff;
+      filter: drop-shadow(0 0 8px #62c9ff);
+    }
+    .compass-preloader__title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      color: #62c9ff;
+      text-transform: uppercase;
+      margin: 0 0 6px 0;
+      text-shadow: 0 0 12px rgba(98, 201, 255, 0.5);
+    }
+    .compass-preloader__status {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(226, 232, 240, 0.5);
+      text-transform: uppercase;
+      margin: 0;
+      animation: compass-pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes compass-spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes compass-spin-rev {
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes compass-pulse {
+      0%, 100% { opacity: 0.6; transform: scale(0.96); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
+  </style>
+  <script type="module" crossorigin src="./js/index-BjDrJCUp.js"></script>
   <link rel="modulepreload" crossorigin href="./js/vendor-core-BanDfL0c.js">
-  <link rel="modulepreload" crossorigin href="./js/vendor-DpzjLMBW.js">
-  <link rel="modulepreload" crossorigin href="./js/vendor-vuetify-zrkVAnA9.js">
-  <link rel="modulepreload" crossorigin href="./js/vendor-three-DbgnMstn.js">
-  <link rel="modulepreload" crossorigin href="./js/vendor-echarts-C55Qj7Kd.js">
+  <link rel="modulepreload" crossorigin href="./js/vendor-CJmlNVdy.js">
+  <link rel="modulepreload" crossorigin href="./js/vendor-query-CwPvaxPF.js">
+  <link rel="modulepreload" crossorigin href="./js/vendor-vuetify-CCvPJ5I2.js">
+  <link rel="modulepreload" crossorigin href="./js/vendor-echarts-obykDmOO.js">
   <link rel="stylesheet" crossorigin href="./css/vendor-BcLIA_rZ.css">
   <link rel="stylesheet" crossorigin href="./css/vendor-vuetify-sRR8k9sJ.css">
-  <link rel="stylesheet" crossorigin href="./css/index-BL0NI7fZ.css">
+  <link rel="stylesheet" crossorigin href="./css/index-CiBkDCMG.css">
 </head>
 
 <body>
@@ -196,7 +202,22 @@
     <strong>We're sorry but Xophz Compass doesn't work properly without JavaScript enabled. Please enable it to
       continue.</strong>
   </noscript>
-  <div id="app"></div>
+  <div id="app">
+    <div class="compass-preloader" aria-label="Initializing Compass Systems">
+      <div class="compass-preloader__rings">
+        <div class="compass-preloader__ring compass-preloader__ring--outer"></div>
+        <div class="compass-preloader__ring compass-preloader__ring--mid"></div>
+        <div class="compass-preloader__ring compass-preloader__ring--inner"></div>
+        <div class="compass-preloader__core">
+          <svg viewBox="0 0 24 24">
+            <polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9" />
+          </svg>
+        </div>
+      </div>
+      <p class="compass-preloader__title">COMPASS</p>
+      <p class="compass-preloader__status">INITIALIZING SYSTEMS...</p>
+    </div>
+  </div>
 </body>
 
 </html>
