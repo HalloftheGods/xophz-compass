@@ -27,6 +27,9 @@ class Xophz_Compass_Auth_API {
 	 * Register REST routes under xophz-compass/v1.
 	 */
 	public function register_routes() {
+		// Bypass nonce check and cookie check for centralized authentication endpoints
+		add_filter( 'rest_authentication_errors', array( $this, 'bypass_cookie_check_for_auth' ), 999 );
+
 		register_rest_route( 'xophz-compass/v1', '/login', array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => array( $this, 'handle_login' ),
@@ -44,6 +47,37 @@ class Xophz_Compass_Auth_API {
 			'callback'            => array( $this, 'handle_me' ),
 			'permission_callback' => '__return_true',
 		) );
+	}
+
+	/**
+	 * Bypass cookie check errors for centralized authentication routes.
+	 *
+	 * @param WP_Error|null|bool $error Error from prior authentication filters.
+	 * @return WP_Error|null|bool
+	 */
+	public function bypass_cookie_check_for_auth( $error ) {
+		$rest_route = isset( $GLOBALS['wp']->query_vars['rest_route'] ) ? (string) $GLOBALS['wp']->query_vars['rest_route'] : '';
+		if ( empty( $rest_route ) && isset( $_GET['rest_route'] ) ) {
+			$rest_route = (string) $_GET['rest_route'];
+		}
+		if ( empty( $rest_route ) && isset( $_SERVER['REQUEST_URI'] ) ) {
+			$rest_route = (string) $_SERVER['REQUEST_URI'];
+		}
+
+		$is_login_route = strpos( $rest_route, '/xophz-compass/v1/login' ) !== false;
+		$is_auth_route  = strpos( $rest_route, '/xophz-compass/v1/login' ) !== false ||
+		                  strpos( $rest_route, '/xophz-compass/v1/logout' ) !== false ||
+		                  strpos( $rest_route, '/xophz-compass/v1/me' ) !== false;
+
+		if ( $is_login_route ) {
+			return null;
+		}
+
+		if ( $is_auth_route && is_wp_error( $error ) && $error->get_error_code() === 'rest_cookie_invalid_nonce' ) {
+			return null;
+		}
+
+		return $error;
 	}
 
 	/**
