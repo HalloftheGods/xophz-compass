@@ -631,6 +631,8 @@ class Xophz_Compass_Dev_Proxy {
 		if ( $this->is_dev_mode() ) {
 			$dev_html = $this->fetch_dev_server_html();
 			if ( false !== $dev_html ) {
+				$dev_html = apply_filters( 'xophz_compass_dev_proxy_html', $dev_html, $this->slug, $this );
+				$dev_html = apply_filters( "xophz_compass_dev_proxy_{$this->slug}_html", $dev_html, $this->slug, $this );
 				header( 'Content-Type: text/html; charset=UTF-8' );
 				echo $dev_html;
 				exit;
@@ -639,6 +641,8 @@ class Xophz_Compass_Dev_Proxy {
 
 		// Production Dist Serving
 		$prod_html = $this->load_production_dist();
+		$prod_html = apply_filters( 'xophz_compass_dev_proxy_html', $prod_html, $this->slug, $this );
+		$prod_html = apply_filters( "xophz_compass_dev_proxy_{$this->slug}_html", $prod_html, $this->slug, $this );
 		header( 'Content-Type: text/html; charset=UTF-8' );
 		echo $prod_html;
 		exit;
@@ -777,7 +781,13 @@ class Xophz_Compass_Dev_Proxy {
 		$root_url   = function_exists( 'wp_make_link_relative' ) ? wp_make_link_relative( rest_url() ) : '/wp-json/';
 		$plugin_url = function_exists( 'wp_make_link_relative' ) ? wp_make_link_relative( $this->plugin_url ) : preg_replace( '#^https?://[^/]+#i', '', $this->plugin_url );
 
+		$raw_title  = function_exists( 'get_bloginfo' ) ? get_bloginfo( 'name' ) : '';
+		$site_title = function_exists( 'wp_specialchars_decode' )
+			? wp_specialchars_decode( $raw_title, ENT_QUOTES )
+			: htmlspecialchars_decode( (string) $raw_title, ENT_QUOTES );
+
 		$payload = array(
+			'siteTitle'   => $site_title,
 			'root'        => esc_url_raw( $root_url ),
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
 			'pluginUrl'   => esc_url_raw( $plugin_url ),
