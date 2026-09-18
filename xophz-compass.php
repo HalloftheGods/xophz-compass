@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       My Compass Engine
  * Plugin URI:        https://github.com/HalloftheGods/xophz-compass
- * Description:       It's dangerous to go alone! Explore the depths of your site without getting lost using my handy dandy COMPASS. 
+ * Description:       It's dangerous to go alone! Explore the depths of your site and navigate the dungeons and dark corners of the unknown realm of the internet without getting lost using my handy dandy COMPASS.
  * Version:           26.9.17-1101
  * Author:            Hall of the Gods, Inc.
  * Author URI:        https://www.hallofthegods.com/

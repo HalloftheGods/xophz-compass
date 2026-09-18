@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-09-18]
+
+### Changed
+- Plugin Description: Updated plugin description in `xophz-compass.php` and `composer.json` to highlight navigating both site depths and the dungeons and dark corners of the unknown realm of the internet.
+
 ## [2026-09-13]
 
 ### Added
