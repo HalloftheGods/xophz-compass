@@ -38,7 +38,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'XOPHZ_COMPASS_VERSION', '26.9.17-1101' );
+define( 'XOPHZ_COMPASS_VERSION', '26.9.18' );
 define( 'XOPHZ_COMPASS_PATH', plugin_dir_path( __FILE__ ) );
 
 /**
