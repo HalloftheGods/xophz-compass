@@ -47,6 +47,12 @@ class Xophz_Compass_Auth_API {
 			'callback'            => array( $this, 'handle_me' ),
 			'permission_callback' => '__return_true',
 		) );
+
+		register_rest_route( 'xophz-compass/v1', '/lostpassword', array(
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => array( $this, 'handle_lostpassword' ),
+			'permission_callback' => '__return_true',
+		) );
 	}
 
 	/**
@@ -67,7 +73,9 @@ class Xophz_Compass_Auth_API {
 		$is_login_route = strpos( $rest_route, '/xophz-compass/v1/login' ) !== false;
 		$is_auth_route  = strpos( $rest_route, '/xophz-compass/v1/login' ) !== false ||
 		                  strpos( $rest_route, '/xophz-compass/v1/logout' ) !== false ||
-		                  strpos( $rest_route, '/xophz-compass/v1/me' ) !== false;
+		                  strpos( $rest_route, '/xophz-compass/v1/me' ) !== false ||
+		                  strpos( $rest_route, '/xophz-compass/v1/lostpassword' ) !== false ||
+		                  strpos( $rest_route, '/xophz-compass/v1/register' ) !== false;
 
 		if ( $is_login_route ) {
 			return null;
@@ -415,6 +423,64 @@ class Xophz_Compass_Auth_API {
 				'email'       => $user->user_email,
 				'roles'       => $roles,
 			),
+		), 200 );
+	}
+
+	/**
+	 * Handle POST /xophz-compass/v1/lostpassword.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function handle_lostpassword( $request ) {
+		$params     = $request->get_json_params();
+		$user_login = isset( $params['user_login'] ) ? (string) $params['user_login'] : (string) $request->get_param( 'user_login' );
+		if ( empty( $user_login ) ) {
+			$user_login = isset( $params['username'] ) ? (string) $params['username'] : (string) $request->get_param( 'username' );
+		}
+		if ( empty( $user_login ) ) {
+			$user_login = isset( $params['email'] ) ? (string) $params['email'] : (string) $request->get_param( 'email' );
+		}
+		$user_login = trim( $user_login );
+
+		if ( empty( $user_login ) ) {
+			return new WP_REST_Response( array(
+				'success' => false,
+				'message' => __( 'Please enter a username or email address.', 'xophz-compass' ),
+			), 400 );
+		}
+
+		$user_data = self::resolve_user( $user_login );
+
+		if ( ! $user_data ) {
+			return new WP_REST_Response( array(
+				'success' => true,
+				'message' => __( 'If an account exists, a password reset link has been sent to the email address on file.', 'xophz-compass' ),
+			), 200 );
+		}
+
+		$key = get_password_reset_key( $user_data );
+		if ( is_wp_error( $key ) ) {
+			return new WP_REST_Response( array(
+				'success' => false,
+				'message' => __( 'Could not generate reset key.', 'xophz-compass' ),
+			), 500 );
+		}
+
+		$site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+		$message = __( 'Someone has requested a password reset for the following account:' ) . "\r\n\r\n";
+		$message .= sprintf( __( 'Site Name: %s' ), $site_name ) . "\r\n\r\n";
+		$message .= sprintf( __( 'Username: %s' ), $user_data->user_login ) . "\r\n\r\n";
+		$message .= __( 'If this was a mistake, just ignore this email and nothing will happen.' ) . "\r\n\r\n";
+		$message .= __( 'To reset your password, visit the following address:' ) . "\r\n\r\n";
+		$message .= network_site_url( "wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user_data->user_login ), 'login' ) . "\r\n";
+
+		$title = sprintf( __( '[%s] Password Reset' ), $site_name );
+		@wp_mail( $user_data->user_email, $title, $message );
+
+		return new WP_REST_Response( array(
+			'success' => true,
+			'message' => __( 'If an account exists, a password reset link has been sent to the email address on file.', 'xophz-compass' ),
 		), 200 );
 	}
 }
