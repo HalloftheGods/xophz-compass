@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [2026-09-18]
 
+### Added
+- Showcase & Online Portal Links: Added `showcase_url`, `showcase_label`, and `saas_offer` metadata to `Xophz_Compass_Modules_API::get_module_registry()` for 9 core modules (`xophz-nook-phone`, `xophz-compass-xp`, `xophz-kitchen-synk`, `xophz-compass-glowitheflow`, `xophz-compass-yellow-links`, `xophz-compass-fresh-mints`, `xophz-compass-phone`, `xophz-compass-event-horizon`, and `xophz-compass-midnight-nerd`).
+- Plugin URI Fallback: Enhanced `get_modules()` to fallback to installed plugin `PluginURI` header when `showcase_url` is unconfigured.
+
 ### Changed
 - Plugin Description: Updated plugin description in `xophz-compass.php` and `composer.json` to highlight navigating both site depths and the dungeons and dark corners of the unknown realm of the internet.
 

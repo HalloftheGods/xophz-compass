@@ -331,11 +331,19 @@ class Xophz_Compass_Modules_API {
 	public static function get_module_registry() {
 		$modules = array(
 			'xophz-compass-xp' => array(
-				'slug'         => 'xophz-compass-xp',
-				'name'         => 'XP',
-				'description'  => 'User rewards, experience points, and achievement badges',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-xp/archive/refs/heads/main.zip',
-				'category'     => 'True North',
+				'slug'           => 'xophz-compass-xp',
+				'name'           => 'XP',
+				'description'    => 'User rewards, experience points, and achievement badges',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-xp/archive/refs/heads/main.zip',
+				'category'       => 'True North',
+				'showcase_url'   => 'https://forthexp.com/',
+				'showcase_label' => 'Live Platform',
+				'saas_offer'     => array(
+					'headline' => 'Turnkey Gamification & Experience Engine',
+					'audience' => 'Gamification engine introducing XP, levels, achievement badges, and reward mechanics across the entire webwork.',
+					'badge'    => 'Live Platform',
+					'url'      => 'https://forthexp.com/',
+				),
 			),
 			'xophz-compass-bazaar' => array(
 				'slug'         => 'xophz-compass-bazaar',
@@ -345,11 +353,19 @@ class Xophz_Compass_Modules_API {
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-event-horizon' => array(
-				'slug'         => 'xophz-compass-event-horizon',
-				'name'         => 'Event Horizon',
-				'description'  => 'Task automation and event trigger engine',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-event-horizon/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
+				'slug'           => 'xophz-compass-event-horizon',
+				'name'           => 'Event Horizon',
+				'description'    => 'Task automation and event trigger engine',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-event-horizon/archive/refs/heads/main.zip',
+				'category'       => 'Command Deck',
+				'showcase_url'   => 'https://youmeos.com/',
+				'showcase_label' => 'Spatial OS',
+				'saas_offer'     => array(
+					'headline' => 'Spatial Operating System & Interactive Microverse Portal',
+					'audience' => 'Bring transparency to user-to-media connectivity by observing a 3D interactive heat map from micro to macro.',
+					'badge'    => 'Spatial OS',
+					'url'      => 'https://youmeos.com/',
+				),
 			),
 			'xophz-compass-bomb-bag' => array(
 				'slug'         => 'xophz-compass-bomb-bag',
@@ -422,11 +438,19 @@ class Xophz_Compass_Modules_API {
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-compass-midnight-nerd' => array(
-				'slug'         => 'xophz-compass-midnight-nerd',
-				'name'         => 'Midnight Nerd',
-				'description'  => 'Developer tools console and system inspection',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-midnight-nerd/archive/refs/heads/main.zip',
-				'category'     => 'Wizard\'s Tower',
+				'slug'           => 'xophz-compass-midnight-nerd',
+				'name'           => 'Midnight Nerd',
+				'description'    => 'Developer tools console and system inspection',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-midnight-nerd/archive/refs/heads/main.zip',
+				'category'       => 'Wizard\'s Tower',
+				'showcase_url'   => 'https://www.youmeos.com/u/?sparks=midnight-nerd&fullspark=true&name=Midnight+Nerd&icon=fal+fa-dice-d20&color=%238d105e',
+				'showcase_label' => 'Launch Spark',
+				'saas_offer'     => array(
+					'headline' => '24/7 ITSM Helpdesk & Architect Support Spark',
+					'audience' => 'Sovereign support ticketing system and interactive YouMeOS spark connecting users to senior technical architects.',
+					'badge'    => 'Live Spark',
+					'url'      => 'https://www.youmeos.com/u/?sparks=midnight-nerd&fullspark=true&name=Midnight+Nerd&icon=fal+fa-dice-d20&color=%238d105e',
+				),
 			),
 			'xophz-compass-mirror-shield' => array(
 				'slug'         => 'xophz-compass-mirror-shield',
@@ -520,18 +544,34 @@ class Xophz_Compass_Modules_API {
 				'category'     => 'Wizard\'s Tower',
 			),
 			'xophz-nook-phone' => array(
-				'slug'         => 'xophz-nook-phone',
-				'name'         => 'Xophz Nook Phone',
-				'description'  => 'Island companion widget suite and mini-app launcher',
-				'download_url' => 'https://github.com/SuperNerdBros/xophz-nook-phone/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
+				'slug'           => 'xophz-nook-phone',
+				'name'           => 'Xophz Nook Phone',
+				'description'    => 'Island companion widget suite and mini-app launcher',
+				'download_url'   => 'https://github.com/SuperNerdBros/xophz-nook-phone/archive/refs/heads/main.zip',
+				'category'       => 'Command Deck',
+				'showcase_url'   => 'https://nookphone.app/',
+				'showcase_label' => 'Live App',
+				'saas_offer'     => array(
+					'headline' => 'Standalone Spatial Phone Interface & App Dashboard',
+					'audience' => 'Spatial phone interface, island companion widget suite, and communication gateway.',
+					'badge'    => 'Live App',
+					'url'      => 'https://nookphone.app/',
+				),
 			),
 			'xophz-compass-phone' => array(
-				'slug'         => 'xophz-compass-phone',
-				'name'         => 'Phone',
-				'description'  => 'Mobile companion app backend and system bridge',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-phone/releases/download/v26.7.20.1409/xophz-compass-phone-26.7.20.1409.zip',
-				'category'     => 'Command Deck',
+				'slug'           => 'xophz-compass-phone',
+				'name'           => 'Phone',
+				'description'    => 'Mobile companion app backend and system bridge',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-phone/releases/download/v26.7.20.1409/xophz-compass-phone-26.7.20.1409.zip',
+				'category'       => 'Command Deck',
+				'showcase_url'   => 'https://phone.mycompassconsulting.com/',
+				'showcase_label' => 'Live Gateway',
+				'saas_offer'     => array(
+					'headline' => 'Mobile Telephony Bridge & 2FA SMS Gateway',
+					'audience' => 'Mobile telephony bridge, SMS dispatch, and two-factor authentication gateway for sovereign identities.',
+					'badge'    => 'Live Gateway',
+					'url'      => 'https://phone.mycompassconsulting.com/',
+				),
 			),
 			'super-nerd-bros-dodo-air' => array(
 				'slug'         => 'super-nerd-bros-dodo-air',
@@ -541,12 +581,20 @@ class Xophz_Compass_Modules_API {
 				'category'     => 'Command Deck',
 			),
 			'xophz-compass-fresh-mints' => array(
-				'slug'         => 'xophz-compass-fresh-mints',
-				'name'         => 'Fresh Mints',
-				'description'  => 'Turnkey lead discovery, license registry audit, skip-tracing, and practice website launcher platform integrated with Questbook CRM and WP Connectors API.',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-fresh-mints/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
-				'price'        => 79.00,
+				'slug'           => 'xophz-compass-fresh-mints',
+				'name'           => 'Fresh Mints',
+				'description'    => 'Turnkey lead discovery, license registry audit, skip-tracing, and practice website launcher platform integrated with Questbook CRM and WP Connectors API.',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-fresh-mints/archive/refs/heads/main.zip',
+				'category'       => 'Command Deck',
+				'price'          => 79.00,
+				'showcase_url'   => 'https://freshmints.worldwidewebwork.com/',
+				'showcase_label' => 'Live Platform',
+				'saas_offer'     => array(
+					'headline' => 'Turnkey Lead Discovery & Skip-Tracing Intelligence',
+					'audience' => 'Turnkey lead discovery, license registry audit, skip-tracing, and practice website launcher platform.',
+					'badge'    => 'Live Platform',
+					'url'      => 'https://freshmints.worldwidewebwork.com/',
+				),
 			),
 			'xophz-compass' => array(
 				'slug'         => 'xophz-compass',
@@ -579,12 +627,20 @@ class Xophz_Compass_Modules_API {
 				'price'        => 79.00,
 			),
 			'xophz-compass-glowitheflow' => array(
-				'slug'         => 'xophz-compass-glowitheflow',
-				'name'         => 'Glowitheflow Network',
-				'description'  => 'Flow economy engine, creator tributaries, cross-promotional click credit ledger, and viral sharing mechanics.',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-glowitheflow/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
-				'price'        => 79.00,
+				'slug'           => 'xophz-compass-glowitheflow',
+				'name'           => 'Glowitheflow Network',
+				'description'    => 'Flow economy engine, creator tributaries, cross-promotional click credit ledger, and viral sharing mechanics.',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-glowitheflow/archive/refs/heads/main.zip',
+				'category'       => 'Command Deck',
+				'price'          => 79.00,
+				'showcase_url'   => 'https://glowitheflow.com/',
+				'showcase_label' => 'Live Network',
+				'saas_offer'     => array(
+					'headline' => 'Flow Economy Engine & Creator Tributaries Network',
+					'audience' => 'Creator tributaries, cross-promotional click credit ledger, and viral sharing mechanics.',
+					'badge'    => 'Live Network',
+					'url'      => 'https://glowitheflow.com/',
+				),
 			),
 			'xophz-compass-produce' => array(
 				'slug'         => 'xophz-compass-produce',
@@ -595,20 +651,36 @@ class Xophz_Compass_Modules_API {
 				'price'        => 79.00,
 			),
 			'xophz-compass-yellow-links' => array(
-				'slug'         => 'xophz-compass-yellow-links',
-				'name'         => 'Yellow Links Hub',
-				'description'  => 'Municipal link directory, civic resources, verified business registry, and public web index portal.',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-compass-yellow-links/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
-				'price'        => 79.00,
+				'slug'           => 'xophz-compass-yellow-links',
+				'name'           => 'Yellow Links Hub',
+				'description'    => 'Municipal link directory, civic resources, verified business registry, and public web index portal.',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-compass-yellow-links/archive/refs/heads/main.zip',
+				'category'       => 'Command Deck',
+				'price'          => 79.00,
+				'showcase_url'   => 'https://yellowlinks.worldwidewebwork.com/',
+				'showcase_label' => 'Live Directory',
+				'saas_offer'     => array(
+					'headline' => 'Unified Sovereign Link Aggregator & Municipal Directory',
+					'audience' => 'Civic resources, verified business registry, and public web index portal.',
+					'badge'    => 'Live Directory',
+					'url'      => 'https://yellowlinks.worldwidewebwork.com/',
+				),
 			),
 			'xophz-kitchen-synk' => array(
-				'slug'         => 'xophz-kitchen-synk',
-				'name'         => 'Kitchen Synk',
-				'description'  => 'Universal cross-app data synchronization engine and bidirectional state replication mesh.',
-				'download_url' => 'https://github.com/HalloftheGods/xophz-kitchen-synk/archive/refs/heads/main.zip',
-				'category'     => 'Command Deck',
-				'price'        => 79.00,
+				'slug'           => 'xophz-kitchen-synk',
+				'name'           => 'Kitchen Synk',
+				'description'    => 'Universal cross-app data synchronization engine and bidirectional state replication mesh.',
+				'download_url'   => 'https://github.com/HalloftheGods/xophz-kitchen-synk/archive/refs/heads/main.zip',
+				'category'       => 'Command Deck',
+				'price'          => 79.00,
+				'showcase_url'   => 'https://kitchensynk.app/',
+				'showcase_label' => 'Live App',
+				'saas_offer'     => array(
+					'headline' => 'Universal Cross-App Data Synchronization & State Replication',
+					'audience' => 'Standalone admin bar command center and state replication mesh for the Kitchen Synk web app.',
+					'badge'    => 'Live App',
+					'url'      => 'https://kitchensynk.app/',
+				),
 			),
 			'xophz-thoth-reader-wp' => array(
 				'slug'         => 'xophz-thoth-reader-wp',
@@ -852,6 +924,13 @@ class Xophz_Compass_Modules_API {
 						$module['description'] = $fetched_desc;
 						set_transient( 'compass_mod_desc_' . $slug, $fetched_desc, DAY_IN_SECONDS );
 					}
+				}
+			}
+
+			if ( empty( $module['showcase_url'] ) && $module['is_installed'] && ! empty( $installed_plugins[ $plugin_file ]['PluginURI'] ) ) {
+				$plugin_uri = $installed_plugins[ $plugin_file ]['PluginURI'];
+				if ( ! empty( $plugin_uri ) && strpos( $plugin_uri, 'github.com' ) === false ) {
+					$module['showcase_url'] = $plugin_uri;
 				}
 			}
 
