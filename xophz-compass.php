@@ -16,7 +16,7 @@
  * Plugin Name:       My Compass Engine
  * Plugin URI:        https://github.com/HalloftheGods/xophz-compass
  * Description:       It's dangerous to go alone! Explore the depths of your site and navigate the dungeons and dark corners of the unknown realm of the internet without getting lost using my handy dandy COMPASS.
- * Version:           26.9.19-414
+ * Version:           26.9.20
  * Author:            Hall of the Gods, Inc.
  * Author URI:        https://www.hallofthegods.com/
  * License:           GPL-2.0+
@@ -38,7 +38,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'XOPHZ_COMPASS_VERSION', '26.9.19-414' );
+define( 'XOPHZ_COMPASS_VERSION', '26.9.20' );
 define( 'XOPHZ_COMPASS_PATH', plugin_dir_path( __FILE__ ) );
 
 /**
