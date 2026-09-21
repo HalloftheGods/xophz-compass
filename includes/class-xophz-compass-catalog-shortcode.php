@@ -31,6 +31,54 @@ class Xophz_Compass_Catalog_Shortcode {
 		add_shortcode( 'compass_catalog', array( __CLASS__, 'render_shortcode' ) );
 		add_shortcode( 'compass_suite', array( __CLASS__, 'render_shortcode' ) );
 		add_shortcode( 'compass_plugins', array( __CLASS__, 'render_shortcode' ) );
+		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_routes' ) );
+	}
+
+	/**
+	 * Register REST API route for dynamic catalog data.
+	 */
+	public static function register_rest_routes(): void {
+		register_rest_route(
+			'xophz-compass/v1',
+			'/catalog',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'rest_get_catalog' ),
+					'permission_callback' => '__return_true',
+				),
+			)
+		);
+	}
+
+	/**
+	 * REST API handler for catalog list.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public static function rest_get_catalog( WP_REST_Request $request ): WP_REST_Response {
+		$category = sanitize_text_field( (string) $request->get_param( 'category' ) );
+		$catalog  = self::get_catalog();
+
+		if ( ! empty( $category ) && strcasecmp( $category, 'all' ) !== 0 ) {
+			$catalog = array_values(
+				array_filter(
+					$catalog,
+					function( $p ) use ( $category ) {
+						return strcasecmp( $p['category'] ?? '', $category ) === 0;
+					}
+				)
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'count'   => count( $catalog ),
+				'plugins' => $catalog,
+			)
+		);
 	}
 
 	/**
@@ -961,6 +1009,58 @@ class Xophz_Compass_Catalog_Shortcode {
 				'showcaseLabel' => '',
 			),
 		);
+
+		// Dynamically synchronize with installed plugins and Xophz_Compass_Modules_API
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$all_wp_plugins = function_exists( 'get_plugins' ) ? get_plugins() : array();
+		$active_plugins = (array) get_option( 'active_plugins', array() );
+
+		// Check each catalog item against local installation and module registry
+		foreach ( $catalog as &$item ) {
+			$codename    = $item['codename'] ?? '';
+			$target_file = $codename . '/' . $codename . '.php';
+
+			if ( isset( $all_wp_plugins[ $target_file ] ) ) {
+				$installed = $all_wp_plugins[ $target_file ];
+				if ( ! empty( $installed['Version'] ) ) {
+					$item['version'] = 'v' . ltrim( $installed['Version'], 'v' );
+				}
+				$item['isInstalled'] = true;
+				$item['isActive']    = in_array( $target_file, $active_plugins, true );
+			} else {
+				$item['isInstalled'] = false;
+				$item['isActive']    = false;
+			}
+
+			// Pull dynamic pricing / saas offer from Modules API if available
+			if ( class_exists( 'Xophz_Compass_Modules_API' ) ) {
+				$mod = Xophz_Compass_Modules_API::find_module( $item['key'] ?? $codename );
+				if ( $mod ) {
+					if ( ! empty( $mod['saas_offer'] ) && empty( $item['saasOffer'] ) ) {
+						$item['saasOffer'] = array(
+							'headline' => $mod['saas_offer']['headline'] ?? '',
+							'audience' => $mod['saas_offer']['audience'] ?? '',
+							'badge'    => $mod['saas_offer']['badge'] ?? 'Live Platform',
+							'url'      => $mod['saas_offer']['url'] ?? '',
+						);
+					}
+					if ( ! empty( $mod['showcase_url'] ) && empty( $item['showcaseUrl'] ) ) {
+						$item['showcaseUrl']   = $mod['showcase_url'];
+						$item['showcaseLabel'] = $mod['showcase_label'] ?? 'Live App';
+					}
+				}
+			}
+		}
+		unset( $item );
+
+		/**
+		 * Filter master catalog plugins before rendering or returning via REST.
+		 *
+		 * @param array<int, array<string, mixed>> $catalog Master list of companion plugins.
+		 */
+		return apply_filters( 'compass_catalog_plugins', $catalog );
 	}
 
 	/**
@@ -976,20 +1076,31 @@ class Xophz_Compass_Catalog_Shortcode {
 		}
 
 		$filename = basename( $logo );
+		$codename = $plugin['codename'] ?? '';
 
-		// 1. Check local assets/icons/plugins
+		// 1. Check local plugin directory directly for icon.svg / icon.png
+		if ( ! empty( $codename ) && defined( 'WP_PLUGIN_DIR' ) ) {
+			if ( file_exists( WP_PLUGIN_DIR . '/' . $codename . '/icon.svg' ) ) {
+				return plugins_url( $codename . '/icon.svg' );
+			}
+			if ( file_exists( WP_PLUGIN_DIR . '/' . $codename . '/icon.png' ) ) {
+				return plugins_url( $codename . '/icon.png' );
+			}
+		}
+
+		// 2. Check local assets/icons/plugins
 		$local_sub = dirname( __DIR__ ) . '/assets/icons/plugins/' . $filename;
 		if ( file_exists( $local_sub ) ) {
 			return plugins_url( 'assets/icons/plugins/' . $filename, dirname( __DIR__ ) . '/xophz-compass.php' );
 		}
 
-		// 2. Check local assets root
+		// 3. Check local assets root
 		$local_root = dirname( __DIR__ ) . '/assets/' . $filename;
 		if ( file_exists( $local_root ) ) {
 			return plugins_url( 'assets/' . $filename, dirname( __DIR__ ) . '/xophz-compass.php' );
 		}
 
-		// 3. Fallback to upstream xophz.com static asset
+		// 4. Fallback to upstream xophz.com static asset
 		return 'https://xophz.com' . $logo;
 	}
 
@@ -1000,12 +1111,16 @@ class Xophz_Compass_Catalog_Shortcode {
 	 * @return string HTML output.
 	 */
 	public static function render_shortcode( $atts ): string {
+		$default_checkout = ( isset( $_SERVER['HTTP_HOST'] ) && strpos( $_SERVER['HTTP_HOST'], 'mycompassconsulting.com' ) !== false )
+			? home_url( '/buy/my-compass/{key}' )
+			: 'https://mycompassconsulting.com/buy/my-compass/{key}';
+
 		$args = shortcode_atts(
 			array(
 				'category'     => '',
 				'limit'        => '-1',
 				'columns'      => '2',
-				'checkout_url' => 'https://xophz.com/my-compass?plugin={key}&purchased=true',
+				'checkout_url' => $default_checkout,
 				'show_search'  => 'true',
 				'show_tabs'    => 'true',
 			),
@@ -1044,7 +1159,12 @@ class Xophz_Compass_Catalog_Shortcode {
 
 		self::render_styles_and_scripts();
 		?>
-		<div id="<?php echo esc_attr( $instance_id ); ?>" class="compass-catalog-root" data-checkout-pattern="<?php echo esc_attr( $checkout_url ); ?>">
+		<div
+			id="<?php echo esc_attr( $instance_id ); ?>"
+			class="compass-catalog-root"
+			data-checkout-pattern="<?php echo esc_attr( $checkout_url ); ?>"
+			data-endpoint="<?php echo esc_url( rest_url( 'xophz-compass/v1/catalog' ) ); ?>"
+		>
 
 			<?php if ( $show_search || $show_tabs ) : ?>
 				<div class="compass-catalog-toolbar">
@@ -1109,6 +1229,7 @@ class Xophz_Compass_Catalog_Shortcode {
 					$saas_bdg  = ! empty( $plugin['saasOffer']['badge'] ) ? esc_html( $plugin['saasOffer']['badge'] ) : ( $has_demo ? 'Live App' : '' );
 					$eqv       = ! empty( $plugin['marketEqv'] ) ? esc_html( $plugin['marketEqv'] ) : '';
 					$ver       = ! empty( $plugin['version'] ) ? esc_html( $plugin['version'] ) : 'v26.9.5';
+					$plugin['logoUrl'] = $logo_url;
 					$json_data = esc_attr( wp_json_encode( $plugin ) );
 				?>
 					<div
@@ -1339,18 +1460,20 @@ class Xophz_Compass_Catalog_Shortcode {
 		?>
 		<style id="xophz-compass-catalog-css">
 			/* =========================================================================
-			   COMPASS CATALOG ROOT & LIGHT/DARK ADAPTIVE THEME
+			   COMPASS CATALOG ROOT & MAGIC HAT CIRCADIAN THEME ENGINE
 			   ========================================================================= */
 			.compass-catalog-root {
-				--xo-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-				--xo-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-				--xo-primary: #8b5cf6;
-				--xo-primary-glow: rgba(139, 92, 246, 0.35);
+				--xo-font: var(--mh-font-body, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
+				--xo-font-heading: var(--mh-font-heading, var(--xo-font));
+				--xo-font-mono: var(--mh-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+				--xo-primary: var(--mh-color-brand-base, #62c9ff);
+				--xo-primary-glow: color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 35%, transparent);
 				font-family: var(--xo-font);
 				box-sizing: border-box;
 				position: relative;
 				width: 100%;
 				margin: 1.5rem 0;
+				color: var(--mh-color-text-main, #f8fafc);
 			}
 			.compass-catalog-root *,
 			.compass-catalog-root *::before,
@@ -1367,10 +1490,7 @@ class Xophz_Compass_Catalog_Shortcode {
 				gap: 1rem;
 				margin-bottom: 1.5rem;
 				padding-top: 0.5rem;
-				border-top: 1px solid rgba(0, 0, 0, 0.08);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-catalog-toolbar {
-				border-top-color: rgba(255, 255, 255, 0.08);
+				border-top: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.08));
 			}
 			.compass-toolbar-header {
 				display: flex;
@@ -1385,19 +1505,17 @@ class Xophz_Compass_Catalog_Shortcode {
 				gap: 0.5rem;
 			}
 			.compass-toolbar-icon {
-				color: #8b5cf6;
+				color: var(--mh-color-brand-base, #62c9ff);
 				display: flex;
 				align-items: center;
 			}
 			.compass-toolbar-title {
+				font-family: var(--xo-font-heading);
 				font-size: 1.25rem;
 				font-weight: 700;
 				margin: 0;
-				color: #0f172a;
+				color: var(--mh-color-text-heading, #f8fafc);
 				letter-spacing: -0.01em;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-toolbar-title {
-				color: #f8fafc;
 			}
 
 			/* Search Input */
@@ -1412,42 +1530,42 @@ class Xophz_Compass_Catalog_Shortcode {
 			.compass-search-icon {
 				position: absolute;
 				left: 0.85rem;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 				pointer-events: none;
 			}
 			.compass-search-input {
 				width: 100%;
 				padding: 0.55rem 2rem 0.55rem 2.4rem;
 				font-size: 0.82rem;
-				border-radius: 9999px;
-				border: 1px solid rgba(228, 228, 231, 0.9);
-				background: #ffffff;
-				color: #0f172a;
+				border-radius: var(--mh-radius-pill, 9999px);
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.12));
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.05));
+				color: var(--mh-color-text-main, #f8fafc);
 				outline: none;
-				transition: all 0.2s ease;
+				backdrop-filter: blur(var(--mh-glass-blur-sm, 4px));
+				-webkit-backdrop-filter: blur(var(--mh-glass-blur-sm, 4px));
+				transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-search-input {
-				background: rgba(255, 255, 255, 0.05);
-				border-color: rgba(255, 255, 255, 0.1);
-				color: #f8fafc;
+			.compass-search-input::placeholder {
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 			.compass-search-input:focus {
-				border-color: #8b5cf6;
-				box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+				border-color: var(--mh-color-brand-base, #62c9ff);
+				box-shadow: 0 0 0 3px color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 25%, transparent);
 			}
 			.compass-search-clear {
 				position: absolute;
 				right: 0.75rem;
 				background: transparent;
 				border: none;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 				cursor: pointer;
 				display: flex;
 				align-items: center;
 				padding: 0;
 			}
 			.compass-search-clear:hover {
-				color: #0f172a;
+				color: var(--mh-color-text-heading, #f8fafc);
 			}
 
 			/* Filter Pills */
@@ -1460,30 +1578,24 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.35rem 0.8rem;
 				font-size: 0.75rem;
 				font-weight: 500;
-				border-radius: 9999px;
-				border: 1px solid rgba(0, 0, 0, 0.08);
-				background: transparent;
-				color: #64748b;
+				border-radius: var(--mh-radius-pill, 9999px);
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.1));
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.03));
+				color: var(--mh-color-text-muted, #94a3b8);
 				cursor: pointer;
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-pill-btn {
-				border-color: rgba(255, 255, 255, 0.1);
-				color: #94a3b8;
-			}
 			.compass-pill-btn:hover {
-				background: rgba(0, 0, 0, 0.04);
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-pill-btn:hover {
-				background: rgba(255, 255, 255, 0.06);
-				color: #f8fafc;
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.07));
+				color: var(--mh-color-text-heading, #f8fafc);
+				border-color: var(--mh-color-border-hover, rgba(255, 255, 255, 0.2));
 			}
 			.compass-pill-btn.is-active {
-				background: #8b5cf6;
-				border-color: #8b5cf6;
-				color: #ffffff;
-				box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+				background: var(--mh-color-brand-base, #62c9ff);
+				border-color: var(--mh-color-brand-base, #62c9ff);
+				color: var(--mh-color-text-inverse, #0a0b10);
+				box-shadow: 0 2px 8px color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 35%, transparent);
+				font-weight: 600;
 			}
 
 			.compass-count-row {
@@ -1495,11 +1607,12 @@ class Xophz_Compass_Catalog_Shortcode {
 				font-weight: 700;
 				letter-spacing: 0.1em;
 				text-transform: uppercase;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
+				font-family: var(--xo-font-mono);
 			}
 
 			/* =========================================================================
-			   CARDS GRID & COLUMNS (SCREENSHOT 1 SPEC)
+			   CARDS GRID & COLUMNS
 			   ========================================================================= */
 			.compass-plugins-grid {
 				display: grid;
@@ -1517,17 +1630,17 @@ class Xophz_Compass_Catalog_Shortcode {
 			}
 
 			/* =========================================================================
-			   CARD COMPONENT: SIDE LOGO WITHOUT CONTAINER (SCREENSHOT 1 SPEC)
+			   CARD COMPONENT: CIRCADIAN RHYTHM COMPATIBLE WITH MAGIC HAT
 			   ========================================================================= */
 			.compass-plug-card {
 				position: relative;
 				overflow: hidden;
-				border-radius: 1rem;
-				background: #ffffff;
-				border: 1px solid rgba(228, 228, 231, 0.85);
-				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-				backdrop-filter: blur(16px);
-				-webkit-backdrop-filter: blur(16px);
+				border-radius: var(--mh-radius-md, 1rem);
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.05));
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.08));
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+				backdrop-filter: blur(var(--mh-glass-blur, 16px));
+				-webkit-backdrop-filter: blur(var(--mh-glass-blur, 16px));
 				padding: 1rem 1.25rem;
 				display: flex;
 				align-items: center;
@@ -1535,16 +1648,14 @@ class Xophz_Compass_Catalog_Shortcode {
 				gap: 0.75rem;
 				min-height: 160px;
 				cursor: pointer;
-				transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-plug-card {
-				background: rgba(255, 255, 255, 0.03);
-				border-color: rgba(255, 255, 255, 0.07);
-				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+				transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+				            box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+				            transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+				            background 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 			}
 			.compass-plug-card:hover {
-				border-color: var(--plug-color);
-				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 20px rgba(139, 92, 246, 0.15);
+				border-color: var(--plug-color, var(--mh-color-brand-base, #62c9ff));
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 24px color-mix(in srgb, var(--plug-color, var(--mh-color-brand-base, #62c9ff)) 25%, transparent);
 				transform: translateY(-2px);
 			}
 
@@ -1577,7 +1688,7 @@ class Xophz_Compass_Catalog_Shortcode {
 				margin-left: -2.75rem;
 				width: 140px;
 				height: 140px;
-				border-radius: 50%;
+				border-radius: var(--mh-radius-pill, 50%);
 				align-items: center;
 				justify-content: center;
 				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
@@ -1617,73 +1728,61 @@ class Xophz_Compass_Catalog_Shortcode {
 				display: inline-flex;
 				align-items: center;
 				padding: 0.15rem 0.45rem;
-				border-radius: 4px;
+				border-radius: var(--mh-radius-xs, 4px);
 				font-size: 0.65rem;
 				font-weight: 600;
 				line-height: 1.2;
 			}
 			.compass-badge-cat {
-				background: rgba(139, 92, 246, 0.1);
-				color: #8b5cf6;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-badge-cat {
-				background: rgba(139, 92, 246, 0.15);
-				color: #a78bfa;
+				background: color-mix(in srgb, var(--plug-color, var(--mh-color-brand-base, #62c9ff)) 14%, transparent);
+				color: var(--plug-color, var(--mh-color-brand-base, #62c9ff));
+				border: 1px solid color-mix(in srgb, var(--plug-color, var(--mh-color-brand-base, #62c9ff)) 25%, transparent);
 			}
 			.compass-badge-grp {
 				font-family: var(--xo-font-mono);
 				font-size: 0.58rem;
-				background: rgba(0, 0, 0, 0.05);
-				color: #64748b;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-badge-grp {
-				background: rgba(255, 255, 255, 0.05);
-				color: #94a3b8;
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.04));
+				color: var(--mh-color-text-muted, #94a3b8);
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.08));
 			}
 			.compass-badge-live {
 				font-family: var(--xo-font-mono);
-				background: rgba(16, 185, 129, 0.1);
-				color: #10b981;
+				background: color-mix(in srgb, var(--mh-color-success, #10b981) 15%, transparent);
+				color: var(--mh-color-success, #10b981);
+				border: 1px solid color-mix(in srgb, var(--mh-color-success, #10b981) 30%, transparent);
 			}
 			.compass-badge-price {
 				font-family: var(--xo-font-mono);
-				color: #6366f1;
-				border: 1px solid rgba(99, 102, 241, 0.35);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-badge-price {
-				color: #818cf8;
-				border-color: rgba(129, 140, 248, 0.35);
+				color: var(--mh-color-brand-base, #62c9ff);
+				border: 1px solid color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 35%, transparent);
+				background: color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 10%, transparent);
 			}
 
 			/* Title & Description */
 			.compass-title {
+				font-family: var(--xo-font-heading);
 				font-size: 1.15rem;
 				font-weight: 700;
-				color: #0f172a;
+				color: var(--mh-color-text-heading, #f8fafc);
 				margin: 0 0 0.25rem 0;
 				line-height: 1.3;
 				letter-spacing: -0.01em;
 				transition: color 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-title {
-				color: #f8fafc;
-			}
 			.compass-plug-card:hover .compass-title {
-				color: var(--plug-color);
+				color: var(--plug-color, var(--mh-color-brand-hover, #8be0ff));
 			}
 
 			.compass-desc {
+				font-family: var(--xo-font);
 				font-size: 0.78rem;
 				line-height: 1.45;
-				color: #64748b;
+				color: var(--mh-color-text-muted, #94a3b8);
 				margin: 0;
 				display: -webkit-box;
 				-webkit-line-clamp: 2;
 				-webkit-box-orient: vertical;
 				overflow: hidden;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-desc {
-				color: #94a3b8;
 			}
 
 			/* Bottom Bar */
@@ -1695,10 +1794,7 @@ class Xophz_Compass_Catalog_Shortcode {
 				gap: 0.5rem;
 				margin-top: 0.75rem;
 				padding-top: 0.65rem;
-				border-top: 1px solid rgba(0, 0, 0, 0.05);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-bottom-bar {
-				border-top-color: rgba(255, 255, 255, 0.05);
+				border-top: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.06));
 			}
 
 			.compass-meta-specs {
@@ -1708,25 +1804,18 @@ class Xophz_Compass_Catalog_Shortcode {
 				gap: 0.35rem;
 				font-size: 0.65rem;
 				font-family: var(--xo-font-mono);
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 			.compass-meta-ver {
 				font-weight: 700;
-				color: #475569;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-meta-ver {
-				color: #cbd5e1;
+				color: var(--mh-color-text-main, #cbd5e1);
 			}
 			.compass-meta-dot {
-				color: #cbd5e1;
+				color: var(--mh-color-border-base, rgba(255, 255, 255, 0.2));
 			}
 			.compass-meta-eqv,
 			.compass-meta-pub {
-				color: #64748b;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-meta-eqv,
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-meta-pub {
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 
 			/* Actions */
@@ -1742,24 +1831,17 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.3rem 0.65rem;
 				font-size: 0.72rem;
 				font-weight: 600;
-				border-radius: 6px;
-				border: 1px solid rgba(0, 0, 0, 0.1);
-				background: transparent;
-				color: #475569;
+				border-radius: var(--mh-radius-sm, 6px);
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.12));
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.05));
+				color: var(--mh-color-text-main, #cbd5e1);
 				text-decoration: none;
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-btn-demo {
-				border-color: rgba(255, 255, 255, 0.12);
-				color: #cbd5e1;
-			}
 			.compass-btn-demo:hover {
-				background: rgba(0, 0, 0, 0.05);
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-btn-demo:hover {
-				background: rgba(255, 255, 255, 0.08);
-				color: #ffffff;
+				background: color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 15%, transparent);
+				color: var(--mh-color-brand-base, #62c9ff);
+				border-color: var(--mh-color-brand-base, #62c9ff);
 			}
 
 			.compass-btn-details {
@@ -1769,27 +1851,24 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.3rem 0.65rem;
 				font-size: 0.72rem;
 				font-weight: 600;
-				border-radius: 6px;
-				border: none;
-				background: rgba(139, 92, 246, 0.1);
-				color: #8b5cf6;
+				border-radius: var(--mh-radius-sm, 6px);
+				border: 1px solid color-mix(in srgb, var(--plug-color, var(--mh-color-brand-base, #62c9ff)) 28%, transparent);
+				background: color-mix(in srgb, var(--plug-color, var(--mh-color-brand-base, #62c9ff)) 14%, transparent);
+				color: var(--plug-color, var(--mh-color-brand-base, #62c9ff));
 				cursor: pointer;
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-btn-details {
-				background: rgba(139, 92, 246, 0.15);
-				color: #a78bfa;
-			}
 			.compass-btn-details:hover {
-				background: #8b5cf6;
-				color: #ffffff;
+				background: var(--plug-color, var(--mh-color-brand-base, #62c9ff));
+				color: var(--mh-color-text-inverse, #0a0b10);
+				border-color: var(--plug-color, var(--mh-color-brand-base, #62c9ff));
 			}
 
 			/* Empty State */
 			.compass-empty-state {
 				text-align: center;
 				padding: 4rem 1rem;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 			.compass-empty-state svg {
 				margin-bottom: 0.75rem;
@@ -1797,7 +1876,7 @@ class Xophz_Compass_Catalog_Shortcode {
 			}
 
 			/* =========================================================================
-			   MODAL DIALOG (SCREENSHOT 2 SPEC)
+			   MODAL DIALOG (CIRCADIAN RHYTHM COMPATIBLE WITH MAGIC HAT)
 			   ========================================================================= */
 			.compass-modal-overlay {
 				position: fixed;
@@ -1807,9 +1886,9 @@ class Xophz_Compass_Catalog_Shortcode {
 				align-items: center;
 				justify-content: center;
 				padding: 1rem;
-				background: rgba(0, 0, 0, 0.7);
-				backdrop-filter: blur(16px);
-				-webkit-backdrop-filter: blur(16px);
+				background: rgba(0, 0, 0, 0.75);
+				backdrop-filter: blur(var(--mh-glass-blur-lg, 16px));
+				-webkit-backdrop-filter: blur(var(--mh-glass-blur-lg, 16px));
 				overflow-y: auto;
 			}
 			.compass-modal-overlay.is-open {
@@ -1820,20 +1899,16 @@ class Xophz_Compass_Catalog_Shortcode {
 				width: 100%;
 				max-width: 680px;
 				margin: auto;
-				border-radius: 1.5rem;
-				background: #ffffff;
-				border: 1px solid rgba(228, 228, 231, 0.9);
-				box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+				border-radius: var(--mh-radius-lg, 1.5rem);
+				background: var(--mh-color-main, #0f172a);
+				border: 1px solid var(--mh-color-border-base, rgba(255, 255, 255, 0.12));
+				box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 				padding: 1.75rem 2rem;
 				overflow: hidden;
-				backdrop-filter: blur(24px);
-				-webkit-backdrop-filter: blur(24px);
+				backdrop-filter: blur(var(--mh-glass-blur-xl, 24px));
+				-webkit-backdrop-filter: blur(var(--mh-glass-blur-xl, 24px));
 				animation: compassModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-box {
-				background: #18181b;
-				border-color: rgba(255, 255, 255, 0.15);
-				box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+				color: var(--mh-color-text-main, #f8fafc);
 			}
 			@keyframes compassModalPop {
 				from {
@@ -1851,11 +1926,11 @@ class Xophz_Compass_Catalog_Shortcode {
 				position: absolute;
 				width: 280px;
 				height: 280px;
-				border-radius: 50%;
+				border-radius: var(--mh-radius-pill, 50%);
 				filter: blur(80px);
 				pointer-events: none;
 				opacity: 0.18;
-				background-color: var(--plug-color, #8b5cf6);
+				background-color: var(--plug-color, var(--mh-color-brand-base, #62c9ff));
 			}
 			.compass-halo-top {
 				top: -60px;
@@ -1873,10 +1948,10 @@ class Xophz_Compass_Catalog_Shortcode {
 				right: 1.25rem;
 				width: 2.25rem;
 				height: 2.25rem;
-				border-radius: 50%;
-				border: 1px solid rgba(0, 0, 0, 0.08);
-				background: rgba(0, 0, 0, 0.04);
-				color: #64748b;
+				border-radius: var(--mh-radius-pill, 50%);
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.1));
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.05));
+				color: var(--mh-color-text-muted, #94a3b8);
 				cursor: pointer;
 				display: flex;
 				align-items: center;
@@ -1884,18 +1959,10 @@ class Xophz_Compass_Catalog_Shortcode {
 				z-index: 20;
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-close {
-				border-color: rgba(255, 255, 255, 0.1);
-				background: rgba(255, 255, 255, 0.05);
-				color: #94a3b8;
-			}
 			.compass-modal-close:hover {
-				background: rgba(0, 0, 0, 0.08);
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-close:hover {
-				background: rgba(255, 255, 255, 0.12);
-				color: #f8fafc;
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.1));
+				color: var(--mh-color-text-heading, #ffffff);
+				border-color: var(--mh-color-border-hover, rgba(255, 255, 255, 0.2));
 			}
 
 			/* Modal Header */
@@ -1906,10 +1973,7 @@ class Xophz_Compass_Catalog_Shortcode {
 				align-items: center;
 				gap: 1.25rem;
 				padding-bottom: 1.25rem;
-				border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-header {
-				border-bottom-color: rgba(255, 255, 255, 0.1);
+				border-bottom: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.1));
 			}
 			.compass-modal-artwork-wrap {
 				width: 88px;
@@ -1939,36 +2003,29 @@ class Xophz_Compass_Catalog_Shortcode {
 			}
 			.compass-badge-license {
 				font-family: var(--xo-font-mono);
-				background: rgba(2, 132, 199, 0.1);
-				border: 1px solid rgba(2, 132, 199, 0.25);
-				color: #0284c7;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-badge-license {
-				background: rgba(56, 189, 248, 0.1);
-				border-color: rgba(56, 189, 248, 0.25);
-				color: #38bdf8;
+				background: color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 12%, transparent);
+				border: 1px solid color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 30%, transparent);
+				color: var(--mh-color-brand-base, #62c9ff);
 			}
 			.compass-modal-tag {
 				font-size: 0.65rem;
 				font-weight: 500;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 
 			.compass-modal-title {
+				font-family: var(--xo-font-heading);
 				font-size: 1.75rem;
 				font-weight: 700;
-				color: #0f172a;
+				color: var(--mh-color-text-heading, #ffffff);
 				margin: 0;
 				line-height: 1.2;
 				letter-spacing: -0.02em;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-title {
-				color: #f8fafc;
-			}
 			.compass-modal-codename {
 				font-family: var(--xo-font-mono);
 				font-size: 0.75rem;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 				margin: 0.2rem 0 0 0;
 			}
 
@@ -1986,25 +2043,23 @@ class Xophz_Compass_Catalog_Shortcode {
 				font-weight: 700;
 				letter-spacing: 0.12em;
 				text-transform: uppercase;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 				margin: 0 0 0.5rem 0;
 			}
 			.compass-modal-desc {
+				font-family: var(--xo-font);
 				font-size: 0.88rem;
 				line-height: 1.6;
-				color: #475569;
+				color: var(--mh-color-text-main, #cbd5e1);
 				margin: 0;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-desc {
-				color: #cbd5e1;
 			}
 
 			/* Turnkey SaaS Banner */
 			.compass-saas-banner {
 				padding: 1rem;
-				border-radius: 1rem;
-				background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.04) 100%);
-				border: 1px solid rgba(16, 185, 129, 0.2);
+				border-radius: var(--mh-radius-md, 1rem);
+				background: linear-gradient(135deg, color-mix(in srgb, var(--mh-color-success, #10b981) 12%, transparent) 0%, color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 6%, transparent) 100%);
+				border: 1px solid color-mix(in srgb, var(--mh-color-success, #10b981) 25%, transparent);
 				display: flex;
 				flex-direction: column;
 				gap: 0.75rem;
@@ -2024,9 +2079,9 @@ class Xophz_Compass_Catalog_Shortcode {
 			.compass-saas-icon {
 				width: 1.75rem;
 				height: 1.75rem;
-				border-radius: 6px;
-				background: rgba(16, 185, 129, 0.15);
-				color: #10b981;
+				border-radius: var(--mh-radius-xs, 6px);
+				background: color-mix(in srgb, var(--mh-color-success, #10b981) 20%, transparent);
+				color: var(--mh-color-success, #10b981);
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -2037,16 +2092,13 @@ class Xophz_Compass_Catalog_Shortcode {
 				font-weight: 700;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
-				color: #10b981;
+				color: var(--mh-color-success, #10b981);
 			}
 			.compass-saas-headline {
 				font-size: 0.85rem;
 				font-weight: 700;
 				margin: 0;
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-saas-headline {
-				color: #f8fafc;
+				color: var(--mh-color-text-heading, #f8fafc);
 			}
 			.compass-saas-link {
 				display: inline-flex;
@@ -2055,19 +2107,20 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.35rem 0.75rem;
 				font-size: 0.72rem;
 				font-weight: 600;
-				border-radius: 6px;
-				background: #10b981;
-				color: #ffffff;
+				border-radius: var(--mh-radius-sm, 6px);
+				background: var(--mh-color-success, #10b981);
+				color: var(--mh-color-text-inverse, #ffffff);
 				text-decoration: none;
+				transition: filter 0.2s ease;
+			}
+			.compass-saas-link:hover {
+				filter: brightness(1.1);
 			}
 			.compass-saas-audience {
 				font-size: 0.78rem;
 				line-height: 1.45;
-				color: #64748b;
+				color: var(--mh-color-text-muted, #cbd5e1);
 				margin: 0;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-saas-audience {
-				color: #cbd5e1;
 			}
 			.compass-saas-footer {
 				display: flex;
@@ -2076,9 +2129,9 @@ class Xophz_Compass_Catalog_Shortcode {
 				flex-wrap: wrap;
 				gap: 0.5rem;
 				padding-top: 0.5rem;
-				border-top: 1px solid rgba(16, 185, 129, 0.15);
+				border-top: 1px solid color-mix(in srgb, var(--mh-color-success, #10b981) 15%, transparent);
 				font-size: 0.72rem;
-				color: #64748b;
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 			.compass-saas-selfhost {
 				display: flex;
@@ -2088,25 +2141,18 @@ class Xophz_Compass_Catalog_Shortcode {
 			.compass-saas-price {
 				font-family: var(--xo-font-mono);
 				font-weight: 700;
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-saas-price {
-				color: #f8fafc;
+				color: var(--mh-color-text-heading, #f8fafc);
 			}
 
-			/* Specs Grid (Screenshot 2) */
+			/* Specs Grid */
 			.compass-specs-grid {
 				display: grid;
 				grid-template-columns: repeat(4, 1fr);
 				gap: 0.75rem;
 				padding: 0.85rem 1rem;
-				border-radius: 1rem;
-				background: #f8fafc;
-				border: 1px solid rgba(228, 228, 231, 0.8);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-specs-grid {
-				background: rgba(255, 255, 255, 0.03);
-				border-color: rgba(255, 255, 255, 0.08);
+				border-radius: var(--mh-radius-md, 1rem);
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.03));
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.08));
 			}
 			@media (max-width: 600px) {
 				.compass-specs-grid {
@@ -2122,33 +2168,26 @@ class Xophz_Compass_Catalog_Shortcode {
 				font-size: 0.62rem;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
-				color: #94a3b8;
+				color: var(--mh-color-text-muted, #94a3b8);
 			}
 			.compass-spec-value {
 				font-family: var(--xo-font-mono);
 				font-size: 0.78rem;
 				font-weight: 700;
-				color: #0f172a;
+				color: var(--mh-color-text-heading, #f8fafc);
 				word-break: break-word;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-spec-value {
-				color: #e2e8f0;
-			}
 
-			/* SHA-256 Checksum Row (Screenshot 2) */
+			/* SHA-256 Checksum Row */
 			.compass-checksum-row {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
 				gap: 0.75rem;
 				padding: 0.75rem 1rem;
-				border-radius: 1rem;
-				background: #f8fafc;
-				border: 1px solid rgba(228, 228, 231, 0.8);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-checksum-row {
-				background: rgba(0, 0, 0, 0.25);
-				border-color: rgba(255, 255, 255, 0.08);
+				border-radius: var(--mh-radius-md, 1rem);
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.03));
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.08));
 			}
 			.compass-checksum-left {
 				display: flex;
@@ -2156,7 +2195,7 @@ class Xophz_Compass_Catalog_Shortcode {
 				gap: 0.45rem;
 				font-size: 0.75rem;
 				font-weight: 600;
-				color: #10b981;
+				color: var(--mh-color-success, #10b981);
 			}
 			.compass-checksum-copy {
 				display: inline-flex;
@@ -2165,33 +2204,25 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.3rem 0.65rem;
 				font-size: 0.72rem;
 				font-weight: 600;
-				border-radius: 6px;
-				border: 1px solid rgba(0, 0, 0, 0.08);
-				background: #ffffff;
-				color: #475569;
+				border-radius: var(--mh-radius-sm, 6px);
+				border: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.1));
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.06));
+				color: var(--mh-color-text-main, #cbd5e1);
 				cursor: pointer;
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-checksum-copy {
-				background: rgba(255, 255, 255, 0.06);
-				border-color: rgba(255, 255, 255, 0.1);
-				color: #cbd5e1;
-			}
 			.compass-checksum-copy:hover {
-				background: #f1f5f9;
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-checksum-copy:hover {
-				background: rgba(255, 255, 255, 0.12);
-				color: #ffffff;
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.12));
+				color: var(--mh-color-text-heading, #ffffff);
+				border-color: var(--mh-color-border-hover, rgba(255, 255, 255, 0.2));
 			}
 			.compass-checksum-copy.is-copied {
-				background: rgba(16, 185, 129, 0.1);
-				border-color: rgba(16, 185, 129, 0.3);
-				color: #10b981;
+				background: color-mix(in srgb, var(--mh-color-success, #10b981) 15%, transparent);
+				border-color: var(--mh-color-success, #10b981);
+				color: var(--mh-color-success, #10b981);
 			}
 
-			/* Modal Footer Actions (Screenshot 2) */
+			/* Modal Footer Actions */
 			.compass-modal-footer {
 				position: relative;
 				z-index: 10;
@@ -2201,10 +2232,7 @@ class Xophz_Compass_Catalog_Shortcode {
 				justify-content: space-between;
 				gap: 0.75rem;
 				padding-top: 1rem;
-				border-top: 1px solid rgba(0, 0, 0, 0.08);
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-modal-footer {
-				border-top-color: rgba(255, 255, 255, 0.1);
+				border-top: 1px solid var(--mh-color-border-muted, rgba(255, 255, 255, 0.08));
 			}
 			.compass-btn-view-source {
 				display: inline-flex;
@@ -2213,24 +2241,17 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.5rem 0.9rem;
 				font-size: 0.78rem;
 				font-weight: 600;
-				border-radius: 8px;
-				border: 1px solid rgba(0, 0, 0, 0.12);
-				background: transparent;
-				color: #475569;
+				border-radius: var(--mh-radius-sm, 8px);
+				border: 1px solid var(--mh-color-border-base, rgba(255, 255, 255, 0.12));
+				background: var(--mh-color-section, rgba(255, 255, 255, 0.05));
+				color: var(--mh-color-text-main, #cbd5e1);
 				text-decoration: none;
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-btn-view-source {
-				border-color: rgba(255, 255, 255, 0.15);
-				color: #cbd5e1;
-			}
 			.compass-btn-view-source:hover {
-				background: rgba(0, 0, 0, 0.05);
-				color: #0f172a;
-			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-btn-view-source:hover {
-				background: rgba(255, 255, 255, 0.08);
-				color: #ffffff;
+				background: var(--mh-color-card, rgba(255, 255, 255, 0.1));
+				color: var(--mh-color-text-heading, #ffffff);
+				border-color: var(--mh-color-brand-base, #62c9ff);
 			}
 
 			.compass-modal-actions-right {
@@ -2245,23 +2266,19 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.5rem 1rem;
 				font-size: 0.78rem;
 				font-weight: 600;
-				border-radius: 8px;
-				background: rgba(139, 92, 246, 0.12);
-				border: 1px solid rgba(139, 92, 246, 0.25);
-				color: #8b5cf6;
+				border-radius: var(--mh-radius-sm, 8px);
+				background: var(--mh-color-cta-base, #ff3366);
+				border: 1px solid var(--mh-color-cta-base, #ff3366);
+				color: var(--mh-color-text-inverse, #ffffff);
 				text-decoration: none;
+				box-shadow: 0 4px 14px color-mix(in srgb, var(--mh-color-cta-base, #ff3366) 35%, transparent);
 				transition: all 0.2s ease;
 			}
-			:is(.dark, [data-theme="dark"], body.has-surface-body-background-color) .compass-btn-buy-license {
-				background: rgba(139, 92, 246, 0.2);
-				border-color: rgba(139, 92, 246, 0.35);
-				color: #c4b5fd;
-			}
 			.compass-btn-buy-license:hover {
-				background: #8b5cf6;
-				border-color: #8b5cf6;
-				color: #ffffff;
-				box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+				background: var(--mh-color-cta-hover, #ff668c);
+				border-color: var(--mh-color-cta-hover, #ff668c);
+				color: var(--mh-color-text-inverse, #ffffff);
+				box-shadow: 0 6px 18px color-mix(in srgb, var(--mh-color-cta-base, #ff3366) 45%, transparent);
 			}
 
 			.compass-btn-modal-demo {
@@ -2271,15 +2288,18 @@ class Xophz_Compass_Catalog_Shortcode {
 				padding: 0.5rem 1rem;
 				font-size: 0.78rem;
 				font-weight: 600;
-				border-radius: 8px;
-				background: #8b5cf6;
-				color: #ffffff;
+				border-radius: var(--mh-radius-sm, 8px);
+				background: var(--mh-color-brand-base, #62c9ff);
+				border: 1px solid var(--mh-color-brand-base, #62c9ff);
+				color: var(--mh-color-text-inverse, #0a0b10);
 				text-decoration: none;
-				box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+				box-shadow: 0 4px 14px color-mix(in srgb, var(--mh-color-brand-base, #62c9ff) 35%, transparent);
 				transition: all 0.2s ease;
 			}
 			.compass-btn-modal-demo:hover {
-				background: #7c3aed;
+				background: var(--mh-color-brand-hover, #8be0ff);
+				border-color: var(--mh-color-brand-hover, #8be0ff);
+				color: var(--mh-color-text-inverse, #0a0b10);
 			}
 		</style>
 
@@ -2370,7 +2390,14 @@ class Xophz_Compass_Catalog_Shortcode {
 						// Artwork image
 						var artworkImg = modal.querySelector('.compass-modal-artwork');
 						if (artworkImg) {
-							artworkImg.src = plugin.logoUrl ? ('https://xophz.com' + plugin.logoUrl) : '';
+							var rawLogo = plugin.logoUrl || '';
+							if (rawLogo.indexOf('http://') === 0 || rawLogo.indexOf('https://') === 0 || rawLogo.indexOf('/') === 0) {
+								artworkImg.src = rawLogo;
+							} else if (rawLogo) {
+								artworkImg.src = 'https://xophz.com' + rawLogo;
+							} else {
+								artworkImg.src = '';
+							}
 							artworkImg.alt = plugin.name || '';
 						}
 
@@ -2451,8 +2478,11 @@ class Xophz_Compass_Catalog_Shortcode {
 						var buyBtn = modal.querySelector('.js-m-buy');
 						var buyText = modal.querySelector('.js-m-buy-text');
 						if (buyBtn) {
-							var pattern = root.getAttribute('data-checkout-pattern') || 'https://xophz.com/my-compass?plugin={key}&purchased=true';
-							var checkoutHref = pattern.replace('{key}', encodeURIComponent(plugin.key || plugin.codename));
+							var defaultPattern = 'https://mycompassconsulting.com/buy/my-compass/{key}';
+							var pattern = root.getAttribute('data-checkout-pattern') || defaultPattern;
+							var rawKey = plugin.key || plugin.codename || plugin.githubRepo || '';
+							var cleanKey = rawKey.replace(/^xophz-compass-|^xophz-/, '');
+							var checkoutHref = pattern.replace('{key}', encodeURIComponent(cleanKey || rawKey));
 							buyBtn.href = checkoutHref;
 							if (buyText) buyText.textContent = 'Buy Site License · ' + (plugin.price || '$79/yr');
 						}
@@ -2537,6 +2567,45 @@ class Xophz_Compass_Catalog_Shortcode {
 							closeModal();
 						}
 					});
+
+					// Dynamic Live Sync from REST Endpoint
+					var endpoint = root.getAttribute('data-endpoint');
+					if (endpoint && window.fetch) {
+						fetch(endpoint, {
+							headers: { 'Accept': 'application/json' },
+							credentials: 'same-origin'
+						})
+						.then(function(res) { return res.ok ? res.json() : null; })
+						.then(function(payload) {
+							if (!payload || !Array.isArray(payload.plugins)) return;
+							var pluginMap = {};
+							payload.plugins.forEach(function(p) {
+								if (p.key) pluginMap[p.key] = p;
+								if (p.codename) pluginMap[p.codename] = p;
+							});
+
+							// Synchronize existing cards with updated endpoint data
+							cards.forEach(function(card) {
+								var cardKey = card.getAttribute('data-key');
+								var fresh = pluginMap[cardKey];
+								if (fresh) {
+									card.setAttribute('data-plugin', JSON.stringify(fresh));
+									var verElem = card.querySelector('.compass-meta-ver');
+									if (verElem && fresh.version) {
+										verElem.textContent = fresh.version;
+									}
+									var priceBdg = card.querySelector('.compass-badge-price');
+									if (priceBdg && fresh.price) {
+										priceBdg.textContent = fresh.price;
+									}
+								}
+							});
+						})
+						.catch(function(err) {
+							// Silent fallback: server-rendered markup remains fully functional
+							console.debug('Compass catalog background sync skipped:', err);
+						});
+					}
 				});
 			});
 		</script>

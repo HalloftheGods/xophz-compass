@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-09-21]
+
+### Added
+- Magic Hat Circadian Rhythm Tokens: Refactored `[compass_catalog]`, `[compass_suite]`, and `[compass_plugins]` shortcode styling to dynamically bind to Magic Hat 24-hour circadian theme tokens (`--mh-color-card`, `--mh-color-border-muted`, `--mh-color-text-main`, `--mh-color-brand-base`, `--mh-radius-*`, `--mh-glass-blur-*`), replacing hardcoded light-mode colors.
+- Dynamic Catalog REST Endpoint: Added `GET /wp-json/xophz-compass/v1/catalog` to provide real-time discovery of catalog plugins, module registry metadata, version status, and local asset icon URLs.
+- Client-Side Live Sync: Added background hydration to the catalog script to synchronize cards with active plugin states and versions without page refreshes.
+
+### Changed
+- Checkout Routing: Updated catalog and modal buy buttons to route fulfillment to sovereign `https://mycompassconsulting.com/buy/my-compass/{key}` Bedrock checkout takeover links, normalizing plugin keys to match module registry keys.
+- Local Icon Resolution: Enhanced logo resolution to prioritize local plugin SVG and PNG icons before remote fallbacks.
+
 ## [2026-09-18]
 
 ### Added
