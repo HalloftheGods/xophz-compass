@@ -783,21 +783,23 @@ class Xophz_Compass_Admin {
   public function getPluginsByXoph(){
     $plugins = get_plugins();
     
-    // Inject Magic Formulas since it's now bundled natively in compass but needs to appear as a plugin in UI
-    $plugins['xophz-compass-magic-formula/xophz-compass-magic-formula.php'] = [
-      'Name' => 'Xophz Magic Formulas',
-      'PluginURI' => 'http://www.mycompassconsulting.com/',
-      'Version' => '1.0.0',
-      'Description' => 'The ultimate form, poll, and quiz builder.',
-      'Author' => 'Xoph',
-      'TextDomain' => 'xophz-compass-magic-formula',
-      'DomainPath' => '/languages',
-      'Network' => false,
-      'Title' => 'Xophz Magic Formulas',
-      'AuthorName' => 'Xoph',
-      'Category' => 'Command Deck',
-      'Group' => 'CRM'
-    ];
+    // Inject Magic Formula only as a fallback if the standalone plugin is not installed on disk
+    if ( ! isset( $plugins['xophz-compass-magic-formula/xophz-compass-magic-formula.php'] ) ) {
+      $plugins['xophz-compass-magic-formula/xophz-compass-magic-formula.php'] = [
+        'Name' => 'Xophz Magic Formula',
+        'PluginURI' => 'https://youmeos.com',
+        'Version' => '26.9.5',
+        'Description' => 'Proxy from YouMeOS/COMPASS to the Forminator PHP plugin.',
+        'Author' => 'Hall of the Gods, Inc.',
+        'TextDomain' => 'xophz-compass-magic-formula',
+        'DomainPath' => '/languages',
+        'Network' => false,
+        'Title' => 'Xophz Magic Formula',
+        'AuthorName' => 'Hall of the Gods, Inc.',
+        'Category' => 'Trajectory',
+        'Group' => 'CRM'
+      ];
+    }
 
     $vendor_prefix = Xophz_Compass_Branding::get_vendor_prefix();
 
@@ -823,7 +825,8 @@ class Xophz_Compass_Admin {
       if ( is_multisite() ) {
         $active_plugins = array_merge( $active_plugins, array_keys( get_site_option( 'active_sitewide_plugins', array() ) ) );
       }
-      $plugins[$p]['isActivated'] = ( $slug === 'magic-formula' ) || in_array( $p, $active_plugins );
+      $is_standalone_installed = file_exists( WP_PLUGIN_DIR . '/' . $p );
+      $plugins[$p]['isActivated'] = $is_standalone_installed ? in_array( $p, $active_plugins ) : true;
       $plugins[$p]['isInstalled'] = true;
 
       $admin_js_slug = WP_PLUGIN_DIR . '/' . $plugin_folder . '/admin/js/' . $slug . '-admin.js';
@@ -856,19 +859,25 @@ class Xophz_Compass_Admin {
         $plugins[$p]['icon'] = "https://raw.githubusercontent.com/{$owner}/{$plugin['TextDomain']}/main/icon.svg";
       }
       
-      // Fallback approach if WP's native plugins caching hides Category
-      if (empty($plugin['Category'])) {
+      // Fallback approach if WP's native plugins caching hides Category or Group
+      if (empty($plugin['Category']) || empty($plugin['Group'])) {
         $plugin_file = WP_PLUGIN_DIR . '/' . $p;
         if (file_exists($plugin_file)) {
-          $plugin_data = get_file_data($plugin_file, ['Category' => 'Category']);
-          if (!empty($plugin_data['Category'])) {
+          $plugin_data = get_file_data($plugin_file, ['Category' => 'Category', 'Group' => 'Group']);
+          if (!empty($plugin_data['Category']) && empty($plugin['Category'])) {
             $plugin['Category'] = $plugin_data['Category'];
+          }
+          if (!empty($plugin_data['Group']) && empty($plugin['Group'])) {
+            $plugin['Group'] = $plugin_data['Group'];
           }
         }
       }
       
       // Ensure category has a fallback
       $plugins[$p]['Category'] = !empty($plugin['Category']) ? trim($plugin['Category']) : 'Uncategorized';
+      if (!empty($plugin['Group'])) {
+        $plugins[$p]['Group'] = trim($plugin['Group']);
+      }
     }
 
     $this->output_json($plugins);
@@ -1290,13 +1299,29 @@ class Xophz_Compass_Admin {
         $plugin_folder = $plugin['TextDomain'];
       }
       $plugin_dir = wp_make_link_relative( plugins_url( $plugin_folder ) );
-      if ($slug === 'magic-formula') {
+      $icon_path = WP_PLUGIN_DIR . '/' . $plugin_folder . '/icon.svg';
+      if (file_exists($icon_path)) {
+        $icon_version = filemtime($icon_path);
+        $icon = "{$plugin_dir}/icon.svg?v={$icon_version}";
+      } elseif ($slug === 'magic-formula') {
         $icon_version = time();
         $icon = wp_make_link_relative( plugins_url('xophz-compass/assets/magic-formula.svg') ) . "?v={$icon_version}";
       } else {
-        $icon_path = WP_PLUGIN_DIR . '/' . $plugin_folder . '/icon.svg';
-        $icon_version = file_exists($icon_path) ? filemtime($icon_path) : time();
+        $icon_version = time();
         $icon = "{$plugin_dir}/icon.svg?v={$icon_version}";
+      }
+
+      if (empty($plugin['Category']) || empty($plugin['Group'])) {
+        $plugin_file = WP_PLUGIN_DIR . '/' . $p;
+        if (file_exists($plugin_file)) {
+          $plugin_data = get_file_data($plugin_file, ['Category' => 'Category', 'Group' => 'Group']);
+          if (!empty($plugin_data['Category']) && empty($plugin['Category'])) {
+            $plugin['Category'] = $plugin_data['Category'];
+          }
+          if (!empty($plugin_data['Group']) && empty($plugin['Group'])) {
+            $plugin['Group'] = $plugin_data['Group'];
+          }
+        }
       }
 
       $available[] = [

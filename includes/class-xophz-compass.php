@@ -159,6 +159,7 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-3d-block.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-integrations.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-plugins-manager-rest.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-catalog-shortcode.php';
 		Xophz_Compass_Integrations::get_instance();
 
 		$this->loader = $this;

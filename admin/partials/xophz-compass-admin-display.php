@@ -116,7 +116,7 @@
         </svg>
       </div>
     </div>
-    <p class="compass-preloader__title">COMPASS</p>
+    <p class="compass-preloader__title">MY COMPASS</p>
     <p class="compass-preloader__status">INITIALIZING SYSTEMS...</p>
   </div>
 </div>

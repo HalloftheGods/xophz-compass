@@ -700,13 +700,13 @@ class Xophz_Compass_Modules_API {
 			),
 		);
 
-		// Bundled natively, does not download via GitHub
+		// Bundled natively or installed as child plugin
 		$modules['xophz-compass-magic-formula'] = array(
 			'slug'         => 'xophz-compass-magic-formula',
-			'name'         => 'Magic Formulas',
-			'description'  => 'The ultimate form, poll, and quiz builder.',
-			'download_url' => '', 
-			'category'     => 'Command Deck',
+			'name'         => 'Magic Formula',
+			'description'  => 'Proxy from YouMeOS/COMPASS to the Forminator PHP plugin.',
+			'download_url' => 'https://github.com/HalloftheGods/xophz-compass-magic-formula/archive/refs/heads/main.zip', 
+			'category'     => 'Trajectory',
 			'price'        => 79.00,
 		);
 
@@ -902,7 +902,7 @@ class Xophz_Compass_Modules_API {
 				}
 			}
 
-			if ( $slug === 'xophz-compass-magic-formula' ) {
+			if ( $slug === 'xophz-compass-magic-formula' && ! array_key_exists( $slug . '/' . $slug . '.php', $installed_plugins ) ) {
 				$module['is_installed'] = true;
 				$module['is_active']    = true;
 				continue;
@@ -912,8 +912,16 @@ class Xophz_Compass_Modules_API {
 			$module['is_installed'] = array_key_exists( $plugin_file, $installed_plugins );
 			$module['is_active'] = is_plugin_active( $plugin_file );
 
-			if ( $module['is_installed'] && ! empty( $installed_plugins[ $plugin_file ]['Description'] ) ) {
-				$module['description'] = $installed_plugins[ $plugin_file ]['Description'];
+			if ( $module['is_installed'] ) {
+				if ( ! empty( $installed_plugins[ $plugin_file ]['Description'] ) ) {
+					$module['description'] = $installed_plugins[ $plugin_file ]['Description'];
+				}
+				if ( ! empty( $installed_plugins[ $plugin_file ]['Name'] ) ) {
+					$module['name'] = trim( str_replace( 'Xophz', '', $installed_plugins[ $plugin_file ]['Name'] ) );
+				}
+				if ( ! empty( $installed_plugins[ $plugin_file ]['Category'] ) ) {
+					$module['category'] = $installed_plugins[ $plugin_file ]['Category'];
+				}
 			} elseif ( ! $module['is_installed'] ) {
 				$cached_desc = get_transient( 'compass_mod_desc_' . $slug );
 				if ( false !== $cached_desc && ! empty( $cached_desc ) ) {

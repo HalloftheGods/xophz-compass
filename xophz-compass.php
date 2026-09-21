@@ -24,7 +24,7 @@
  * Text Domain:       xophz-compass
  * Domain Path:       /languages
  * Update URI:        https://github.com/HalloftheGods/xophz-compass
- * Category:          Command Deck
+ * Category:          True North 
  * Group:             OS
  */
 
