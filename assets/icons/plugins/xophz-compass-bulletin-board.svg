@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-44 -44 600 600" style="enable-background:new 0 0 512 512;">
+<!-- Circular Badge Background -->
+<circle cx="256" cy="256" r="256" fill="#1B2838"/>
+<circle cx="256" cy="256" r="240" fill="#243447"/>
+
+<!-- Cork Board Frame -->
+<rect x="72" y="72" width="368" height="368" rx="16" ry="16" fill="#5D4037"/>
+<rect x="76" y="76" width="360" height="360" rx="14" ry="14" fill="#795548"/>
+
+<!-- Cork Surface -->
+<rect x="88" y="88" width="336" height="336" rx="8" ry="8" fill="#D7A86E"/>
+<rect x="88" y="88" width="336" height="336" rx="8" ry="8" fill="#C09050" opacity="0.5"/>
+
+<!-- Cork Texture Dots -->
+<circle cx="120" cy="120" r="3" fill="#B8834A" opacity="0.4"/>
+<circle cx="200" cy="110" r="2" fill="#B8834A" opacity="0.3"/>
+<circle cx="310" cy="130" r="3" fill="#B8834A" opacity="0.4"/>
+<circle cx="380" cy="100" r="2" fill="#B8834A" opacity="0.3"/>
+<circle cx="150" cy="280" r="3" fill="#B8834A" opacity="0.3"/>
+<circle cx="350" cy="310" r="2" fill="#B8834A" opacity="0.4"/>
+<circle cx="280" cy="380" r="3" fill="#B8834A" opacity="0.3"/>
+<circle cx="130" cy="370" r="2" fill="#B8834A" opacity="0.4"/>
+
+<!-- Note Card 1: Top-Left (Cyan) -->
+<rect x="104" y="108" width="128" height="100" rx="4" ry="4" fill="#E3F2FD" transform="rotate(-3 168 158)"/>
+<rect x="104" y="108" width="128" height="22" rx="4" ry="0" fill="#62C9FF" transform="rotate(-3 168 158)"/>
+<rect x="118" y="140" width="80" height="4" rx="2" fill="#90CAF9" transform="rotate(-3 168 158)"/>
+<rect x="118" y="152" width="96" height="4" rx="2" fill="#B3E5FC" transform="rotate(-3 168 158)"/>
+<rect x="118" y="164" width="64" height="4" rx="2" fill="#B3E5FC" transform="rotate(-3 168 158)"/>
+<rect x="118" y="176" width="88" height="4" rx="2" fill="#B3E5FC" transform="rotate(-3 168 158)"/>
+<!-- Pin 1 -->
+<circle cx="168" cy="108" r="8" fill="#F44336" transform="rotate(-3 168 158)"/>
+<circle cx="168" cy="106" r="4" fill="#EF9A9A" transform="rotate(-3 168 158)"/>
+
+<!-- Note Card 2: Top-Right (Gold/Amber) -->
+<rect x="268" y="100" width="136" height="120" rx="4" ry="4" fill="#FFF8E1" transform="rotate(2 336 160)"/>
+<rect x="268" y="100" width="136" height="22" rx="4" ry="0" fill="#FFC107" transform="rotate(2 336 160)"/>
+<rect x="282" y="132" width="92" height="4" rx="2" fill="#FFD54F" transform="rotate(2 336 160)"/>
+<rect x="282" y="144" width="108" height="4" rx="2" fill="#FFE082" transform="rotate(2 336 160)"/>
+<rect x="282" y="156" width="72" height="4" rx="2" fill="#FFE082" transform="rotate(2 336 160)"/>
+<rect x="282" y="168" width="100" height="4" rx="2" fill="#FFE082" transform="rotate(2 336 160)"/>
+<rect x="282" y="180" width="56" height="4" rx="2" fill="#FFE082" transform="rotate(2 336 160)"/>
+<!-- Pin 2 -->
+<circle cx="336" cy="100" r="8" fill="#4CAF50" transform="rotate(2 336 160)"/>
+<circle cx="336" cy="98" r="4" fill="#A5D6A7" transform="rotate(2 336 160)"/>
+
+<!-- Note Card 3: Bottom-Left (Purple) -->
+<rect x="100" y="240" width="144" height="140" rx="4" ry="4" fill="#F3E5F5" transform="rotate(2 172 310)"/>
+<rect x="100" y="240" width="144" height="22" rx="4" ry="0" fill="#AB47BC" transform="rotate(2 172 310)"/>
+<rect x="114" y="272" width="100" height="4" rx="2" fill="#CE93D8" transform="rotate(2 172 310)"/>
+<rect x="114" y="284" width="116" height="4" rx="2" fill="#E1BEE7" transform="rotate(2 172 310)"/>
+<rect x="114" y="296" width="80" height="4" rx="2" fill="#E1BEE7" transform="rotate(2 172 310)"/>
+<rect x="114" y="308" width="108" height="4" rx="2" fill="#E1BEE7" transform="rotate(2 172 310)"/>
+<rect x="114" y="320" width="64" height="4" rx="2" fill="#E1BEE7" transform="rotate(2 172 310)"/>
+<rect x="114" y="332" width="96" height="4" rx="2" fill="#E1BEE7" transform="rotate(2 172 310)"/>
+<!-- Pin 3 -->
+<circle cx="172" cy="240" r="8" fill="#2196F3" transform="rotate(2 172 310)"/>
+<circle cx="172" cy="238" r="4" fill="#90CAF9" transform="rotate(2 172 310)"/>
+
+<!-- Note Card 4: Bottom-Right (Teal) -->
+<rect x="272" y="260" width="120" height="110" rx="4" ry="4" fill="#E0F2F1" transform="rotate(-2 332 315)"/>
+<rect x="272" y="260" width="120" height="22" rx="4" ry="0" fill="#009688" transform="rotate(-2 332 315)"/>
+<rect x="286" y="292" width="76" height="4" rx="2" fill="#80CBC4" transform="rotate(-2 332 315)"/>
+<rect x="286" y="304" width="92" height="4" rx="2" fill="#B2DFDB" transform="rotate(-2 332 315)"/>
+<rect x="286" y="316" width="60" height="4" rx="2" fill="#B2DFDB" transform="rotate(-2 332 315)"/>
+<rect x="286" y="328" width="84" height="4" rx="2" fill="#B2DFDB" transform="rotate(-2 332 315)"/>
+<!-- Pin 4 -->
+<circle cx="332" cy="260" r="8" fill="#FF9800" transform="rotate(-2 332 315)"/>
+<circle cx="332" cy="258" r="4" fill="#FFCC80" transform="rotate(-2 332 315)"/>
+
+<!-- Decorative String (connecting pins) -->
+<path d="M168 108 Q 256 70 336 100" fill="none" stroke="#FFEB3B" stroke-width="2" stroke-opacity="0.6" stroke-dasharray="4,4"/>
+
+<!-- Outer Glow Ring -->
+<circle cx="256" cy="256" r="248" fill="none" stroke="#62C9FF" stroke-width="2" stroke-opacity="0.3"/>
+</svg>

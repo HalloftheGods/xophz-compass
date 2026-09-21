@@ -1,0 +1,70 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- LAYER 1: Purple Circle Background -->
+  <circle cx="256" cy="256" r="210" fill="#7b3fa0"/>
+
+  <!-- Background purple bubbles -->
+  <circle cx="380" cy="170" r="45" fill="#9b5ec2" opacity="0.6"/>
+  <circle cx="330" cy="230" r="25" fill="#9b5ec2" opacity="0.5"/>
+  <circle cx="120" cy="180" r="30" fill="#8a4db5" opacity="0.5"/>
+
+  <!-- LAYER 2: Flask Group (overlaps the purple circle) -->
+  <g transform="translate(-10, 30) rotate(-18, 250, 280)">
+
+    <!-- Flask Neck Back -->
+    <rect x="210" y="80" width="70" height="110" fill="#d4cec9"/>
+    <rect x="210" y="80" width="35" height="110" fill="#bdb5af"/>
+
+    <!-- Cork base -->
+    <rect x="218" y="30" width="54" height="45" fill="#a7674c"/>
+    <rect x="218" y="30" width="27" height="45" fill="#8a533b"/>
+
+    <!-- Cork top cap -->
+    <rect x="205" y="8" width="80" height="28" rx="8" fill="#cf896b"/>
+    <rect x="205" y="8" width="40" height="28" rx="8" fill="#b07054"/>
+
+    <!-- Flask Body -->
+    <circle cx="245" cy="290" r="145" fill="#3ab57b"/>
+
+    <!-- Flask Body Light Green Side -->
+    <path d="M 245 145 A 145 145 0 0 1 245 435 A 90 145 0 0 0 245 145 Z" fill="#a8e268"/>
+
+    <!-- Bubbles inside flask -->
+    <circle cx="155" cy="360" r="24" fill="#84d65d"/>
+    <circle cx="310" cy="260" r="22" fill="#c0f187"/>
+    <circle cx="255" cy="180" r="10" fill="#c0f187"/>
+    <circle cx="125" cy="270" r="18" fill="#00a374"/>
+    <circle cx="235" cy="320" r="22" fill="#00a374"/>
+    <circle cx="310" cy="380" r="15" fill="#00a374"/>
+
+    <!-- Neck Front Rim -->
+    <rect x="198" y="70" width="94" height="22" rx="11" fill="#ebe5e6"/>
+    <rect x="198" y="70" width="47" height="22" rx="11" fill="#d4ccce"/>
+  </g>
+
+  <!-- LAYER 3: Mortar and Pestle (overlaps the circle and the flask) -->
+  
+  <!-- Mortar Inner Hole (full ellipse) -->
+  <ellipse cx="340" cy="390" rx="130" ry="20" fill="#b8b1ab"/>
+
+  <!-- Pestle (angled diagonally, placed INSIDE the hole) -->
+  <g transform="rotate(-45, 370, 410)">
+    <!-- Pestle handle base (light, left side) -->
+    <rect x="355" y="230" width="30" height="180" rx="15" fill="#d3ccc7"/>
+    <!-- Pestle handle shadow (dark, right side) -->
+    <path d="M 370 230 L 385 230 L 385 395 A 15 15 0 0 1 370 410 Z" fill="#bcbaaf"/>
+    <!-- Pestle head base (perfect circle) -->
+    <circle cx="370" cy="230" r="28" fill="#e8e2dd"/>
+    <!-- Pestle head shadow (crescent starting at bottom-center, curving up the right edge) -->
+    <path d="M 370 258 A 28 28 0 0 0 384 206 A 35 35 0 0 1 370 258 Z" fill="#c6c0ba"/>
+  </g>
+
+  <!-- Mortar Bowl Front Outer Face (drawn after pestle to cover the bottom) -->
+  <path d="M 210 390 A 130 90 0 0 0 470 390 A 130 20 0 0 1 210 390 Z" fill="#e0dcd9"/>
+  
+  <!-- Mortar Bowl Left Shadow -->
+  <path d="M 210 390 A 130 90 0 0 0 340 480 Q 280 430 210 390 Z" fill="#c4bcb6"/>
+  
+  <!-- Mortar Bowl Front Rim Highlight (drawn LAST to cut cleanly across the pestle handle) -->
+  <path d="M 210 390 A 130 20 0 0 0 470 390 A 130 13 0 0 1 210 390 Z" fill="#f2edea"/>
+
+</svg>

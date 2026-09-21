@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Hand-crafted, deeply imaginative SVG logic. -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="-44 -44 600 600" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+
+<!-- Circular backdrop: Match original pink/coral -->
+<path style="fill:#F25872;" d="M512 256c0 141.385-114.615 256-256 256S0 397.385 0 256 114.615 0 256 0s256 114.615 256 256z"/>
+
+<!-- Big floating sparkles popping out of the circle bounds! -->
+<g transform="rotate(-15, 20, 80)">
+	<!-- Top left (pops out left edge) -->
+	<path style="fill:#FFF573;" d="M -20 80 Q 20 80 20 40 Q 20 80 60 80 Q 20 80 20 120 Q 20 80 -20 80 Z"/>
+</g>
+
+<!-- Mini sparkle on left -->
+<path style="fill:#FFEB50;" d="M 0 160 Q 15 160 15 145 Q 15 160 30 160 Q 15 160 15 175 Q 15 160 0 160 Z"/>
+
+<g transform="rotate(25, 480, 50)">
+	<!-- Top right (pops out top edge) -->
+	<path style="fill:#FFF573;" d="M 450 50 Q 480 50 480 20 Q 480 50 510 50 Q 480 50 480 80 Q 480 50 450 50 Z"/>
+</g>
+
+<!-- Bottom right (pops out bottom edge) -->
+<path style="fill:#FFEB50;" d="M 480 420 Q 510 420 510 390 Q 510 420 540 420 Q 510 420 510 450 Q 510 420 480 420 Z"/>
+
+<!-- Bottom left (pops out left edge) -->
+<path style="fill:#FFF573;" d="M -10 400 Q 15 400 15 375 Q 15 400 40 400 Q 15 400 15 425 Q 15 400 -10 400 Z"/>
+
+<g transform="translate(256, 256) rotate(-22) translate(-256, -256)">
+  <!-- Shadow of the handle and frame on the bg -->
+  <g transform="translate(15, 25)">
+    <ellipse cx="256" cy="200" rx="170" ry="220" fill="#C43B52" opacity="0.6"/>
+    <rect x="236" y="350" width="40" height="200" rx="10" fill="#C43B52" opacity="0.6"/>
+    <circle cx="256" cy="550" r="35" fill="#C43B52" opacity="0.6"/>
+  </g>
+
+  <!-- Handle Back -->
+  <rect x="236" y="350" width="40" height="200" rx="10" fill="#AA8222"/>
+  <rect x="236" y="350" width="20" height="200" fill="#D4AF37"/>
+
+  <!-- Handle Base/Pommel -->
+  <circle cx="256" cy="550" r="35" fill="#AA8222"/>
+  <path d="M 256 515 A 35 35 0 0 0 256 585 Z" fill="#D4AF37"/>
+  <circle cx="256" cy="550" r="15" fill="#5E134D"/>
+  <path d="M 256 535 A 15 15 0 0 0 256 565 Z" fill="#8C1C77"/>
+
+  <!-- Neck/Attachment to Frame -->
+  <polygon points="216,350 296,350 266,410 246,410" fill="#AA8222"/>
+  <polygon points="216,350 256,350 256,410 246,410" fill="#D4AF37"/>
+
+  <!-- Handle Jewel -->
+  <polygon points="256,400 270,450 256,500 242,450" fill="#D942A6"/>
+  <polygon points="256,400 256,500 242,450" fill="#FF8BE2"/>
+
+  <!-- Frame Outer -->
+  <ellipse cx="256" cy="200" rx="170" ry="220" fill="#AA8222"/>
+  <path d="M 256 -20 A 170 220 0 0 0 256 420 Z" fill="#D4AF37"/>
+  
+  <!-- Frame Detail Ridge -->
+  <ellipse cx="256" cy="200" rx="145" ry="195" fill="#8B6914"/>
+  <path d="M 256 5 A 145 195 0 0 0 256 395 Z" fill="#EAD068"/>
+
+  <!-- Frame Inner/Rim -->
+  <ellipse cx="256" cy="200" rx="125" ry="175" fill="#6B4F09"/>
+
+  <!-- Glass Area -->
+  <clipPath id="glassClip">
+    <ellipse cx="256" cy="200" rx="120" ry="170" />
+  </clipPath>
+  <g clip-path="url(#glassClip)">
+    <rect x="0" y="-100" width="512" height="600" fill="#1C1126"/>
+    <!-- Magical swirls/glows using flat layered ellipses -->
+    <ellipse cx="256" cy="320" rx="160" ry="160" fill="#3D1E62"/>
+    <ellipse cx="180" cy="260" rx="120" ry="120" fill="#67215B"/>
+    <ellipse cx="150" cy="180" rx="70" ry="70" fill="#9C2A7D"/>
+    <ellipse cx="160" cy="140" rx="30" ry="30" fill="#D942A6"/>
+    
+    <!-- Diagonal reflections (with slight offsets for glass specular highlights) -->
+    <polygon fill="#FFFFFF" opacity="0.3" points="360,-100 460,-100 160,500 60,500"/>
+    <polygon fill="#FFFFFF" opacity="0.15" points="520,-100 570,-100 270,500 220,500"/>
+    <polygon fill="#FFFFFF" opacity="0.4" points="100,-100 120,-100 -80,500 -100,500"/>
+    
+    <!-- A small star flare ON the glass -->
+    <path fill="#FFFFFF" opacity="0.8" d="M 120 100 Q 140 100 140 80 Q 140 100 160 100 Q 140 100 140 120 Q 140 100 120 100 Z"/>
+  </g>
+</g>
+</svg>

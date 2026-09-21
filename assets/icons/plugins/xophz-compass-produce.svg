@@ -1,0 +1,28 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular Dark Background -->
+  <circle cx="256" cy="256" r="240" fill="#0A1F11" stroke="#4CAF50" stroke-width="6" stroke-opacity="0.7"/>
+  <circle cx="256" cy="256" r="215" fill="none" stroke="#81C784" stroke-width="2" stroke-dasharray="8,6" stroke-opacity="0.4"/>
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#FFD54F" stroke-width="2" stroke-opacity="0.35"/>
+
+  <!-- Orbital Harvest Rings -->
+  <ellipse cx="256" cy="256" rx="150" ry="45" fill="none" stroke="#4CAF50" stroke-width="3" transform="rotate(-25 256 256)" stroke-opacity="0.8"/>
+  <ellipse cx="256" cy="256" rx="150" ry="45" fill="none" stroke="#81C784" stroke-width="2" transform="rotate(35 256 256)" stroke-opacity="0.5"/>
+
+  <!-- Apple Crate / Data Vault Isometric Geometry -->
+  <!-- Outer Crate Ribs -->
+  <polygon points="256,120 380,185 256,250 132,185" fill="#2E7D32" stroke="#81C784" stroke-width="3"/>
+  <polygon points="132,185 256,250 256,380 132,315" fill="#1B5E20" stroke="#81C784" stroke-width="3"/>
+  <polygon points="380,185 256,250 256,380 380,315" fill="#388E3C" stroke="#81C784" stroke-width="3"/>
+
+  <!-- Glowing Fruit / Sovereign Mineral Core -->
+  <circle cx="256" cy="220" r="24" fill="#FFD54F" stroke="#FFF" stroke-width="2"/>
+  <circle cx="256" cy="220" r="12" fill="#FFA000"/>
+
+  <!-- Upper Leaf / True North Sprout -->
+  <path d="M256,180 Q275,160 290,175 Q275,200 256,180" fill="#A5D6A7" stroke="#4CAF50" stroke-width="2"/>
+
+  <!-- Peripheral Node Sparkles -->
+  <circle cx="132" cy="185" r="7" fill="#81C784"/>
+  <circle cx="380" cy="185" r="7" fill="#81C784"/>
+  <circle cx="256" cy="380" r="8" fill="#FFD54F"/>
+</svg>

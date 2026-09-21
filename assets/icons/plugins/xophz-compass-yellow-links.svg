@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Xophz_Yellow_Links_Icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512pt" height="512pt" viewBox="-44 -44 600 600" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+  <!-- 1. Background Medallion Base Circles (Full r=256 canvas match) -->
+  <path d="M 512,256 C 512,397.385 397.385,512 256,512 C 114.615,512 0,397.385 0,256 C 0,114.615 114.615,0 256,0 C 397.385,0 512,114.615 512,256 Z" fill="#FACC15"/>
+  <circle cx="256" cy="256" r="238" fill="#EAB308"/>
+  <circle cx="256" cy="256" r="216" fill="#CA8A04"/>
+  <circle cx="256" cy="256" r="195" fill="#0F172A"/>
+  <circle cx="256" cy="256" r="180" fill="#1E293B"/>
+
+  <!-- Decorative Inner Ring -->
+  <circle cx="256" cy="256" r="168" fill="none" stroke="#FACC15" stroke-width="4" stroke-dasharray="12 8" opacity="0.6"/>
+
+  <!-- 2. Main Graphic Object: Large Interlocking Chain Links (Matching full canvas scale) -->
+  <g transform="translate(0, 0)">
+    <g transform="rotate(-45 256 256)">
+      <!-- Link 1 (Bottom Left Link Outer - Dark Slate) -->
+      <path d="M 140,110 L 260,110 C 308,110 344,146 344,194 C 344,242 308,278 260,278 L 140,278 C 92,278 56,242 56,194 C 56,146 92,110 140,110 Z" fill="#334155"/>
+      <path d="M 145,118 L 255,118 C 295,118 325,146 325,194 C 325,242 295,270 255,270 L 145,270 C 105,270 75,242 75,194 C 75,146 105,118 145,118 Z" fill="#1E293B"/>
+      <!-- Inner cutout -->
+      <path d="M 145,158 L 255,158 C 275,158 290,172 290,194 C 290,216 275,230 255,230 L 145,230 C 125,230 110,216 110,194 C 110,172 125,158 145,158 Z" fill="#0F172A"/>
+
+      <!-- Link 2 (Top Right Link Outer - Glowing Yellow Gold - Extends out of top) -->
+      <path d="M 240,230 L 360,230 C 408,230 444,266 444,314 C 444,362 408,398 360,398 L 240,398 C 192,398 156,362 156,314 C 156,266 192,230 240,230 Z" fill="#CA8A04"/>
+      <path d="M 240,238 L 360,238 C 400,238 428,266 428,314 C 428,362 400,390 360,390 L 240,390 C 200,390 172,362 172,314 C 172,266 200,238 240,238 Z" fill="#FACC15"/>
+      <!-- Inner cutout -->
+      <path d="M 245,276 L 355,276 C 375,276 390,290 390,314 C 390,338 375,352 355,352 L 245,352 C 225,352 210,338 210,314 C 210,290 225,276 245,276 Z" fill="#0F172A"/>
+
+      <!-- Interlock Overlay -->
+      <path d="M 172,230 L 260,230 C 308,230 344,250 344,270 L 344,194 C 344,146 308,110 260,110 L 140,110 C 92,110 56,146 56,194 C 56,220 68,245 88,260 L 110,225 C 110,194 125,158 145,158 L 255,158 C 275,158 290,172 290,194 C 290,206 282,218 270,224 Z" fill="#475569" opacity="0.95"/>
+      
+      <!-- Highlights -->
+      <path d="M 240,238 L 360,238 C 400,238 428,266 428,314" stroke="#FEF08A" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <circle cx="380" cy="255" r="6" fill="#FFFFFF"/>
+      <circle cx="405" cy="285" r="4" fill="#FFFFFF"/>
+    </g>
+
+    <!-- Sparkles -->
+    <path d="M 430,70 L 438,92 L 460,100 L 438,108 L 430,130 L 422,108 L 400,100 L 422,92 Z" fill="#FACC15"/>
+    <path d="M 90,410 L 95,424 L 109,429 L 95,434 L 90,448 L 85,434 L 71,429 L 85,424 Z" fill="#FEF08A"/>
+  </g>
+
+  <!-- 3. Foreground Bottom Circle Arc (Tucking bottom behind circle base) -->
+  <path d="M 0,256 C 0,397.385 114.615,512 256,512 C 397.385,512 512,397.385 512,256 L 472,256 C 472,375.295 375.295,472 256,472 C 136.705,472 40,375.295 40,256 Z" fill="#FACC15"/>
+  <path d="M 18,256 C 18,387.442 124.558,494 256,494 C 387.442,494 494,387.442 494,256 L 472,256 C 472,375.295 375.295,472 256,472 C 136.705,472 40,375.295 40,256 Z" fill="#EAB308"/>
+  <path d="M 40,256 C 40,375.295 136.705,472 256,472 C 375.295,472 472,375.295 472,256 L 451,256 C 451,358.724 363.724,446 256,446 C 148.276,446 61,358.724 61,256 Z" fill="#CA8A04"/>
+  <path d="M 61,256 C 61,358.724 148.276,446 256,446 C 363.724,446 451,358.724 451,256 L 436,256 C 436,350.441 355.441,431 256,431 C 156.559,431 76,350.441 76,256 Z" fill="#0F172A"/>
+
+  <!-- Decorative Inner Ring Bottom Arc -->
+  <path d="M 88,256 C 88,348.784 163.216,424 256,424 C 348.784,424 424,348.784 424,256" fill="none" stroke="#FACC15" stroke-width="4" stroke-dasharray="12 8" opacity="0.6"/>
+</svg>

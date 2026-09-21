@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Circle Radial Gradient -->
+    <radialGradient id="bgGrad" cx="30%" cy="25%" r="75%">
+      <stop offset="0%" stop-color="#1a2744"/>
+      <stop offset="60%" stop-color="#0a1020"/>
+      <stop offset="100%" stop-color="#04070e"/>
+    </radialGradient>
+
+    <!-- Neon Cyan Glow -->
+    <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#80d8ff"/>
+      <stop offset="50%" stop-color="#62c9ff"/>
+      <stop offset="100%" stop-color="#0091ea"/>
+    </linearGradient>
+
+    <!-- Gold Gem-Mint Label Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="50%" stop-color="#ffd54f"/>
+      <stop offset="100%" stop-color="#ffb300"/>
+    </linearGradient>
+
+    <!-- Slab Acrylic Border Gradient -->
+    <linearGradient id="slabBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.45)"/>
+      <stop offset="50%" stop-color="rgba(98, 201, 255, 0.3)"/>
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0.1)"/>
+    </linearGradient>
+
+    <!-- Acrylic Glass Fill -->
+    <linearGradient id="slabGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(30, 41, 59, 0.85)"/>
+      <stop offset="100%" stop-color="rgba(15, 23, 42, 0.95)"/>
+    </linearGradient>
+
+    <!-- Holographic Card Art Gradient -->
+    <linearGradient id="holoArt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1b2a"/>
+      <stop offset="40%" stop-color="#1b263b"/>
+      <stop offset="100%" stop-color="#0d2b45"/>
+    </linearGradient>
+
+    <!-- Filter for Glow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Outer Starship Base Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGrad)" stroke="url(#cyanGlow)" stroke-width="6" stroke-opacity="0.6"/>
+  <!-- Ambient Inner Orbit Ring -->
+  <circle cx="256" cy="256" r="226" fill="none" stroke="#62c9ff" stroke-width="1.5" stroke-dasharray="8 6" stroke-opacity="0.3"/>
+
+  <!-- Back Card Shadow / Offset Stack (Layered depth) -->
+  <rect x="180" y="80" width="200" height="310" rx="18" transform="rotate(12 280 235)" fill="#0f172a" stroke="url(#cyanGlow)" stroke-width="2" stroke-opacity="0.35" opacity="0.6"/>
+
+  <!-- Main Foreground Graded Slab -->
+  <g transform="translate(136, 76)">
+    <!-- Slab Outer Shell (Thick Acrylic Capsule) -->
+    <rect x="0" y="0" width="240" height="360" rx="20" fill="url(#slabGlass)" stroke="url(#slabBorder)" stroke-width="4" filter="url(#glow)"/>
+    <!-- Inner Bevel -->
+    <rect x="8" y="8" width="224" height="344" rx="14" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+
+    <!-- Slab Header: Grading Label (PSA / BGS Style) -->
+    <rect x="18" y="18" width="204" height="64" rx="8" fill="#111827" stroke="url(#goldGrad)" stroke-width="2"/>
+    <!-- Grade Header Bar -->
+    <rect x="18" y="18" width="204" height="14" rx="6" fill="url(#goldGrad)"/>
+    <text x="120" y="29" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8" font-weight="900" fill="#0b0f19" text-anchor="middle" letter-spacing="2">CARD VAULT ARCHIVE</text>
+
+    <!-- Grade Label Details -->
+    <text x="26" y="50" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="#ffffff" opacity="0.95">DEALER TRADE DESK</text>
+    <text x="26" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8" font-weight="500" fill="#62c9ff" opacity="0.85">OPTICAL GRADE GEM</text>
+    <text x="26" y="74" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="7" font-weight="400" fill="#94a3b8">#CV-2026-XOP</text>
+
+    <!-- Big Grade Badge: 10 -->
+    <rect x="174" y="36" width="40" height="38" rx="6" fill="#1e293b" stroke="url(#goldGrad)" stroke-width="1.5"/>
+    <text x="194" y="56" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="900" fill="#ffd54f" text-anchor="middle">10</text>
+    <text x="194" y="68" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="7" font-weight="800" fill="#62c9ff" text-anchor="middle">PRISTINE</text>
+
+    <!-- Card Inset Window (Recessed Trading Card Bed) -->
+    <rect x="18" y="94" width="204" height="248" rx="10" fill="url(#holoArt)" stroke="rgba(98, 201, 255, 0.4)" stroke-width="2"/>
+
+    <!-- Inner Card Holo Frame -->
+    <rect x="26" y="102" width="188" height="232" rx="8" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1"/>
+
+    <!-- Card Art: Celestial Star & Holographic Shine -->
+    <path d="M 30 110 L 190 270" stroke="rgba(255,255,255,0.08)" stroke-width="18" stroke-linecap="round"/>
+    <path d="M 60 110 L 200 250" stroke="rgba(98,201,255,0.12)" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Vault Crest: Shield & Keyhole Motif in Card Center -->
+    <g transform="translate(120, 205)">
+      <!-- Shield Outer -->
+      <path d="M 0 -44 L 38 -24 C 38 18 20 46 0 58 C -20 46 -38 18 -38 -24 Z" fill="#0f172a" stroke="url(#cyanGlow)" stroke-width="3"/>
+      <!-- Inner Shield Ring -->
+      <path d="M 0 -36 L 30 -20 C 30 14 16 36 0 46 C -16 36 -30 14 -30 -20 Z" fill="rgba(98, 201, 255, 0.15)" stroke="url(#goldGrad)" stroke-width="1.5"/>
+
+      <!-- Vault Dial / Keyhole -->
+      <circle cx="0" cy="-2" r="14" fill="#1e293b" stroke="url(#goldGrad)" stroke-width="2"/>
+      <circle cx="0" cy="-2" r="6" fill="#ffd54f"/>
+      <path d="M -3 -2 L 3 -2 L 5 12 L -5 12 Z" fill="#ffd54f"/>
+
+      <!-- Holographic Sparkles around Vault -->
+      <path d="M 0 -58 L 2 -48 L 12 -46 L 2 -44 L 0 -34 L -2 -44 L -12 -46 L -2 -48 Z" fill="#62c9ff"/>
+      <path d="M 38 32 L 40 38 L 46 40 L 40 42 L 38 48 L 36 42 L 30 40 L 36 38 Z" fill="#ffd54f"/>
+      <path d="M -38 32 L -36 38 L -30 40 L -36 42 L -38 48 L -40 42 L -46 40 L -40 38 Z" fill="#62c9ff"/>
+    </g>
+
+    <!-- Card Bottom Foil Ribbon -->
+    <rect x="36" y="296" width="168" height="24" rx="4" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(98, 201, 255, 0.3)" stroke-width="1"/>
+    <text x="120" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="900" fill="#62c9ff" text-anchor="middle" letter-spacing="3">MY CARD VAULT</text>
+  </g>
+</svg>
