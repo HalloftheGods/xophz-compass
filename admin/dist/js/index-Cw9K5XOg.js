@@ -1,1 +1,0 @@
-import{ae as r,r as t}from"./vendor-bo_e8OIJ.js";const g=r("litLamp",()=>{const s=t(!1),o=t(null),n=t(!1),a=t(null);return{isNavOpen:s,systemInfo:o,isLoading:n,error:a,setIsNavOpen:e=>{s.value=e},toggleNav:()=>{s.value=!s.value},setSystemInfo:e=>{o.value=e},setLoading:e=>{n.value=e},setError:e=>{a.value=e}}});export{g as u};
