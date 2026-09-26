@@ -396,7 +396,7 @@ class Xophz_Compass_Dev_Proxy {
 
 		$is_asset_folder = str_starts_with( $subpath, 'icons/' ) || str_starts_with( $subpath, 'assets/' );
 		$is_favicon      = (bool) preg_match( '#^favicon\.(ico|svg|png)$#i', $subpath );
-		$has_asset_ext   = (bool) preg_match( '#\.(ico|svg|png|jpe?g|webp|woff2?|ttf|json|css|js|map)$#i', $subpath );
+		$has_asset_ext   = (bool) preg_match( '#\.(ico|svg|png|jpe?g|webp|woff2?|ttf|json|css|js|map|html)$#i', $subpath );
 
 		return $is_asset_folder || $is_favicon || $has_asset_ext;
 	}
@@ -503,6 +503,7 @@ class Xophz_Compass_Dev_Proxy {
 			'json'  => 'application/json; charset=UTF-8',
 			'css'   => 'text/css; charset=UTF-8',
 			'js'    => 'application/javascript; charset=UTF-8',
+			'html'  => 'text/html; charset=UTF-8',
 			'map'   => 'application/json; charset=UTF-8',
 		);
 
