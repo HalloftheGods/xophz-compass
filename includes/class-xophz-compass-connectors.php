@@ -285,6 +285,20 @@ class Xophz_Compass_Connectors {
 			),
 		) );
 
+		// ---------------------------------------------------------
+		// Explee B2B Outreach & Data Platform Configuration
+		// ---------------------------------------------------------
+		$registry->register( 'explee_api_key', array(
+			'name'           => __( 'Explee API Key', 'xophz-compass' ),
+			'description'    => __( 'API Key for Explee AutoGTM campaigns, lead search, and contact enrichment.', 'xophz-compass' ),
+			'type'           => 'marketing',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => 'https://explee.com/app-auto-gtm/api-keys',
+				'setting_name'    => 'compass_explee_api_key',
+			),
+		) );
+
 	}
 
 	/**
@@ -552,6 +566,15 @@ class Xophz_Compass_Connectors {
 				'color'        => '#10b981',
 				'description'  => 'Authorization token for subscription tier sync and upgrades',
 			),
+			array(
+				'id'           => 'explee',
+				'name'         => 'Explee B2B Outreach & Data',
+				'setting_name' => 'compass_explee_api_key',
+				'type'         => 'marketing',
+				'icon'         => 'fad fa-paper-plane',
+				'color'        => '#6366f1',
+				'description'  => 'Autonomous B2B outreach campaigns, lead discovery, email sequences, and reply management',
+			),
 		);
 	}
 
@@ -560,6 +583,7 @@ class Xophz_Compass_Connectors {
 	 */
 	private static function get_connector_icon( $id, $name ) {
 		$str = strtolower( $id . ' ' . $name );
+		if ( strpos( $str, 'explee' ) !== false ) return 'fad fa-paper-plane';
 		if ( strpos( $str, 'advfinder' ) !== false || strpos( $str, 'gavel' ) !== false ) return 'fad fa-gavel';
 		if ( strpos( $str, 'email_service' ) !== false || strpos( $str, 'lawfirm' ) !== false ) return 'fad fa-envelope-open-text';
 		if ( strpos( $str, 'google' ) !== false || strpos( $str, 'gemini' ) !== false ) return 'fab fa-google';
@@ -581,6 +605,7 @@ class Xophz_Compass_Connectors {
 	 */
 	private static function get_connector_color( $id, $type ) {
 		$str = strtolower( $id . ' ' . $type );
+		if ( strpos( $str, 'explee' ) !== false ) return '#6366f1';
 		if ( strpos( $str, 'advfinder' ) !== false ) return '#2563eb';
 		if ( strpos( $str, 'lawfirm' ) !== false ) return '#3b82f6';
 		if ( strpos( $str, 'google' ) !== false || strpos( $str, 'gemini' ) !== false ) return '#ea4335';

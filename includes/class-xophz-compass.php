@@ -160,6 +160,7 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-integrations.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-plugins-manager-rest.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-catalog-shortcode.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-gateway.php';
 		Xophz_Compass_Integrations::get_instance();
 
 		$this->loader = $this;
@@ -283,6 +284,10 @@ class Xophz_Compass {
     require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-stripe-api.php';
     $stripe_api = new Xophz_Compass_Stripe_API();
     $this->loader->add_action( 'rest_api_init', $stripe_api, 'register_routes' );
+
+    // Register Universal API Gateway
+    $gateway_api = new Xophz_Compass_Gateway();
+    $this->loader->add_action( 'rest_api_init', $gateway_api, 'register_routes' );
 
     // Register Matrix (Org Chart) API
     $matrix_api = new Xophz_Compass_Matrix_API();
