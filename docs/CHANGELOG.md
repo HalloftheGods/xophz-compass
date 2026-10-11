@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Fresh Mints is approved for the `google`, `openai` and `anthropic` AI connectors, so the AI plugin no longer refuses its Gemini calls with `wpai_connector_not_approved` (#5950).
+- Discord login works again on sites that hold the Discord credentials only in environment variables. Event Horizon reads them only through connectors since #5954, and the `discord_client_id`, `discord_client_secret`, `google_oauth_client_id` and `google_oauth_client_secret` connectors declared no constant or env names. They now declare `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` for both (#5978).
+- AI connector approvals now also cover Super Nerd Bros Dodo Air, Card Vault, Yellow Links, Alphabet Soup and the Magic Hat theme (the AI plugin keys a theme by its directory slug, `xophz-magic-hat`). The Thoth Reader entry uses the plugin's real basename, `xophz-thoth-reader-wp/xophz-thoth-reader.php` (#5978).
 
 ### Added
 - `POST /xophz/v1/passport/pin` (`includes/class-xophz-compass-passport-pin-api.php`): pins a validated `GlobalPlayerProfile` to IPFS through Pinata from the server and returns `{ cid }`. The JWT is read through the `pinata_jwt` connector; with none set the route answers `503 compass_pinata_not_configured`. Logged-in users, 10 pins per hour each.

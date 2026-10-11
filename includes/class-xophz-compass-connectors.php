@@ -22,7 +22,10 @@ class Xophz_Compass_Connectors {
 	}
 
 	/**
-	 * Automatically approve COMPASS ecosystem plugins for AI connectors in WP 7.0+ AI plugin.
+	 * Automatically approve COMPASS ecosystem callers for AI connectors in the WP 7.0+ AI plugin.
+	 *
+	 * The AI plugin's Http_Guard keys each approval by the caller it finds on the stack: a plugin
+	 * basename (folder/main-file.php) or, for a theme, the theme's directory slug.
 	 *
 	 * @param mixed $approvals
 	 * @return array
@@ -31,18 +34,23 @@ class Xophz_Compass_Connectors {
 		if ( ! is_array( $approvals ) ) {
 			$approvals = array();
 		}
-		$compass_plugins = array(
+		$compass_callers = array(
 			'xophz-compass/xophz-compass.php',
 			'xophz-compass-moving-castle/xophz-compass-moving-castle.php',
 			'xophz-kitchen-synk/xophz-kitchen-synk.php',
 			'xophz-nook-phone/xophz-nook-phone.php',
-			'xophz-thoth-reader-wp/xophz-thoth-reader-wp.php',
+			'xophz-thoth-reader-wp/xophz-thoth-reader.php',
 			'xophz-compass-diego-lawfirm/xophz-compass-diego-lawfirm.php',
 			'xophz-compass-fresh-mints/xophz-compass-fresh-mints.php',
+			'super-nerd-bros-dodo-air/super-nerd-bros-dodo-air.php',
+			'xophz-compass-card-vault/xophz-compass-card-vault.php',
+			'xophz-compass-yellow-links/xophz-compass-yellow-links.php',
+			'xophz-compass-alphabet-soup/xophz-compass-alphabet-soup.php',
+			'xophz-magic-hat',
 		);
 		$connectors = array( 'google', 'openai', 'anthropic' );
 
-		foreach ( $compass_plugins as $plugin ) {
+		foreach ( $compass_callers as $plugin ) {
 			if ( ! isset( $approvals[ $plugin ] ) || ! is_array( $approvals[ $plugin ] ) ) {
 				$approvals[ $plugin ] = array();
 			}
@@ -108,6 +116,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://discord.com/developers/applications',
 				'setting_name'    => 'compass_discord_client_id',
+				'constant_name'   => 'DISCORD_CLIENT_ID',
+				'env_var_name'    => 'DISCORD_CLIENT_ID',
 			),
 		) );
 
@@ -119,6 +129,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://discord.com/developers/applications',
 				'setting_name'    => 'compass_discord_client_secret',
+				'constant_name'   => 'DISCORD_CLIENT_SECRET',
+				'env_var_name'    => 'DISCORD_CLIENT_SECRET',
 			),
 		) );
 
@@ -171,6 +183,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://console.cloud.google.com/apis/credentials',
 				'setting_name'    => 'compass_google_client_id',
+				'constant_name'   => 'GOOGLE_CLIENT_ID',
+				'env_var_name'    => 'GOOGLE_CLIENT_ID',
 			),
 		) );
 
@@ -182,6 +196,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://console.cloud.google.com/apis/credentials',
 				'setting_name'    => 'compass_google_client_secret',
+				'constant_name'   => 'GOOGLE_CLIENT_SECRET',
+				'env_var_name'    => 'GOOGLE_CLIENT_SECRET',
 			),
 		) );
 
