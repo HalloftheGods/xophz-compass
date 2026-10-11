@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Security
 - Pinata credentials no longer ship in `admin/dist`. A bare `import.meta.env` read in the shared logger (`src/core/sys-logger.ts`) made Vite inline every `VITE_*` value, including the Pinata API key, secret and JWT, into the admin bundle, and `useWeb3Gateways` read `VITE_PINATA_JWT` to call Pinata from the browser. The bundle is rebuilt without them and the root build now fails on any secret-named env value in its output (`scripts/vite-secret-guard.js`). The old values remain in this repository's git history: rotate them at Pinata.
 - The `/xophz/v1/connectors` routes (read and write) and `POST /xophz/v1/site-settings` now require `manage_options`. The connectors list returns `configured` and a masked `hint` (last four characters) instead of stored values, and a blank write keeps the stored key (#5938).
+- `POST /xophz/v1/gemini/generate` sends the Gemini key in the `x-goog-api-key` header instead of `?key=` in the URL, so the key no longer lands in provider, proxy or HTTP debug logs. The caller-supplied model name is cut to model-id characters before it becomes part of the URL path (#5978, M1).
 
 ### Fixed
 - Fresh Mints is approved for the `google`, `openai` and `anthropic` AI connectors, so the AI plugin no longer refuses its Gemini calls with `wpai_connector_not_approved` (#5950).

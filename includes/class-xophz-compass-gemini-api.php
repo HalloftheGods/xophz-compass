@@ -123,6 +123,9 @@ class Xophz_Compass_Gemini_API {
 			}
 		}
 
+		// The model name is a URL path segment: keep only model-id characters.
+		$model = preg_replace( '/[^A-Za-z0-9._-]/', '', (string) $model );
+
 		// Fallback to latest known working model if not set or using older deprecated models
 		if ( empty( $model ) || strpos( $model, 'gemini-2.0' ) !== false || strpos( $model, 'gemini-2.5' ) !== false ) {
 			$model = 'gemini-3.6-flash';
@@ -143,8 +146,8 @@ class Xophz_Compass_Gemini_API {
 		
 		set_transient( $limit_key, $usage + 1, MINUTE_IN_SECONDS );
 
-		// Construct the Gemini API endpoint
-		$endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
+		// The key travels in the x-goog-api-key header, never in the URL, so it stays out of access and debug logs.
+		$endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
 		// Construct the payload matching Gemini API structure
 		$payload = array(
@@ -172,7 +175,8 @@ class Xophz_Compass_Gemini_API {
 		// Make the request
 		$response = wp_remote_post( $endpoint, array(
 			'headers' => array(
-				'Content-Type' => 'application/json',
+				'Content-Type'   => 'application/json',
+				'x-goog-api-key' => $api_key,
 			),
 			'body'    => wp_json_encode( $payload ),
 			'timeout' => 60, // Give it time to generate
