@@ -66,14 +66,12 @@ class Xophz_Compass_Push_API {
 	}
 
 	/**
-	 * Get the public VAPID key.
+	 * Get the public VAPID key (the compass_vapid_public_key connector).
 	 */
 	public static function get_public_key() {
-		if ( defined( 'COMPASS_VAPID_PUBLIC_KEY' ) && ! empty( COMPASS_VAPID_PUBLIC_KEY ) ) {
-			return COMPASS_VAPID_PUBLIC_KEY;
-		}
-		$public_key = get_option( 'compass_vapid_public_key', '' );
-		if ( empty( $public_key ) ) {
+		$public_key = Xophz_Compass_Connector_Key::get( 'compass_vapid_public_key' );
+		$has_no_pair = '' === $public_key && '' === self::get_private_key();
+		if ( $has_no_pair ) {
 			// Auto-generate keys on first access if none exist
 			$keys = self::generate_vapid_keys();
 			if ( ! is_wp_error( $keys ) && ! empty( $keys['publicKey'] ) ) {
@@ -84,23 +82,18 @@ class Xophz_Compass_Push_API {
 	}
 
 	/**
-	 * Get the private VAPID key.
+	 * Get the private VAPID key (the compass_vapid_private_key connector). Server-side only:
+	 * it signs Web Push requests and is never returned from a REST route.
 	 */
 	public static function get_private_key() {
-		if ( defined( 'COMPASS_VAPID_PRIVATE_KEY' ) && ! empty( COMPASS_VAPID_PRIVATE_KEY ) ) {
-			return COMPASS_VAPID_PRIVATE_KEY;
-		}
-		return get_option( 'compass_vapid_private_key', '' );
+		return Xophz_Compass_Connector_Key::get( 'compass_vapid_private_key' );
 	}
 
 	/**
-	 * Get the VAPID subject (mailto or URL).
+	 * Get the VAPID subject (mailto or URL), from the compass_vapid_subject connector.
 	 */
 	public static function get_subject() {
-		if ( defined( 'COMPASS_VAPID_SUBJECT' ) && ! empty( COMPASS_VAPID_SUBJECT ) ) {
-			return COMPASS_VAPID_SUBJECT;
-		}
-		$subject = get_option( 'compass_vapid_subject', '' );
+		$subject = Xophz_Compass_Connector_Key::get( 'compass_vapid_subject' );
 		if ( empty( $subject ) ) {
 			$admin_email = get_option( 'admin_email', 'admin@' . ( isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : 'localhost' ) );
 			$subject = 'mailto:' . $admin_email;
@@ -231,6 +224,11 @@ class Xophz_Compass_Push_API {
 	 * REST Callback: Generate new VAPID keys
 	 */
 	public static function generate_keys_api( WP_REST_Request $request ) {
+		$pinned = in_array( Xophz_Compass_Connector_Key::source( 'compass_vapid_private_key' ), array( 'env', 'constant' ), true );
+		if ( $pinned ) {
+			return new WP_Error( 'vapid_keys_pinned', __( 'The VAPID keys are set by an environment variable or constant. Change them there.', 'xophz-compass' ), array( 'status' => 409 ) );
+		}
+
 		$keys = self::generate_vapid_keys( true );
 		if ( is_wp_error( $keys ) ) {
 			return $keys;
@@ -545,8 +543,21 @@ class Xophz_Compass_Push_API {
 
 	/**
 	 * Generate sovereign VAPID Key pair using OpenSSL NIST P-256.
+	 *
+	 * The pair is stored in the VAPID connectors' options and only the public key is returned:
+	 * the private key never leaves the server.
+	 *
+	 * @param bool $save_to_options Kept for backward compatibility. The pair is always stored,
+	 *                              since a private key that is not stored could never be used.
+	 * @return array{publicKey: string}|WP_Error
 	 */
 	public static function generate_vapid_keys( $save_to_options = true ) {
+		$public_setting  = Xophz_Compass_Connector_Key::setting_name( 'compass_vapid_public_key' );
+		$private_setting = Xophz_Compass_Connector_Key::setting_name( 'compass_vapid_private_key' );
+		if ( '' === $public_setting || '' === $private_setting ) {
+			return new WP_Error( 'vapid_connectors_missing', __( 'The VAPID connectors are not registered.', 'xophz-compass' ) );
+		}
+
 		$config = array(
 			'curve_name'       => 'prime256v1',
 			'private_key_type' => OPENSSL_KEYTYPE_EC,
@@ -569,18 +580,18 @@ class Xophz_Compass_Push_API {
 		$public_key_b64  = self::base64_url_encode( $public_key_raw );
 		$private_key_b64 = self::base64_url_encode( $private_key_raw );
 
-		if ( $save_to_options ) {
-			update_option( 'compass_vapid_public_key', $public_key_b64 );
-			update_option( 'compass_vapid_private_key', $private_key_b64 );
-			if ( ! get_option( 'compass_vapid_subject' ) ) {
-				$admin_email = get_option( 'admin_email', 'admin@localhost' );
-				update_option( 'compass_vapid_subject', 'mailto:' . $admin_email );
-			}
+		update_option( $public_setting, $public_key_b64 );
+		update_option( $private_setting, $private_key_b64, false );
+		unset( $private_key_raw, $private_key_b64 );
+
+		$subject_setting = Xophz_Compass_Connector_Key::setting_name( 'compass_vapid_subject' );
+		if ( '' !== $subject_setting && ! Xophz_Compass_Connector_Key::is_configured( 'compass_vapid_subject' ) ) {
+			$admin_email = get_option( 'admin_email', 'admin@localhost' );
+			update_option( $subject_setting, 'mailto:' . $admin_email );
 		}
 
 		return array(
-			'publicKey'  => $public_key_b64,
-			'privateKey' => $private_key_b64,
+			'publicKey' => $public_key_b64,
 		);
 	}
 

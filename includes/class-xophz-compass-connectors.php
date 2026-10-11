@@ -279,6 +279,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => '',
 				'setting_name'    => 'compass_vapid_public_key',
+				'constant_name'   => 'COMPASS_VAPID_PUBLIC_KEY',
+				'env_var_name'    => 'COMPASS_VAPID_PUBLIC_KEY',
 			),
 		) );
 
@@ -290,6 +292,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => '',
 				'setting_name'    => 'compass_vapid_private_key',
+				'constant_name'   => 'COMPASS_VAPID_PRIVATE_KEY',
+				'env_var_name'    => 'COMPASS_VAPID_PRIVATE_KEY',
 			),
 		) );
 
@@ -301,6 +305,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => '',
 				'setting_name'    => 'compass_vapid_subject',
+				'constant_name'   => 'COMPASS_VAPID_SUBJECT',
+				'env_var_name'    => 'COMPASS_VAPID_SUBJECT',
 			),
 		) );
 
