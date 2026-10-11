@@ -67,13 +67,36 @@ class Xophz_Compass_Gateway {
 			return true;
 		}
 
-		$gateway_key = $request->get_header( 'X-Compass-Gateway-Key' );
-		$stored_key  = get_option( 'compass_gateway_token', '' );
-		if ( ! empty( $stored_key ) && ! empty( $gateway_key ) && hash_equals( $stored_key, $gateway_key ) ) {
+		$gateway_key = (string) $request->get_header( 'X-Compass-Gateway-Key' );
+		$stored_key  = Xophz_Compass_Connector_Key::get( 'compass_gateway_token' );
+		if ( '' !== $stored_key && '' !== $gateway_key && hash_equals( $stored_key, $gateway_key ) ) {
 			return true;
 		}
 
 		return new WP_Error( 'gateway_forbidden', 'Administrative privileges or a valid gateway key are required.', array( 'status' => 403 ) );
+	}
+
+	/**
+	 * A provider's credential, read through its connector. `auth_connector` names the connector;
+	 * a provider added through the `compass_gateway_providers` filter with only the older
+	 * `auth_option` is resolved through the registered connector that declares that option.
+	 * Any other option name is not read.
+	 *
+	 * @param array $cfg Provider config.
+	 */
+	private static function provider_key( array $cfg ): string {
+		$connector_id = (string) ( $cfg['auth_connector'] ?? '' );
+		$option       = (string) ( $cfg['auth_option'] ?? '' );
+		if ( '' === $connector_id && '' !== $option && function_exists( 'wp_get_connectors' ) ) {
+			foreach ( (array) wp_get_connectors() as $id => $connector ) {
+				if ( is_array( $connector ) && $option === ( $connector['authentication']['setting_name'] ?? '' ) ) {
+					$connector_id = (string) $id;
+					break;
+				}
+			}
+		}
+
+		return '' === $connector_id ? '' : Xophz_Compass_Connector_Key::get( $connector_id );
 	}
 
 	/**
@@ -86,7 +109,7 @@ class Xophz_Compass_Gateway {
 				'base_url'            => 'https://api.explee.com',
 				'auth_strategy'       => 'header',
 				'auth_header'         => 'X-API-Key',
-				'auth_option'         => 'compass_explee_api_key',
+				'auth_connector'      => 'explee_api_key',
 				'allowed_path_regex'  => '#^/public/api/v1/#',
 				'timeout'             => 30,
 				'minute_limit'        => 30,
@@ -106,11 +129,10 @@ class Xophz_Compass_Gateway {
 		foreach ( array( 'explee' ) as $pid ) {
 			$cfg = self::get_provider_config( $pid );
 			if ( ! $cfg ) continue;
-			$key = get_option( $cfg['auth_option'], '' );
 			$providers[] = array(
 				'id'         => $pid,
 				'name'       => $cfg['name'],
-				'configured' => ! empty( $key ),
+				'configured' => '' !== self::provider_key( $cfg ),
 				'base_url'   => $cfg['base_url'],
 				'actions'    => array( 'balance', 'search-people', 'enrich-email', 'hot-leads', 'campaigns' ),
 			);
@@ -208,7 +230,7 @@ class Xophz_Compass_Gateway {
 		}
 
 		// 1. Vault Credential Resolution
-		$api_key = get_option( $cfg['auth_option'], '' );
+		$api_key = self::provider_key( $cfg );
 		if ( empty( $api_key ) ) {
 			return self::build_envelope( false, $provider_id, null, array(
 				'code'        => 'missing_credentials',

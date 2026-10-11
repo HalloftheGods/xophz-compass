@@ -201,7 +201,7 @@ class Xophz_Compass_Modules_API {
 
 		// 2. Trigger SMS Alert if Twilio is configured
 		if ( class_exists( 'Xophz_Compass_Twilio_API' ) ) {
-			$twilio_phone = get_option( 'compass_twilio_phone_number' );
+			$twilio_phone = Xophz_Compass_Connector_Key::get( 'twilio_phone_number' );
 			if ( ! empty( $twilio_phone ) ) {
 				$sms_msg = "🚀 [Compass Alert] New Provisioning Request: $name ($email, $website). Ready for instance setup!";
 				Xophz_Compass_Twilio_API::send_sms( $twilio_phone, $sms_msg );
@@ -224,28 +224,9 @@ class Xophz_Compass_Modules_API {
 		$success_url = isset( $params['success_url'] ) ? esc_url_raw( $params['success_url'] ) : home_url();
 		$cancel_url = isset( $params['cancel_url'] ) ? esc_url_raw( $params['cancel_url'] ) : home_url();
 
-		// Fetch Stripe Secret Key via WordPress Connectors API
-		$secret_key = '';
-
-		if ( function_exists( 'wp_get_connectors' ) ) {
-			$connectors = wp_get_connectors();
-			if ( ! empty( $connectors['stripe_secret_key']['authentication']['setting_name'] ) ) {
-				$setting_name = $connectors['stripe_secret_key']['authentication']['setting_name'];
-				$secret_key = get_option( $setting_name, '' );
-			}
-		}
-
-		if ( empty( $secret_key ) ) {
-			$secret_key = get_option( 'compass_stripe_secret_key', '' );
-		}
-
-		if ( empty( $secret_key ) && defined( 'STRIPE_SECRET_KEY' ) ) {
-			$secret_key = STRIPE_SECRET_KEY;
-		}
-
-		if ( empty( $secret_key ) && ! empty( $_ENV['STRIPE_SECRET_KEY'] ) ) {
-			$secret_key = $_ENV['STRIPE_SECRET_KEY'];
-		}
+		// Stripe secret key from the stripe_secret_key connector (STRIPE_SECRET_KEY env var, then
+		// constant, then its option).
+		$secret_key = Xophz_Compass_Connector_Key::get( 'stripe_secret_key' );
 
 		if ( empty( $secret_key ) ) {
 			return new WP_Error( 'no_stripe_key', 'Stripe secret key is not configured in Settings -> Connectors UI or STRIPE_SECRET_KEY.', array( 'status' => 400 ) );
@@ -1144,15 +1125,11 @@ class Xophz_Compass_Modules_API {
 			) );
 		}
 
-		// Set up GitHub token auth filter if available
-		$github_token = '';
-		if ( defined( 'GITHUB_TOKEN' ) ) {
-			$github_token = GITHUB_TOKEN;
-		} elseif ( defined( 'GITHUB_PA_TOKEN' ) ) {
-			$github_token = GITHUB_PA_TOKEN;
-		} else {
-			$github_token = get_option( 'xophz_compass_bugnet_github_token', '' );
-		}
+		// GitHub token from the github_token connector that Hookshot and Bug-Catching Net register
+		// (GITHUB_TOKEN env var, then constant, then its option). With neither plugin active the
+		// connector is unregistered and public release assets download without a token (#5969).
+		$has_github_connector = function_exists( 'wp_is_connector_registered' ) && wp_is_connector_registered( 'github_token' );
+		$github_token         = $has_github_connector ? Xophz_Compass_Connector_Key::get( 'github_token' ) : '';
 
 		// Dynamically fetch official GitHub release ZIP package asset
 		$release_asset = self::fetch_latest_release_zip( $slug, $github_token );
@@ -1173,10 +1150,14 @@ class Xophz_Compass_Modules_API {
 		if ( ! empty( $github_token ) ) {
 			$auth_filter = function( $args, $url ) use ( $github_token ) {
 				$args['timeout'] = 300;
-				if ( strpos( $url, 'api.github.com' ) !== false ) {
+				// Match the host exactly: a substring test also sent the token to hosts such as
+				// github.com.example.net or any URL that merely contained "github.com".
+				$host      = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+				$is_github = 'github.com' === $host || '.github.com' === substr( $host, -11 );
+				if ( 'api.github.com' === $host ) {
 					$args['headers']['Authorization'] = 'token ' . $github_token;
 					$args['headers']['Accept']        = 'application/octet-stream';
-				} elseif ( strpos( $url, 'github.com' ) !== false ) {
+				} elseif ( $is_github ) {
 					$args['headers']['Authorization'] = 'token ' . $github_token;
 				}
 				return $args;

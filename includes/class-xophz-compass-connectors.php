@@ -19,6 +19,8 @@ class Xophz_Compass_Connectors {
 		add_action( 'wp_connectors_init', array( __CLASS__, 'register_connectors' ) );
 		add_filter( 'option_wpai_connector_approvals', array( __CLASS__, 'auto_approve_compass_ai_connectors' ) );
 		add_filter( 'default_option_wpai_connector_approvals', array( __CLASS__, 'auto_approve_compass_ai_connectors' ) );
+		// After core's connector init (init:15): moves credentials out of retired option names.
+		add_action( 'init', array( 'Xophz_Compass_Credential_Migration', 'run' ), 20 );
 	}
 
 	/**
@@ -226,6 +228,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://aistudio.google.com/app/apikey',
 				'setting_name'    => 'connectors_ai_google_api_key',
+				'constant_name'   => 'GEMINI_API_KEY',
+				'env_var_name'    => 'GEMINI_API_KEY',
 			),
 		) );
 
@@ -240,6 +244,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://dashboard.stripe.com/apikeys',
 				'setting_name'    => 'compass_stripe_secret_key',
+				'constant_name'   => 'STRIPE_SECRET_KEY',
+				'env_var_name'    => 'STRIPE_SECRET_KEY',
 			),
 		) );
 
@@ -265,6 +271,21 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => '',
 				'setting_name'    => 'compass_wizard_key',
+				'constant_name'   => 'COMPASS_WIZARD_KEY',
+				'env_var_name'    => 'COMPASS_WIZARD_KEY',
+			),
+		) );
+
+		$registry->register( 'compass_gateway_token', array(
+			'name'           => __( 'Compass Gateway Key', 'xophz-compass' ),
+			'description'    => __( 'Shared secret that CLI tools and agents send as X-Compass-Gateway-Key to call the API Gateway without a WordPress session.', 'xophz-compass' ),
+			'type'           => 'system',
+			'authentication' => array(
+				'method'          => 'api_key',
+				'credentials_url' => '',
+				'setting_name'    => 'compass_gateway_token',
+				'constant_name'   => 'COMPASS_GATEWAY_TOKEN',
+				'env_var_name'    => 'COMPASS_GATEWAY_TOKEN',
 			),
 		) );
 
@@ -702,11 +723,10 @@ class Xophz_Compass_Connectors {
 						$type = isset( $cdata->type ) ? $cdata->type : 'system';
 					}
 
-					$val        = ! empty( $setting_name ) ? get_option( $setting_name, '' ) : '';
-					if ( empty( $val ) && 'connectors_ai_anthropic_api_key' === $setting_name ) {
-						$val = get_option( 'compass_anthropic_api_key', '' );
-					}
-					$configured = ! empty( $val );
+					// Resolved like every other read (env, constant, option), so a key set by an
+					// environment variable shows as configured. Only the flag and a masked hint leave.
+					$val        = Xophz_Compass_Connector_Key::get( (string) $cid );
+					$configured = '' !== $val;
 
 					$icon  = self::get_connector_icon( $cid, $name );
 					$color = self::get_connector_color( $cid, $type );
@@ -747,9 +767,6 @@ class Xophz_Compass_Connectors {
 				$configured = true;
 			} else {
 				$val        = get_option( $def['setting_name'], '' );
-				if ( empty( $val ) && 'connectors_ai_anthropic_api_key' === $def['setting_name'] ) {
-					$val = get_option( 'compass_anthropic_api_key', '' );
-				}
 				$configured = ! empty( $val );
 			}
 

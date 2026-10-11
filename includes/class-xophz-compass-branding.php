@@ -286,14 +286,8 @@ class Xophz_Compass_Branding {
      * @return   bool    True if Wizard mode is active.
      */
     public static function is_wizard(): bool {
-        if (defined('COMPASS_WIZARD_KEY')) {
-            if (empty(self::WIZARD_KEY_HASH) || hash('sha256', COMPASS_WIZARD_KEY) === self::WIZARD_KEY_HASH || COMPASS_WIZARD_KEY) {
-                return true;
-            }
-        }
-
-        $saved_key = get_option('compass_wizard_key');
-        if (!empty($saved_key)) {
+        // The compass_wizard_key connector: COMPASS_WIZARD_KEY env var, then constant, then option.
+        if (Xophz_Compass_Connector_Key::is_configured('compass_wizard_key')) {
             return true;
         }
 

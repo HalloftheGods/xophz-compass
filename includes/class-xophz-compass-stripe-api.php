@@ -73,20 +73,12 @@ class Xophz_Compass_Stripe_API {
 	}
 
 	/**
-	 * Retrieve the Stripe secret key.
+	 * Retrieve the Stripe secret key from the stripe_secret_key connector (STRIPE_SECRET_KEY env
+	 * var, then constant, then its option). The retired xophz_compass_stripe_secret_key option is
+	 * moved into the connector by Xophz_Compass_Credential_Migration.
 	 */
 	private function get_secret_key() {
-		if ( defined( 'STRIPE_SECRET_KEY' ) ) {
-			return STRIPE_SECRET_KEY;
-		}
-		if ( ! empty( $_ENV['STRIPE_SECRET_KEY'] ) ) {
-			return $_ENV['STRIPE_SECRET_KEY'];
-		}
-		$key = get_option( 'compass_stripe_secret_key', '' );
-		if ( ! empty( $key ) ) {
-			return $key;
-		}
-		return get_option( 'xophz_compass_stripe_secret_key', '' );
+		return Xophz_Compass_Connector_Key::get( 'stripe_secret_key' );
 	}
 
 	/**

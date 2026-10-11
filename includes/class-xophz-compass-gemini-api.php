@@ -45,54 +45,13 @@ class Xophz_Compass_Gemini_API {
 	}
 
 	/**
-	 * Retrieve the API key for Gemini.
-	 * 
+	 * Retrieve the API key for Gemini through the core resolver (`google`, then
+	 * `google_gemini_api_key`, each by its declared env, constant and option names).
+	 *
 	 * @return string API key or empty string if not found.
 	 */
 	private function get_api_key() {
-		// Attempt to use the official WP Google Connector via Connectors API
-		if ( function_exists( 'wp_get_connectors' ) ) {
-			$connectors = wp_get_connectors();
-			if ( ! empty( $connectors['google']['authentication']['setting_name'] ) ) {
-				$api_key = get_option( $connectors['google']['authentication']['setting_name'], '' );
-				if ( ! empty( $api_key ) ) {
-					return $api_key;
-				}
-			}
-			if ( ! empty( $connectors['google_gemini_api_key']['authentication']['setting_name'] ) ) {
-				$api_key = get_option( $connectors['google_gemini_api_key']['authentication']['setting_name'], '' );
-				if ( ! empty( $api_key ) ) {
-					return $api_key;
-				}
-			}
-		}
-
-		// Direct options check for official Connectors & COMPASS settings
-		$keys = array(
-			'connectors_ai_google_api_key',
-			'ai_google_api_key',
-			'compass_gemini_api_key',
-			'xophz_gemini_api_key',
-		);
-		foreach ( $keys as $k ) {
-			$val = get_option( $k, '' );
-			if ( ! empty( $val ) ) {
-				return $val;
-			}
-		}
-
-		// Fallbacks
-		if ( defined( 'GEMINI_API_KEY' ) && ! empty( GEMINI_API_KEY ) ) {
-			return GEMINI_API_KEY;
-		}
-		if ( ! empty( $_ENV['GEMINI_API_KEY'] ) ) {
-			return $_ENV['GEMINI_API_KEY'];
-		}
-		if ( ! empty( getenv( 'GEMINI_API_KEY' ) ) ) {
-			return getenv( 'GEMINI_API_KEY' );
-		}
-		
-		return '';
+		return (string) Xophz_Compass_HTTP::get_gemini_api_key();
 	}
 
 	/**

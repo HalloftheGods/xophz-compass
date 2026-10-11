@@ -1,7 +1,7 @@
 <?php
 /**
- * Unified HTTP & Connectors Client for Compass plugins.
- * Replaces duplicate WP Connectors API key resolvers and provides resilient remote calls.
+ * Unified HTTP client for Compass plugins: resilient remote calls, plus the Gemini key lookup.
+ * Every credential read delegates to Xophz_Compass_Connector_Key, the one resolver.
  *
  * @package    Xophz_Compass
  * @subpackage Xophz_Compass/includes/core
@@ -14,119 +14,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Xophz_Compass_HTTP {
 
 	/**
-	 * Retrieve official Gemini API Key through WP Connectors cascade.
-	 * Replaces duplicate 50-line key discovery logic across child plugins.
+	 * The Gemini API key: the core `google` AI connector first (GOOGLE_API_KEY, then its option),
+	 * then the COMPASS `google_gemini_api_key` connector, which declares GEMINI_API_KEY and shares
+	 * the same option. Retired option names are moved into that option by
+	 * Xophz_Compass_Credential_Migration and are not read here.
 	 *
-	 * @return string|null
+	 * @return string|null Null when no connector holds a key.
 	 */
 	public static function get_gemini_api_key(): ?string {
-		// Tier 1: Check WP Connectors API for 'google_gemini_api_key' and 'google'
-		if ( function_exists( 'wp_get_connectors' ) ) {
-			$connectors = wp_get_connectors();
-
-			if ( ! empty( $connectors['google_gemini_api_key']['authentication']['setting_name'] ) ) {
-				$setting = $connectors['google_gemini_api_key']['authentication']['setting_name'];
-				$val = get_option( $setting, '' );
-				if ( ! empty( $val ) && is_string( $val ) ) {
-					return trim( $val );
-				}
+		foreach ( array( 'google', 'google_gemini_api_key' ) as $connector_id ) {
+			$key = Xophz_Compass_Connector_Key::get( $connector_id );
+			if ( '' !== $key ) {
+				return $key;
 			}
-
-			if ( ! empty( $connectors['google']['authentication']['setting_name'] ) ) {
-				$setting = $connectors['google']['authentication']['setting_name'];
-				$val = get_option( $setting, '' );
-				if ( ! empty( $val ) && is_string( $val ) ) {
-					return trim( $val );
-				}
-			}
-		}
-
-		// Tier 2: WordPress options fallbacks
-		$fallback_options = array(
-			'connectors_ai_google_api_key',
-			'compass_gemini_api_key',
-			'xophz_gemini_api_key',
-			'gemini_api_key',
-		);
-
-		foreach ( $fallback_options as $opt_key ) {
-			$val = get_option( $opt_key, '' );
-			if ( ! empty( $val ) && is_string( $val ) ) {
-				return trim( $val );
-			}
-		}
-
-		// Tier 3: PHP Constants
-		if ( defined( 'GEMINI_API_KEY' ) ) {
-			$const_val = constant( 'GEMINI_API_KEY' );
-			if ( ! empty( $const_val ) && is_string( $const_val ) ) {
-				return trim( $const_val );
-			}
-		}
-
-		// Tier 4: $_ENV superglobal
-		if ( ! empty( $_ENV['GEMINI_API_KEY'] ) && is_string( $_ENV['GEMINI_API_KEY'] ) ) {
-			return trim( $_ENV['GEMINI_API_KEY'] );
-		}
-
-		// Tier 5: getenv() lookup
-		$env_val = getenv( 'GEMINI_API_KEY' );
-		if ( ! empty( $env_val ) && is_string( $env_val ) ) {
-			return trim( $env_val );
 		}
 
 		return null;
 	}
 
 	/**
-	 * Generic API key resolver using WP 7.0 Connectors, option fallbacks, and env variables.
+	 * A connector's credential, resolved through the names the connector declares.
 	 *
 	 * @param string             $connector_id     WP Connector ID.
-	 * @param array<int, string> $fallback_options WordPress option keys.
-	 * @param string             $env_var_name     Environment variable name.
-	 * @return string|null
+	 * @param array<int, string> $fallback_options Ignored. Kept so existing callers do not break;
+	 *                                             declare names on the connector instead.
+	 * @param string             $env_var_name     Ignored, for the same reason.
+	 * @return string|null Null when the connector is unregistered or holds no value.
 	 */
-	public static function resolve_api_key( string $connector_id, array $fallback_options, string $env_var_name ): ?string {
-		// Tier 1: WP 7.0 Connectors API
-		if ( function_exists( 'wp_get_connectors' ) ) {
-			$connectors = wp_get_connectors();
-			if ( ! empty( $connectors[ $connector_id ]['authentication']['setting_name'] ) ) {
-				$setting = $connectors[ $connector_id ]['authentication']['setting_name'];
-				$val = get_option( $setting, '' );
-				if ( ! empty( $val ) && is_string( $val ) ) {
-					return trim( $val );
-				}
-			}
-		}
+	public static function resolve_api_key( string $connector_id, array $fallback_options = array(), string $env_var_name = '' ): ?string {
+		$key = Xophz_Compass_Connector_Key::get( $connector_id );
 
-		// Tier 2: WordPress options fallbacks
-		foreach ( $fallback_options as $opt_key ) {
-			$val = get_option( $opt_key, '' );
-			if ( ! empty( $val ) && is_string( $val ) ) {
-				return trim( $val );
-			}
-		}
-
-		// Tier 3: PHP Constants
-		if ( defined( $env_var_name ) ) {
-			$const_val = constant( $env_var_name );
-			if ( ! empty( $const_val ) && is_string( $const_val ) ) {
-				return trim( $const_val );
-			}
-		}
-
-		// Tier 4: $_ENV superglobal
-		if ( ! empty( $_ENV[ $env_var_name ] ) && is_string( $_ENV[ $env_var_name ] ) ) {
-			return trim( $_ENV[ $env_var_name ] );
-		}
-
-		// Tier 5: getenv() lookup
-		$env_val = getenv( $env_var_name );
-		if ( ! empty( $env_val ) && is_string( $env_val ) ) {
-			return trim( $env_val );
-		}
-
-		return null;
+		return '' === $key ? null : $key;
 	}
 
 	/**

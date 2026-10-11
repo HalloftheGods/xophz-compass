@@ -20,9 +20,9 @@ class Xophz_Compass_Twilio_API {
 	 * @return bool|WP_Error  True on success, WP_Error on failure.
 	 */
 	public static function send_sms( $to, $message ) {
-		$sid      = get_option( 'compass_twilio_account_sid' );
-		$token    = get_option( 'compass_twilio_auth_token' );
-		$from_num = get_option( 'compass_twilio_phone_number' );
+		$sid      = Xophz_Compass_Connector_Key::get( 'twilio_account_sid' );
+		$token    = Xophz_Compass_Connector_Key::get( 'twilio_auth_token' );
+		$from_num = Xophz_Compass_Connector_Key::get( 'twilio_phone_number' );
 
 		if ( empty( $sid ) || empty( $token ) || empty( $from_num ) ) {
 			return new WP_Error( 'missing_twilio_credentials', __( 'Twilio credentials or phone number are missing from Connectors.', 'xophz-compass' ) );
