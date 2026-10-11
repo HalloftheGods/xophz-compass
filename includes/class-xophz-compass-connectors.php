@@ -842,12 +842,27 @@ class Xophz_Compass_Connectors {
 	public static function update_connector_api( WP_REST_Request $request ) {
 		$params = $request->get_json_params();
 
+		$writes = array();
 		if ( isset( $params['setting_name'] ) && isset( $params['value'] ) ) {
-			self::store_connector_value( $params['setting_name'], $params['value'] );
+			$writes[ (string) $params['setting_name'] ] = $params['value'];
 		} elseif ( isset( $params['connectors'] ) && is_array( $params['connectors'] ) ) {
-			foreach ( $params['connectors'] as $setting_name => $val ) {
-				self::store_connector_value( $setting_name, $val );
-			}
+			$writes = $params['connectors'];
+		}
+
+		// Only the setting names that registered connectors declare may be written, so this route
+		// is never a generic update_option() for any option name. One unknown name refuses the
+		// whole request and nothing is written (#5978).
+		$rejected = array_diff( array_map( 'strval', array_keys( $writes ) ), Xophz_Compass_Connector_Key::registered_setting_names() );
+		if ( ! empty( $rejected ) ) {
+			return new WP_Error(
+				'xophz_connector_unknown_setting',
+				__( 'Only the settings of registered connectors can be written.', 'xophz-compass' ),
+				array( 'status' => 400, 'rejected' => array_values( $rejected ) )
+			);
+		}
+
+		foreach ( $writes as $setting_name => $val ) {
+			self::store_connector_value( $setting_name, $val );
 		}
 
 		// The response lists configured flags and masked hints only; the written value is not echoed.
@@ -960,15 +975,20 @@ class Xophz_Compass_Connectors {
 			'blogdescription'    => get_option( 'blogdescription', '' ),
 			'site_icon'          => $site_icon_id,
 			'site_icon_url'      => $site_icon_url,
-			'admin_email'        => get_option( 'admin_email', '' ),
-			'users_can_register' => (bool) get_option( 'users_can_register', 0 ),
-			'default_role'       => get_option( 'default_role', 'subscriber' ),
 			'site_language'      => $lang,
 			'timezone_string'    => $tz_string,
 			'date_format'        => get_option( 'date_format', 'F j, Y' ),
 			'time_format'        => get_option( 'time_format', 'g:i a' ),
 			'start_of_week'      => (int) get_option( 'start_of_week', 0 ),
 		);
+
+		// The read is public; account and sign-up settings are for administrators only
+		// (admin_email is personal data). The admin onboarding flow is the reader (#5978).
+		if ( current_user_can( 'manage_options' ) ) {
+			$settings['admin_email']        = get_option( 'admin_email', '' );
+			$settings['users_can_register'] = (bool) get_option( 'users_can_register', 0 );
+			$settings['default_role']       = get_option( 'default_role', 'subscriber' );
+		}
 
 		return rest_ensure_response( array(
 			'success'            => true,
