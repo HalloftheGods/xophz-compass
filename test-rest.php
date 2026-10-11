@@ -1,4 +1,5 @@
 <?php
+if ( PHP_SAPI !== 'cli' ) { http_response_code( 404 ); exit; } // Dev-only CLI script: it rewrites active_plugins, so it must never run from a web request (#5978, M10).
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
