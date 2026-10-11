@@ -154,6 +154,8 @@ class Xophz_Compass_Connectors {
 				'method'          => 'api_key',
 				'credentials_url' => 'https://app.pinata.cloud/developers/api-keys',
 				'setting_name'    => 'compass_pinata_jwt',
+				'constant_name'   => 'PINATA_JWT',
+				'env_var_name'    => 'PINATA_JWT',
 			),
 		) );
 
@@ -305,18 +307,18 @@ class Xophz_Compass_Connectors {
 	 * Register REST API routes for Connectors.
 	 */
 	public static function register_routes() {
+		// Connector values are credentials and update_connector_api() writes any option it is
+		// named, so both directions are administrator-only (#5938).
 		register_rest_route( 'xophz/v1', '/connectors', array(
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( __CLASS__, 'get_connectors_api' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( __CLASS__, 'can_manage_options' ),
 			),
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'update_connector_api' ),
-				'permission_callback' => function() {
-					return current_user_can( 'manage_options' ) || current_user_can( 'edit_posts' ) || true;
-				},
+				'permission_callback' => array( __CLASS__, 'can_manage_options' ),
 			),
 		) );
 
@@ -337,11 +339,16 @@ class Xophz_Compass_Connectors {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'update_site_settings_api' ),
-				'permission_callback' => function() {
-					return current_user_can( 'manage_options' ) || true;
-				},
+				'permission_callback' => array( __CLASS__, 'can_manage_options' ),
 			),
 		) );
+	}
+
+	/**
+	 * REST permission: administrators only.
+	 */
+	public static function can_manage_options() {
+		return current_user_can( 'manage_options' );
 	}
 
 	/**
