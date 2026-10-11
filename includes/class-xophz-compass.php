@@ -146,6 +146,7 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-polls-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-updater.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-passport-api.php';
+		require_once $plugin_dir . 'includes/class-xophz-compass-passport-pin-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-auth-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-matrix-api.php';
 		require_once $plugin_dir . 'includes/class-xophz-compass-performance-api.php';
@@ -266,6 +267,10 @@ class Xophz_Compass {
     // Register Passport API
     $plugin_passport = new Xophz_Compass_Passport_API();
     $this->loader->add_action( 'rest_api_init', $plugin_passport, 'register_routes' );
+
+    // Register Passport IPFS pin route (Pinata JWT stays server-side via the pinata_jwt connector)
+    $plugin_passport_pin = new Xophz_Compass_Passport_Pin_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_passport_pin, 'register_routes' );
 
     // Register Centralized Auth API
     $plugin_auth = new Xophz_Compass_Auth_API();
