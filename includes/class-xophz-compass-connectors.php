@@ -38,6 +38,7 @@ class Xophz_Compass_Connectors {
 			'xophz-nook-phone/xophz-nook-phone.php',
 			'xophz-thoth-reader-wp/xophz-thoth-reader-wp.php',
 			'xophz-compass-diego-lawfirm/xophz-compass-diego-lawfirm.php',
+			'xophz-compass-fresh-mints/xophz-compass-fresh-mints.php',
 		);
 		$connectors = array( 'google', 'openai', 'anthropic' );
 
