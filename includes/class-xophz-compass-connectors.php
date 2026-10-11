@@ -353,6 +353,17 @@ class Xophz_Compass_Connectors {
 	}
 
 	/**
+	 * Display hint for a stored credential: its last four characters behind a mask, or '' when it
+	 * is unset or too short to show any of it. The REST response never carries the value (#5938).
+	 *
+	 * @param mixed $value Stored option value.
+	 */
+	public static function masked_hint( $value ): string {
+		$value = is_string( $value ) ? $value : '';
+		return strlen( $value ) >= 12 ? '••••' . substr( $value, -4 ) : '';
+	}
+
+	/**
 	 * Helper array of all known connectors in COMPASS ecosystem.
 	 */
 	public static function get_connector_definitions() {
@@ -688,7 +699,7 @@ class Xophz_Compass_Connectors {
 						'description'  => $desc,
 						'configured'   => $configured,
 						'status'       => $configured ? 'CONNECTED' : 'NOT CONFIGURED',
-						'value'        => is_string( $val ) ? $val : '',
+						'hint'         => self::masked_hint( $val ),
 					);
 
 					$processed_ids[] = $cid;
@@ -730,7 +741,7 @@ class Xophz_Compass_Connectors {
 				'description'  => $def['description'],
 				'configured'   => $configured,
 				'status'       => $configured ? 'CONNECTED' : 'NOT CONFIGURED',
-				'value'        => is_string( $val ) ? $val : '',
+				'hint'         => self::masked_hint( $val ),
 			);
 
 			$processed_ids[] = $def['id'];
@@ -810,16 +821,31 @@ class Xophz_Compass_Connectors {
 		$params = $request->get_json_params();
 
 		if ( isset( $params['setting_name'] ) && isset( $params['value'] ) ) {
-			$setting_name = sanitize_key( $params['setting_name'] );
-			$val          = sanitize_text_field( $params['value'] );
-			update_option( $setting_name, $val, false );
+			self::store_connector_value( $params['setting_name'], $params['value'] );
 		} elseif ( isset( $params['connectors'] ) && is_array( $params['connectors'] ) ) {
 			foreach ( $params['connectors'] as $setting_name => $val ) {
-				update_option( sanitize_key( $setting_name ), sanitize_text_field( $val ), false );
+				self::store_connector_value( $setting_name, $val );
 			}
 		}
 
+		// The response lists configured flags and masked hints only; the written value is not echoed.
 		return self::get_connectors_api( $request );
+	}
+
+	/**
+	 * Stores one connector value. An empty value is ignored: the UI no longer receives stored keys
+	 * to prefill, so a blank field means "keep the stored key", never "erase it".
+	 *
+	 * @param mixed $setting_name Option name from the request.
+	 * @param mixed $value        New value from the request.
+	 */
+	private static function store_connector_value( $setting_name, $value ): void {
+		$name  = sanitize_key( (string) $setting_name );
+		$clean = is_scalar( $value ) ? sanitize_text_field( (string) $value ) : '';
+		$is_storable = '' !== $name && '' !== trim( $clean );
+		if ( $is_storable ) {
+			update_option( $name, $clean, false );
+		}
 	}
 
 	/**
