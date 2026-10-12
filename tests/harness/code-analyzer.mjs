@@ -7,8 +7,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const REPO_ROOT = '/home/xopher/www/elysium';
+const REPO_ROOT = process.env.CHEMX_PROJECT_ROOT
+  || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');
 
 /**
  * Read file content safely as string.

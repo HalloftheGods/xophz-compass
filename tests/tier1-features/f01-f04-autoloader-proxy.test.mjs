@@ -278,6 +278,29 @@ describe('Feature F03: Non-Blocking Dev Proxy: Card Vault', () => {
     assert.strictEqual(res.envFirst, 'card-vault-dev.internal', 'getenv COMPASS_DEV_HOST must be prepended');
     assert.strictEqual(res.constFirst, 'card-vault-const.internal', 'constant COMPASS_DEV_HOST must be prepended when env unset');
   });
+
+  it('F03.7: Dev Proxy finds a dev server on the Docker host through the container default gateway', () => {
+    const res = runPhpJson(`
+      $table = "Iface\\tDestination\\tGateway \\tFlags\\tRefCnt\\tUse\\tMetric\\tMask\\t\\tMTU\\tWindow\\tIRTT\\n"
+        . "eth0\\t00000000\\t010015AC\\t0003\\t0\\t0\\t0\\t00000000\\t0\\t0\\t0\\n"
+        . "eth0\\t000015AC\\t00000000\\t0001\\t0\\t0\\t0\\t0000FFFF\\t0\\t0\\t0\\n";
+      $noDefault = "Iface\\tDestination\\tGateway \\tFlags\\n"
+        . "eth0\\t000015AC\\t00000000\\t0001\\n";
+      $candidates = Xophz_Compass_Dev_Proxy::get_candidate_hosts();
+      echo json_encode([
+        'parsed'    => Xophz_Compass_Dev_Proxy::parse_default_gateway($table),
+        'noDefault' => Xophz_Compass_Dev_Proxy::parse_default_gateway($noDefault),
+        'empty'     => Xophz_Compass_Dev_Proxy::parse_default_gateway(''),
+        'live'      => Xophz_Compass_Dev_Proxy::default_gateway(),
+        'last'      => end($candidates),
+      ]);
+    `);
+    assert.strictEqual(res.parsed, '172.21.0.1', 'little-endian hex gateway must decode to dotted IPv4');
+    assert.strictEqual(res.noDefault, null, 'a table without a default route has no gateway');
+    assert.strictEqual(res.empty, null, 'an unreadable route table has no gateway');
+    assert.ok(/^\d+\.\d+\.\d+\.\d+$/.test(res.live), `container must report its gateway, got ${res.live}`);
+    assert.strictEqual(res.last, res.live, 'the gateway is tried after the named candidates');
+  });
 }, { tier: 1, featureId: 'F03' });
 
 describe('Feature F04: Non-Blocking Dev Proxy: Fresh Mints', () => {

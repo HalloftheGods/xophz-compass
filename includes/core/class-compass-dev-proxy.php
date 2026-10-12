@@ -174,7 +174,42 @@ class Xophz_Compass_Dev_Proxy {
 			$candidates = array_values( array_unique( array_merge( $configured, $candidates ) ) );
 		}
 
+		// Inside Docker on Linux, a dev server running on the host is reachable through the
+		// container's default gateway (host.docker.internal only resolves when compose maps it).
+		$gateway = self::default_gateway();
+		if ( null !== $gateway ) {
+			$candidates = array_values( array_unique( array_merge( $candidates, array( $gateway ) ) ) );
+		}
+
 		return $candidates;
+	}
+
+	/**
+	 * Default gateway of this machine or container, read from /proc/net/route.
+	 *
+	 * @return string|null Dotted IPv4, or null when there is no default route or no procfs.
+	 */
+	public static function default_gateway(): ?string {
+		$table = @file_get_contents( '/proc/net/route' );
+		return self::parse_default_gateway( false === $table ? '' : $table );
+	}
+
+	/**
+	 * Pull the default gateway out of a /proc/net/route table, whose addresses are
+	 * little-endian hex (010015AC is 172.21.0.1).
+	 *
+	 * @param string $table Contents of /proc/net/route.
+	 * @return string|null
+	 */
+	public static function parse_default_gateway( string $table ): ?string {
+		foreach ( preg_split( '/\R/', $table ) as $line ) {
+			$fields = preg_split( '/\s+/', trim( $line ) );
+			if ( count( $fields ) < 3 || '00000000' !== $fields[1] || ! preg_match( '/^[0-9A-Fa-f]{8}$/', $fields[2] ) || '00000000' === $fields[2] ) {
+				continue;
+			}
+			return implode( '.', array_reverse( array_map( 'hexdec', str_split( $fields[2], 2 ) ) ) );
+		}
+		return null;
 	}
 
 	/**
