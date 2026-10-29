@@ -67,6 +67,53 @@ class Xophz_Compass_Security {
 	}
 
 	/**
+	 * Guard an admin-ajax handler called by the Compass SPA.
+	 *
+	 * The SPA's shared client (src/core/api.ts) sends a `wp_rest` nonce in the
+	 * X-WP-Nonce header on every admin-ajax request, so that header is what we
+	 * verify. A `_wpnonce` request parameter is accepted as a fallback for
+	 * non-SPA callers. The current user must hold at least one of the given
+	 * capabilities.
+	 *
+	 * Failures exit with a 403 whose top-level `code` is the one the SPA
+	 * already treats as a stale nonce, so the client refreshes and retries.
+	 *
+	 * @param string ...$capabilities Accepted capabilities (any one suffices).
+	 */
+	public static function enforce_spa_ajax( string ...$capabilities ): void {
+		$allowed = false;
+		foreach ( $capabilities as $capability ) {
+			if ( current_user_can( $capability ) ) {
+				$allowed = true;
+				break;
+			}
+		}
+		if ( ! $allowed ) {
+			wp_send_json(
+				array(
+					'success' => false,
+					'code'    => 'forbidden',
+					'message' => esc_html__( 'You do not have permission to do this.', 'xophz-compass' ),
+				),
+				403
+			);
+		}
+
+		$nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? ( $_REQUEST['_wpnonce'] ?? '' );
+		$nonce = sanitize_text_field( wp_unslash( (string) $nonce ) );
+		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+			wp_send_json(
+				array(
+					'success' => false,
+					'code'    => 'rest_cookie_invalid_nonce',
+					'message' => esc_html__( 'Security check failed. Please refresh the page.', 'xophz-compass' ),
+				),
+				403
+			);
+		}
+	}
+
+	/**
 	 * Verify AJAX request nonce and exit with 403 JSON if invalid.
 	 *
 	 * @param string $action    Nonce action name.

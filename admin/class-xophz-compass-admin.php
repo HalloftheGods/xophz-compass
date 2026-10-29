@@ -755,12 +755,13 @@ class Xophz_Compass_Admin {
   }
 
   public function activate_plugin(){
-    if ( ! isset( $_REQUEST['plugin'] ) ) {
-        $this->output_json( array( 'error' => 'Missing plugin parameter' ) );
+    Xophz_Compass_Security::enforce_spa_ajax( 'activate_plugins' );
+    $plugin_file = $this->requested_plugin_file();
+    if ( null === $plugin_file ) {
+        $this->output_json( array( 'error' => 'Missing or unknown plugin parameter' ) );
         return;
     }
-    $plugin = $_REQUEST['plugin'];
-    $result = activate_plugins( "$plugin/$plugin.php" );
+    $result = activate_plugins( $plugin_file );
     if ( is_wp_error( $result ) ) {
         // Process Error
     }
@@ -768,16 +769,33 @@ class Xophz_Compass_Admin {
   }
 
   public function deactivate_plugin(){
-    if ( ! isset( $_REQUEST['plugin'] ) ) {
-        $this->output_json( array( 'error' => 'Missing plugin parameter' ) );
+    Xophz_Compass_Security::enforce_spa_ajax( 'activate_plugins' );
+    $plugin_file = $this->requested_plugin_file();
+    if ( null === $plugin_file ) {
+        $this->output_json( array( 'error' => 'Missing or unknown plugin parameter' ) );
         return;
     }
-    $plugin = $_REQUEST['plugin'];
-    $result = deactivate_plugins( "$plugin/$plugin.php" );
+    $result = deactivate_plugins( $plugin_file );
     if ( is_wp_error( $result ) ) {
         // Process Error
     }
     $this->output_json($result);
+  }
+
+  /**
+   * Resolve the `plugin` request parameter to an installed "<slug>/<slug>.php" file.
+   * sanitize_key() strips path separators, and the file must be a plugin WordPress knows.
+   */
+  private function requested_plugin_file(): ?string {
+    $slug = isset( $_REQUEST['plugin'] ) ? sanitize_key( wp_unslash( $_REQUEST['plugin'] ) ) : '';
+    if ( '' === $slug ) {
+        return null;
+    }
+    if ( ! function_exists( 'get_plugins' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    $plugin_file = "$slug/$slug.php";
+    return array_key_exists( $plugin_file, get_plugins() ) ? $plugin_file : null;
   }
 
   public function getPluginsByXoph(){

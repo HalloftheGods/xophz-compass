@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-10-29]
+
+### Security
+- The `activate_plugin` and `deactivate_plugin` admin-ajax actions now require `activate_plugins` and a valid nonce. Before this, any logged-in user, Subscribers included, could activate or deactivate plugins, and a malicious page could do it through a visiting admin's browser. The `plugin` parameter must name an installed `<slug>/<slug>.php`, so it can no longer carry a path (#6778).
+- New `Xophz_Compass_Security::enforce_spa_ajax( ...$capabilities )` guards admin-ajax handlers called by the SPA. It requires any one of the given capabilities and verifies the `wp_rest` nonce the SPA's shared client already sends as `X-WP-Nonce` (or a `_wpnonce` parameter). A bad nonce answers `403` with top-level code `rest_cookie_invalid_nonce`, which the SPA already treats as a stale nonce to refresh and retry. Pixie Dust, Enchiridion, Lit Lamp and Bazaar use it for their flagged handlers (#6778).
+
 ## [2026-10-10]
 
 ### Security
