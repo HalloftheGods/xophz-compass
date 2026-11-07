@@ -240,13 +240,14 @@ class Xophz_Compass_Admin {
    */
   public function output_pwa_head_tags() {
     $manifest_url = rest_url( 'xophz-compass/v1/admin-manifest' );
-    $icon_url     = plugins_url( 'dist/favicon.png', __FILE__ );
-    if ( ! file_exists( plugin_dir_path( __FILE__ ) . 'dist/favicon.png' ) ) {
-      $icon_url = home_url( '/favicon.png' );
+    $main_plugin_file = dirname( dirname( __FILE__ ) ) . '/xophz-compass.php';
+    $icon_url     = plugins_url( 'icon.png', $main_plugin_file );
+    if ( file_exists( plugin_dir_path( __FILE__ ) . 'dist/compass-icon-512.png' ) ) {
+      $icon_url = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
     }
     echo '<script>window.__pwaInstallPrompt=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__pwaInstallPrompt=e;if(window.dispatchEvent){window.dispatchEvent(new CustomEvent("compass:pwa-prompt-ready",{detail:e}));}});</script>';
     echo '<link rel="manifest" href="' . esc_url( $manifest_url ) . '">';
-    echo '<meta name="theme-color" content="#070a12">';
+    echo '<meta name="theme-color" content="#1a1e22">';
     echo '<meta name="apple-mobile-web-app-capable" content="yes">';
     echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">';
     echo '<meta name="apple-mobile-web-app-title" content="My Compass">';
@@ -1259,11 +1260,20 @@ class Xophz_Compass_Admin {
     $parsed_admin = parse_url( $admin_url, PHP_URL_PATH ) ?: '/wp-admin/';
     $scope = dirname( $parsed_admin ) . '/';
 
-    $icon_svg = home_url( '/favicon.svg' );
-    $icon_png = home_url( '/favicon.png' );
-    $icon_path = plugin_dir_path( __FILE__ ) . 'dist/favicon.png';
-    if ( file_exists( $icon_path ) ) {
-      $icon_png = plugins_url( 'dist/favicon.png', __FILE__ );
+    $main_plugin_file = dirname( dirname( __FILE__ ) ) . '/xophz-compass.php';
+    $icon_svg = plugins_url( 'icon.svg', $main_plugin_file );
+    $icon_512 = plugins_url( 'icon.png', $main_plugin_file );
+    $icon_192 = home_url( '/compass-icon-192.png' );
+
+    $dist_dir = plugin_dir_path( __FILE__ ) . 'dist/';
+    if ( file_exists( $dist_dir . 'compass-icon.svg' ) ) {
+      $icon_svg = plugins_url( 'dist/compass-icon.svg', __FILE__ );
+    }
+    if ( file_exists( $dist_dir . 'compass-icon-192.png' ) ) {
+      $icon_192 = plugins_url( 'dist/compass-icon-192.png', __FILE__ );
+    }
+    if ( file_exists( $dist_dir . 'compass-icon-512.png' ) ) {
+      $icon_512 = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
     }
 
     $manifest = [
@@ -1274,8 +1284,8 @@ class Xophz_Compass_Admin {
       'scope'            => $scope,
       'display'          => 'standalone',
       'orientation'      => 'any',
-      'background_color' => '#070a12',
-      'theme_color'      => '#070a12',
+      'background_color' => '#1a1e22',
+      'theme_color'      => '#1a1e22',
       'categories'       => ['utilities', 'productivity', 'business'],
       'icons'            => [
         [
@@ -1285,7 +1295,13 @@ class Xophz_Compass_Admin {
           'purpose' => 'any'
         ],
         [
-          'src'     => $icon_png,
+          'src'     => $icon_192,
+          'sizes'   => '192x192',
+          'type'    => 'image/png',
+          'purpose' => 'any'
+        ],
+        [
+          'src'     => $icon_512,
           'sizes'   => '512x512',
           'type'    => 'image/png',
           'purpose' => 'any maskable'

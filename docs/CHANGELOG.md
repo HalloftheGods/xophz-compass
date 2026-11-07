@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-11-07]
+
+### Changed
+- PWA Official Branding & Theme Color: Replaced fallback icons with the official Compass logo (`icon.png` 512x512 and `icon.svg` vector). Updated manifest and apple-touch-icon theme colors to `#1a1e22` to seamlessly match the Compass admin radial gradient background (#7336).
+
 ## [2026-11-06]
 
 ### Added
