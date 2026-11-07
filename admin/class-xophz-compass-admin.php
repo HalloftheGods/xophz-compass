@@ -193,6 +193,8 @@ class Xophz_Compass_Admin {
           'assetsUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/',
           'texturesUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/textures/planets/',
           'externalPlugins' => apply_filters( 'xophz_compass_registered_plugins', Xophz_Compass::get_registered_admin_plugins() ),
+          'pwaManifestUrl' => rest_url( 'xophz-compass/v1/admin-manifest' ),
+          'pwaSwUrl' => rest_url( 'xophz-compass/v1/admin-sw' ),
       ];
 
       if ( $this->isDevServer() ) {
@@ -206,6 +208,7 @@ class Xophz_Compass_Admin {
           
           echo '<script type="module" src="' . $devServerUrl . '/@vite/client"></script>';
           echo '<script type="module" src="' . $devServerUrl . '/src/mount-app.ts"></script>';
+          $this->output_pwa_head_tags();
           $this->output_theme_colors();
         });
       } else {
@@ -225,10 +228,29 @@ class Xophz_Compass_Admin {
         // Inject settings into the main app script
         wp_localize_script( $this->plugin_name.'-main-app', 'xophzCompassSettings', $settings );
         
+        add_action('admin_head', [$this, 'output_pwa_head_tags']);
         add_action('admin_head', [$this, 'output_theme_colors']);
         add_action('admin_head', [$this, 'output_initial_menu_styles']);
       }
     }
+  }
+
+  /**
+   * Outputs PWA manifest link, mobile meta tags, and early beforeinstallprompt listener
+   */
+  public function output_pwa_head_tags() {
+    $manifest_url = rest_url( 'xophz-compass/v1/admin-manifest' );
+    $icon_url     = plugins_url( 'dist/favicon.png', __FILE__ );
+    if ( ! file_exists( plugin_dir_path( __FILE__ ) . 'dist/favicon.png' ) ) {
+      $icon_url = home_url( '/favicon.png' );
+    }
+    echo '<script>window.__pwaInstallPrompt=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__pwaInstallPrompt=e;if(window.dispatchEvent){window.dispatchEvent(new CustomEvent("compass:pwa-prompt-ready",{detail:e}));}});</script>';
+    echo '<link rel="manifest" href="' . esc_url( $manifest_url ) . '">';
+    echo '<meta name="theme-color" content="#070a12">';
+    echo '<meta name="apple-mobile-web-app-capable" content="yes">';
+    echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">';
+    echo '<meta name="apple-mobile-web-app-title" content="My Compass">';
+    echo '<link rel="apple-touch-icon" href="' . esc_url( $icon_url ) . '">';
   }
 
   /**
@@ -1206,6 +1228,103 @@ class Xophz_Compass_Admin {
         ]
       ]
     ]);
+
+    register_rest_route('xophz-compass/v1', '/admin-manifest', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_admin_manifest'],
+      'permission_callback' => '__return_true'
+    ]);
+
+    register_rest_route('xophz-compass/v1', '/admin-sw', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_admin_sw'],
+      'permission_callback' => '__return_true'
+    ]);
+  }
+
+  /**
+   * Generates dynamic Web App Manifest for My Compass Admin PWA.
+   *
+   * @param WP_REST_Request $request
+   * @return WP_REST_Response
+   */
+  public function get_admin_manifest( $request ) {
+    $site_name = get_bloginfo( 'name' );
+    $name = 'My Compass on ' . $site_name;
+    if ( stripos( $site_name, 'Compass' ) !== false ) {
+      $name = $site_name;
+    }
+
+    $admin_url = admin_url( 'admin.php?page=xophz-compass#/' );
+    $parsed_admin = parse_url( $admin_url, PHP_URL_PATH ) ?: '/wp-admin/';
+    $scope = dirname( $parsed_admin ) . '/';
+
+    $icon_svg = home_url( '/favicon.svg' );
+    $icon_png = home_url( '/favicon.png' );
+    $icon_path = plugin_dir_path( __FILE__ ) . 'dist/favicon.png';
+    if ( file_exists( $icon_path ) ) {
+      $icon_png = plugins_url( 'dist/favicon.png', __FILE__ );
+    }
+
+    $manifest = [
+      'name'             => $name,
+      'short_name'       => 'Compass',
+      'description'      => 'My Compass Suite Systems Interface and Sovereign Administrative Command Center',
+      'start_url'        => $admin_url,
+      'scope'            => $scope,
+      'display'          => 'standalone',
+      'orientation'      => 'any',
+      'background_color' => '#070a12',
+      'theme_color'      => '#070a12',
+      'categories'       => ['utilities', 'productivity', 'business'],
+      'icons'            => [
+        [
+          'src'     => $icon_svg,
+          'sizes'   => 'any',
+          'type'    => 'image/svg+xml',
+          'purpose' => 'any'
+        ],
+        [
+          'src'     => $icon_png,
+          'sizes'   => '512x512',
+          'type'    => 'image/png',
+          'purpose' => 'any maskable'
+        ]
+      ]
+    ];
+
+    $response = new WP_REST_Response( $manifest, 200 );
+    $response->header( 'Content-Type', 'application/manifest+json; charset=UTF-8' );
+    $response->header( 'Cache-Control', 'public, max-age=3600' );
+    return $response;
+  }
+
+  /**
+   * Serves service worker script with Service-Worker-Allowed header.
+   */
+  public function get_admin_sw() {
+    $sw_candidates = [
+      plugin_dir_path( __FILE__ ) . 'dist/sw.js',
+      dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/public/sw.js',
+    ];
+
+    $sw_content = '';
+    foreach ( $sw_candidates as $path ) {
+      if ( file_exists( $path ) ) {
+        $sw_content = file_get_contents( $path );
+        break;
+      }
+    }
+
+    if ( empty( $sw_content ) ) {
+      $sw_content = "self.oninstall=()=>self.skipWaiting();self.onactivate=()=>self.clients.claim();";
+    }
+
+    header( 'Content-Type: application/javascript; charset=UTF-8' );
+    header( 'Service-Worker-Allowed: /wp-admin/' );
+    header( 'Cache-Control: no-cache, no-store, must-revalidate' );
+    echo $sw_content;
+    exit;
   }
 
   /**

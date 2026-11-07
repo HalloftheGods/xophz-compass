@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-11-06]
+
+### Added
+- PWA Manifest & Service Worker Endpoints: Added dynamic Web App Manifest endpoint at `xophz-compass/v1/admin-manifest` and service worker endpoint at `xophz-compass/v1/admin-sw` with `Service-Worker-Allowed: /wp-admin/` header.
+- Early Browser Install Capture: Added head script in `class-xophz-compass-admin.php` intercepting `beforeinstallprompt` to preserve the event for Vue PWA prompt components (#7321).
+
 ## [2026-10-29]
 
 ### Security
