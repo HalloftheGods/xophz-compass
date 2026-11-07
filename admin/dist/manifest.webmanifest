@@ -1,0 +1,26 @@
+{
+  "name": "My Compass",
+  "short_name": "Compass",
+  "description": "My Compass Suite Systems Interface and Sovereign Administrative Command Center",
+  "start_url": "/wp-admin/admin.php?page=xophz-compass#/",
+  "scope": "/wp-admin/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070a12",
+  "theme_color": "#070a12",
+  "categories": ["utilities", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
