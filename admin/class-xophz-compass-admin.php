@@ -239,19 +239,32 @@ class Xophz_Compass_Admin {
    * Outputs PWA manifest link, mobile meta tags, and early beforeinstallprompt listener
    */
   public function output_pwa_head_tags() {
-    $manifest_url = rest_url( 'xophz-compass/v1/admin-manifest' );
-    $main_plugin_file = dirname( dirname( __FILE__ ) ) . '/xophz-compass.php';
-    $icon_url     = plugins_url( 'icon.png', $main_plugin_file );
-    if ( file_exists( plugin_dir_path( __FILE__ ) . 'dist/compass-icon-512.png' ) ) {
-      $icon_url = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
+    $manifest_base_url = rest_url( 'xophz-compass/v1/admin-manifest' );
+    $main_plugin_file  = dirname( dirname( __FILE__ ) ) . '/xophz-compass.php';
+    $icon_png          = plugins_url( 'icon.png', $main_plugin_file );
+    $icon_svg          = plugins_url( 'icon.svg', $main_plugin_file );
+    $dist_path         = plugin_dir_path( __FILE__ ) . 'dist/';
+    if ( file_exists( $dist_path . 'compass-icon-512.png' ) ) {
+      $icon_png = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
     }
+    if ( file_exists( $dist_path . 'compass-icon.svg' ) ) {
+      $icon_svg = plugins_url( 'dist/compass-icon.svg', __FILE__ );
+    }
+
+    $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : '26.11.7';
+    $manifest_url = add_query_arg( 'v', $v, $manifest_base_url );
+    $icon_svg_url = add_query_arg( 'v', $v, $icon_svg );
+    $icon_png_url = add_query_arg( 'v', $v, $icon_png );
+
     echo '<script>window.__pwaInstallPrompt=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__pwaInstallPrompt=e;if(window.dispatchEvent){window.dispatchEvent(new CustomEvent("compass:pwa-prompt-ready",{detail:e}));}});</script>';
     echo '<link rel="manifest" href="' . esc_url( $manifest_url ) . '">';
+    echo '<link rel="icon" type="image/svg+xml" href="' . esc_url( $icon_svg_url ) . '">';
+    echo '<link rel="alternate icon" type="image/png" sizes="512x512" href="' . esc_url( $icon_png_url ) . '">';
+    echo '<link rel="apple-touch-icon" href="' . esc_url( $icon_png_url ) . '">';
     echo '<meta name="theme-color" content="#1a1e22">';
     echo '<meta name="apple-mobile-web-app-capable" content="yes">';
     echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">';
     echo '<meta name="apple-mobile-web-app-title" content="My Compass">';
-    echo '<link rel="apple-touch-icon" href="' . esc_url( $icon_url ) . '">';
   }
 
   /**
@@ -1276,6 +1289,11 @@ class Xophz_Compass_Admin {
       $icon_512 = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
     }
 
+    $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : '26.11.7';
+    $icon_svg_v = add_query_arg( 'v', $v, $icon_svg );
+    $icon_192_v = add_query_arg( 'v', $v, $icon_192 );
+    $icon_512_v = add_query_arg( 'v', $v, $icon_512 );
+
     $manifest = [
       'name'             => $name,
       'short_name'       => 'Compass',
@@ -1289,19 +1307,19 @@ class Xophz_Compass_Admin {
       'categories'       => ['utilities', 'productivity', 'business'],
       'icons'            => [
         [
-          'src'     => $icon_svg,
+          'src'     => $icon_svg_v,
           'sizes'   => 'any',
           'type'    => 'image/svg+xml',
           'purpose' => 'any'
         ],
         [
-          'src'     => $icon_192,
+          'src'     => $icon_192_v,
           'sizes'   => '192x192',
           'type'    => 'image/png',
           'purpose' => 'any'
         ],
         [
-          'src'     => $icon_512,
+          'src'     => $icon_512_v,
           'sizes'   => '512x512',
           'type'    => 'image/png',
           'purpose' => 'any maskable'
@@ -1311,7 +1329,9 @@ class Xophz_Compass_Admin {
 
     $response = new WP_REST_Response( $manifest, 200 );
     $response->header( 'Content-Type', 'application/manifest+json; charset=UTF-8' );
-    $response->header( 'Cache-Control', 'public, max-age=3600' );
+    $response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
+    $response->header( 'Pragma', 'no-cache' );
+    $response->header( 'Expires', '0' );
     return $response;
   }
 
