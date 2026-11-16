@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-11-16]
+
+### Added
+- Added vanity login and launch route for `/my-compass` (and `/compass`):
+  - Automatically redirects unauthenticated visitors to `/wp-login.php` with `redirect_to` pre-populated to the Compass dashboard (`/wp-admin/admin.php?page=xophz-compass`).
+  - Automatically redirects authenticated users directly into the Compass dashboard.
+  - Implemented via `template_redirect` hook in `Xophz_Compass_Public` and registered in `class-xophz-compass.php`.
+
 ## [2026-11-07]
 
 ### Changed

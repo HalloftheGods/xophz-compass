@@ -301,4 +301,25 @@ class Xophz_Compass_Public {
     }
   }
 
+  /**
+   * Route vanity URLs like /my-compass and /compass directly into Compass.
+   *
+   * @since 26.11.8
+   */
+  public function handle_my_compass_route() {
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+    $path        = trim( (string) parse_url( $request_uri, PHP_URL_PATH ), '/' );
+
+    if ( 'my-compass' === $path || 'compass' === $path ) {
+      $target_url = admin_url( 'admin.php?page=xophz-compass' );
+
+      if ( ! is_user_logged_in() ) {
+        wp_safe_redirect( wp_login_url( $target_url ) );
+      } else {
+        wp_safe_redirect( $target_url );
+      }
+      exit;
+    }
+  }
+
 }

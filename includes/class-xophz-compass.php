@@ -206,6 +206,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu'); 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_w4_my_compass_menu');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_my_compass_settings');
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'handle_admin_my_compass_shortcut');
 		$this->loader->add_filter( 'admin_body_class', $plugin_admin, 'add_admin_body_classes' );
 		$this->loader->add_filter( 'login_redirect', $plugin_admin, 'redirect_login_to_compass', 10, 3 );
 		// $this->loader->add_action( 'load-index.php', $plugin_admin, 'redirect_dashboard_index' );
@@ -338,6 +339,7 @@ class Xophz_Compass {
 		$this->loader->add_action( 'wp_head', $plugin_public, 'setPostViews' );
 		$this->loader->add_action( 'wp_head', $plugin_public, 'inject_aeo_json_ld' );
 		$this->loader->add_action( 'template_redirect', $plugin_public, 'serve_llms_txt' );
+		$this->loader->add_action( 'template_redirect', $plugin_public, 'handle_my_compass_route' );
 
 		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );

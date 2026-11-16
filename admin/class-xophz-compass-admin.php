@@ -757,6 +757,16 @@ class Xophz_Compass_Admin {
       exit;
   }
 
+  public function handle_admin_my_compass_shortcut() {
+      $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+      $path        = trim( (string) parse_url( $request_uri, PHP_URL_PATH ), '/' );
+
+      if ( 'wp-admin/my-compass' === $path || 'wp-admin/compass' === $path ) {
+          wp_safe_redirect( admin_url( 'admin.php?page=xophz-compass' ) );
+          exit;
+      }
+  }
+
 
 
 
