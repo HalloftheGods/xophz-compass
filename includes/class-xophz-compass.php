@@ -134,6 +134,11 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-diagnostics-api.php';
 
 		/**
+		 * The class responsible for the per-user launcher order endpoint.
+		 */
+		require_once $plugin_dir . 'includes/class-xophz-compass-plugin-order-api.php';
+
+		/**
 		 * The class serving live GitHub metrics and contact details to the phone app.
 		 */
 		require_once $plugin_dir . 'includes/class-xophz-compass-phone-metrics-api.php';
@@ -255,6 +260,10 @@ class Xophz_Compass {
     $this->loader->add_action( 'rest_api_init', $plugin_constellations, 'register_routes' );
     $this->loader->add_action( 'before_delete_post', $plugin_constellations, 'cleanup_orphaned_post' );
     $this->loader->add_action( 'deleted_user', $plugin_constellations, 'cleanup_orphaned_user' );
+
+    // Register the per-user launcher order endpoint (admin Accelerate and phone)
+    $plugin_order = new Xophz_Compass_Plugin_Order_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_order, 'register_routes' );
 
     // Register setup wizard diagnostics endpoint
     $plugin_diagnostics = new Xophz_Compass_Diagnostics_API();

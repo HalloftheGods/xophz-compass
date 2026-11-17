@@ -1123,7 +1123,12 @@ class Xophz_Compass_Admin {
     // Sanitize the order array - only allow valid text domain strings
     $order = array_map('sanitize_text_field', $order);
 
-    update_user_meta($user_id, '_compass_plugin_order', $order);
+    // Merge into the stored order so plugins this request did not list keep their place.
+    $merged = Xophz_Compass_Plugin_Order_API::merge_order(
+      Xophz_Compass_Plugin_Order_API::stored_order($user_id),
+      Xophz_Compass_Plugin_Order_API::normalize_order($order) ?? []
+    );
+    update_user_meta($user_id, Xophz_Compass_Plugin_Order_API::META_KEY, $merged);
     $this->output_json(['success' => true]);
   }
 
