@@ -988,8 +988,10 @@ class Xophz_Compass_Connectors {
 		$site_icon_url = $site_icon_id ? wp_get_attachment_image_url( $site_icon_id, 'full' ) : get_option( 'compass_site_icon_url', '' );
 
 		$settings = array(
-			'blogname'           => get_option( 'blogname', 'My Compass' ),
-			'blogdescription'    => get_option( 'blogdescription', '' ),
+			// WordPress stores titles HTML-escaped (an ampersand is saved as &amp;). The UI
+			// edits plain text, so decode here; saving re-encodes it the way core expects.
+			'blogname'           => html_entity_decode( (string) get_option( 'blogname', 'My Compass' ), ENT_QUOTES, 'UTF-8' ),
+			'blogdescription'    => html_entity_decode( (string) get_option( 'blogdescription', '' ), ENT_QUOTES, 'UTF-8' ),
 			'site_icon'          => $site_icon_id,
 			'site_icon_url'      => $site_icon_url,
 			'site_language'      => $lang,
