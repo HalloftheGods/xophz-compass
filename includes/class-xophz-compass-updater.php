@@ -258,7 +258,7 @@ class Xophz_Compass_Updater {
 		$info->name          = $match['name'];
 		$info->slug          = $match['slug'];
 		$info->version       = $remote_version;
-		$info->author        = '<a href="https://www.hallofthegods.com/">Hall of the Gods, Inc.</a>';
+		$info->author        = '<a href="https://mycompassconsulting.com/">My Compass Consulting</a>';
 		$info->homepage      = "https://github.com/{$match['repo']}";
 		$info->download_link = $download_url;
 		$info->trunk         = $download_url;
@@ -302,7 +302,7 @@ class Xophz_Compass_Updater {
 		$info->name          = $match['name'];
 		$info->slug          = $match['slug'];
 		$info->version       = $remote_version;
-		$info->author        = '<a href="https://www.hallofthegods.com/">Hall of the Gods, Inc.</a>';
+		$info->author        = '<a href="https://mycompassconsulting.com/">My Compass Consulting</a>';
 		$info->homepage      = "https://github.com/{$match['repo']}";
 		$info->download_link = $download_url;
 		$info->trunk         = $download_url;

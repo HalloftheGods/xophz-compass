@@ -854,12 +854,12 @@ class Xophz_Compass_Admin {
         'PluginURI' => 'https://youmeos.com',
         'Version' => '26.9.5',
         'Description' => 'Proxy from YouMeOS/COMPASS to the Forminator PHP plugin.',
-        'Author' => 'Hall of the Gods, Inc.',
+        'Author' => 'My Compass Consulting',
         'TextDomain' => 'xophz-compass-magic-formula',
         'DomainPath' => '/languages',
         'Network' => false,
         'Title' => 'Xophz Magic Formula',
-        'AuthorName' => 'Hall of the Gods, Inc.',
+        'AuthorName' => 'My Compass Consulting',
         'Category' => 'Trajectory',
         'Group' => 'CRM'
       ];
@@ -1018,7 +1018,7 @@ class Xophz_Compass_Admin {
     $version_string = 'v' . $this->version;
     $year = date("Y");
     $copy = "&copy;";
-    $footer = "{$plugin} {$version_string} {$year} {$copy} Hall of the Gods, Inc."; 
+    $footer = "{$plugin} {$version_string} {$year} {$copy} My Compass Consulting"; 
     echo $footer;
   }
 

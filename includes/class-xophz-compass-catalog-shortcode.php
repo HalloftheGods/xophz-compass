@@ -1291,7 +1291,7 @@ class Xophz_Compass_Catalog_Shortcode {
 										<span class="compass-meta-eqv">Eqv: <?php echo $eqv; ?></span>
 									<?php endif; ?>
 									<span class="compass-meta-dot">·</span>
-									<span class="compass-meta-pub">Hall of the Gods, Inc.</span>
+									<span class="compass-meta-pub">My Compass Consulting</span>
 								</div>
 
 								<div class="compass-card-actions">
@@ -1405,7 +1405,7 @@ class Xophz_Compass_Catalog_Shortcode {
 							</div>
 							<div class="compass-spec-item">
 								<span class="compass-spec-label">PUBLISHER</span>
-								<span class="compass-spec-value">Hall of the Gods Inc.</span>
+								<span class="compass-spec-value">My Compass Consulting</span>
 							</div>
 						</div>
 

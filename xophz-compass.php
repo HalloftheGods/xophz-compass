@@ -17,8 +17,8 @@
  * Plugin URI:        https://github.com/HalloftheGods/xophz-compass
  * Description:       It's dangerous to go alone! Explore the depths of your site and navigate the dungeons and dark corners of the unknown realm of the internet without getting lost using my handy dandy COMPASS.
  * Version:           26.11.17-144
- * Author:            Hall of the Gods, Inc.
- * Author URI:        https://www.hallofthegods.com/
+ * Author:            My Compass Consulting
+ * Author URI:        https://mycompassconsulting.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       xophz-compass
