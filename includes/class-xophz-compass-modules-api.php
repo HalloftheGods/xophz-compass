@@ -904,14 +904,20 @@ class Xophz_Compass_Modules_API {
 					$module['category'] = $installed_plugins[ $plugin_file ]['Category'];
 				}
 			} elseif ( ! $module['is_installed'] ) {
+				// '-' marks a lookup that failed. It is cached for an hour so unreachable GitHub
+				// URLs do not slow every plugin refresh; it is never shown as a description.
 				$cached_desc = get_transient( 'compass_mod_desc_' . $slug );
-				if ( false !== $cached_desc && ! empty( $cached_desc ) ) {
-					$module['description'] = $cached_desc;
+				if ( false !== $cached_desc ) {
+					if ( '-' !== $cached_desc && ! empty( $cached_desc ) ) {
+						$module['description'] = $cached_desc;
+					}
 				} else {
 					$fetched_desc = self::fetch_github_module_description( $slug );
 					if ( ! empty( $fetched_desc ) ) {
 						$module['description'] = $fetched_desc;
 						set_transient( 'compass_mod_desc_' . $slug, $fetched_desc, DAY_IN_SECONDS );
+					} else {
+						set_transient( 'compass_mod_desc_' . $slug, '-', HOUR_IN_SECONDS );
 					}
 				}
 			}
