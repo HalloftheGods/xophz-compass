@@ -86,7 +86,8 @@ class Xophz_Compass_Phone_Metrics_API {
 
 		$metrics = $this->build_metrics();
 		// While GitHub is still computing stats, keep the result only briefly so it refreshes soon.
-		$ttl = ! empty( $metrics['pending_repos'] ) ? 5 * MINUTE_IN_SECONDS : self::CACHE_TTL;
+		$short = ! empty( $metrics['pending_repos'] ) || ! empty( $metrics['error'] );
+		$ttl   = $short ? 5 * MINUTE_IN_SECONDS : self::CACHE_TTL;
 		set_transient( self::CACHE_KEY, $metrics, $ttl );
 
 		return rest_ensure_response( $metrics );
@@ -108,7 +109,7 @@ class Xophz_Compass_Phone_Metrics_API {
 			return array( 'configured' => false, 'error' => 'No GitHub account is set.' );
 		}
 
-		$repos = $this->fetch_repos( $user, $token );
+		$repos = $this->fetch_all_repos( $user, $token );
 		if ( is_wp_error( $repos ) ) {
 			return array(
 				'configured' => true,
@@ -125,6 +126,7 @@ class Xophz_Compass_Phone_Metrics_API {
 		$public   = 0;
 		$private  = 0;
 		$last_pushed = '';
+		$repo_totals = array();
 
 		foreach ( $repos as $repo ) {
 			if ( ! empty( $repo['private'] ) ) {
@@ -158,14 +160,28 @@ class Xophz_Compass_Phone_Metrics_API {
 					$punch[ (int) $row[0] ][ (int) $row[1] ] += (int) $row[2];
 				}
 			}
+			$repo_total = 0;
 			foreach ( array_values( $activity ) as $i => $week ) {
 				if ( $i < 52 && isset( $week['total'] ) ) {
 					$weekly[ $i ] += (int) $week['total'];
+					$repo_total   += (int) $week['total'];
 				}
 			}
+			$repo_totals[] = array(
+				'name'      => empty( $repo['private'] ) ? $full : '',
+				'owner'     => (string) ( $repo['owner']['login'] ?? '' ),
+				'avatar'    => (string) ( $repo['owner']['avatar_url'] ?? '' ),
+				'language'  => (string) ( $repo['language'] ?? '' ),
+				'pushed_at' => (string) ( $repo['pushed_at'] ?? '' ),
+				'private'   => ! empty( $repo['private'] ),
+				'commits'   => $repo_total,
+			);
 		}
 
 		arsort( $languages );
+		$repo_commits = $this->summarize_repo_commits( $repo_totals );
+		$orgs         = $this->summarize_orgs( $repo_totals, $user );
+		$repo_list    = $this->list_repos( $repo_totals );
 
 		return array(
 			'configured'        => true,
@@ -180,12 +196,165 @@ class Xophz_Compass_Phone_Metrics_API {
 			'punch_card'        => $punch,
 			'languages'         => array_slice( $languages, 0, 6, true ),
 			'last_pushed_at'    => $last_pushed,
+			'repo_commits'      => $repo_commits,
+			'orgs'              => $orgs,
+			'repo_list'         => $repo_list,
 		);
+	}
+
+	/**
+	 * Top public repos by commits in the last year, with all private repos
+	 * rolled into one "Private" bucket and the rest folded into "Other".
+	 * Private repo names never leave the server.
+	 *
+	 * @param array $repo_totals Rows of name, private and commits.
+	 * @return array
+	 */
+	private function summarize_repo_commits( array $repo_totals ) {
+		$private_total = 0;
+		$public        = array();
+		foreach ( $repo_totals as $row ) {
+			if ( $row['private'] ) {
+				$private_total += $row['commits'];
+			} elseif ( $row['commits'] > 0 ) {
+				$public[] = array( 'name' => $row['name'], 'commits' => $row['commits'] );
+			}
+		}
+		usort( $public, function ( $a, $b ) {
+			return $b['commits'] <=> $a['commits'];
+		} );
+
+		$top   = array_slice( $public, 0, 5 );
+		$other = 0;
+		foreach ( array_slice( $public, 5 ) as $row ) {
+			$other += $row['commits'];
+		}
+		if ( $other > 0 ) {
+			$top[] = array( 'name' => 'Other', 'commits' => $other );
+		}
+		if ( $private_total > 0 ) {
+			$top[] = array( 'name' => 'Private', 'commits' => $private_total );
+		}
+		return $top;
 	}
 
 	/**
 	 * Repos owned by the account. A token also reveals private ones; only counts are returned.
 	 */
+	/**
+	 * Repos the account owns plus every repo in each org it belongs to, de-duplicated, newest first.
+	 * Org lookups are best effort: if the org list fails, the personal repos are still returned.
+	 *
+	 * @return array|WP_Error
+	 */
+	private function fetch_all_repos( $user, $token ) {
+		$owned = $this->fetch_repos( $user, $token );
+		if ( is_wp_error( $owned ) ) {
+			return $owned;
+		}
+
+		$orgs_url = $token
+			? 'https://api.github.com/user/orgs?per_page=100'
+			: "https://api.github.com/users/{$user}/orgs?per_page=100";
+		$orgs     = $this->github_request( $orgs_url, $token );
+		if ( is_wp_error( $orgs ) ) {
+			$orgs = array();
+		}
+
+		$seen = array();
+		$all  = array();
+		foreach ( array_merge( $owned, $this->fetch_org_repos( (array) $orgs, $token ) ) as $repo ) {
+			$key = strtolower( (string) ( $repo['full_name'] ?? '' ) );
+			if ( '' === $key || isset( $seen[ $key ] ) ) {
+				continue;
+			}
+			$seen[ $key ] = true;
+			$all[]        = $repo;
+		}
+
+		usort( $all, function ( $a, $b ) {
+			return strcmp( (string) ( $b['pushed_at'] ?? '' ), (string) ( $a['pushed_at'] ?? '' ) );
+		} );
+
+		return $all;
+	}
+
+	/**
+	 * Flat list of repos across the given orgs, skipping any org whose repos cannot be read.
+	 */
+	private function fetch_org_repos( array $orgs, $token ) {
+		$repos = array();
+		foreach ( $orgs as $org ) {
+			$login = (string) ( $org['login'] ?? '' );
+			if ( '' === $login ) {
+				continue;
+			}
+			$list = $this->github_request( "https://api.github.com/orgs/{$login}/repos?type=all&sort=pushed&per_page=100", $token );
+			if ( ! is_wp_error( $list ) ) {
+				$repos = array_merge( $repos, (array) $list );
+			}
+		}
+		return $repos;
+	}
+
+	/**
+	 * One row per owner (the account itself or an org) with repo, private-repo and commit counts.
+	 * Only analysed repos are counted. Owner names are shown; private repo names never are.
+	 */
+	private function summarize_orgs( array $repo_totals, $user ) {
+		$by_owner = array();
+		foreach ( $repo_totals as $row ) {
+			$login = $row['owner'];
+			if ( '' === $login ) {
+				continue;
+			}
+			if ( ! isset( $by_owner[ $login ] ) ) {
+				$by_owner[ $login ] = array(
+					'login'         => $login,
+					'avatar'        => $row['avatar'],
+					'personal'      => 0 === strcasecmp( $login, (string) $user ),
+					'repos'         => 0,
+					'private_repos' => 0,
+					'commits'       => 0,
+				);
+			}
+			$by_owner[ $login ]['repos']++;
+			if ( $row['private'] ) {
+				$by_owner[ $login ]['private_repos']++;
+			}
+			$by_owner[ $login ]['commits'] += $row['commits'];
+		}
+
+		$orgs = array_values( $by_owner );
+		usort( $orgs, function ( $a, $b ) {
+			return $b['commits'] <=> $a['commits'];
+		} );
+		return $orgs;
+	}
+
+	/**
+	 * Public repos with commits in the last year, most active first.
+	 */
+	private function list_repos( array $repo_totals ) {
+		$rows = array();
+		foreach ( $repo_totals as $row ) {
+			if ( ! $row['private'] && $row['commits'] > 0 ) {
+				$rows[] = array(
+					'name'      => $row['name'],
+					'owner'     => $row['owner'],
+					'language'  => $row['language'],
+					'pushed_at' => $row['pushed_at'],
+					'commits'   => $row['commits'],
+				);
+			}
+		}
+
+		usort( $rows, function ( $a, $b ) {
+			return $b['commits'] <=> $a['commits'];
+		} );
+		return $rows;
+	}
+
 	private function fetch_repos( $user, $token ) {
 		$url = $token
 			? 'https://api.github.com/user/repos?affiliation=owner&visibility=all&sort=pushed&per_page=100'
