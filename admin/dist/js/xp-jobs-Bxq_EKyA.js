@@ -1,1 +1,0 @@
-import{ah as o,aq as t}from"./vendor-BVryKZFq.js";import{a as e}from"./index-CjcA6Izz.js";import"./vendor-core-Vv0wNbK4.js";import"./vendor-query-D7hZlIjb.js";import"./vendor-vuetify-bbucVLB7.js";import"./vendor-echarts-QPGknbAM.js";const r={},a={class:"xp-index"};function c(n,s){return o(),t("div",a," I am an index ")}const x=e(r,[["render",c]]);export{x as default};

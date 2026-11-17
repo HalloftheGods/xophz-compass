@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/class-xophz-compass-matrix-vacancies.php';
+
 class Xophz_Compass_Matrix_API {
 
 	public function register_taxonomy() {
@@ -15,12 +17,23 @@ class Xophz_Compass_Matrix_API {
 	}
 
 	public function register_routes() {
+		( new Xophz_Compass_Matrix_Vacancies() )->register_routes();
+
 		register_rest_route( 'xophz/v1', '/matrix/users', array(
-			'methods'             => WP_REST_Server::READABLE,
-			'callback'            => array( $this, 'get_users' ),
-			'permission_callback' => function() {
-				return current_user_can( 'list_users' );
-			},
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_users' ),
+				'permission_callback' => function() {
+					return current_user_can( 'list_users' );
+				},
+			),
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'create_user' ),
+				'permission_callback' => function() {
+					return current_user_can( 'create_users' );
+				},
+			),
 		));
 
 		register_rest_route( 'xophz/v1', '/matrix/users/(?P<id>\d+)', array(
@@ -51,6 +64,22 @@ class Xophz_Compass_Matrix_API {
 					},
 				),
 			),
+		));
+
+		register_rest_route( 'xophz/v1', '/matrix/contacts/groups', array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => array( $this, 'get_contact_groups' ),
+			'permission_callback' => function() {
+				return current_user_can( 'manage_options' );
+			},
+		));
+
+		register_rest_route( 'xophz/v1', '/matrix/contacts', array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => array( $this, 'get_group_contacts' ),
+			'permission_callback' => function() {
+				return current_user_can( 'manage_options' );
+			},
 		));
 
 		register_rest_route( 'xophz/v1', '/matrix/departments', array(
@@ -110,6 +139,12 @@ class Xophz_Compass_Matrix_API {
 			$reports_to = get_user_meta( $user->ID, 'compass_reports_to', true );
 			$job_title  = get_user_meta( $user->ID, 'compass_job_title', true );
 
+			// Name preference: first + last name, then display name, then username.
+			$first     = get_user_meta( $user->ID, 'first_name', true );
+			$last      = get_user_meta( $user->ID, 'last_name', true );
+			$full_name = trim( $first . ' ' . $last );
+			$name      = '' !== $full_name ? $full_name : ( '' !== trim( $user->display_name ) ? $user->display_name : $user->user_login );
+
 			// Magic Boomerang "Wind" (UTM/Referer Data)
 			$wind_data = array();
 			$wind_fields = array( 'source', 'medium', 'campaign', 'term', 'content', 'referer', 'first_visit' );
@@ -122,7 +157,13 @@ class Xophz_Compass_Matrix_API {
 
 			$result[] = array(
 				'id'         => $user->ID,
-				'name'       => $user->display_name,
+				'name'         => $name,
+				'first_name'   => $first,
+				'last_name'    => $last,
+				'nickname'     => get_user_meta( $user->ID, 'nickname', true ),
+				'display_name' => $user->display_name,
+				'url'          => $user->user_url,
+				'description'  => get_user_meta( $user->ID, 'description', true ),
 				'slug'       => $user->user_login,
 				'email'      => $user->user_email,
 				'avatar'     => get_avatar_url( $user->ID, array( 'size' => 96 ) ),
@@ -130,11 +171,81 @@ class Xophz_Compass_Matrix_API {
 				'department' => $dept_data,
 				'reports_to' => $reports_to ? absint( $reports_to ) : null,
 				'job_title'  => $job_title ?: '',
+				'dotted_to'  => array_values( array_map( 'absint', (array) get_user_meta( $user->ID, 'compass_dotted_to', true ) ) ),
 				'wind'       => empty( $wind_data ) ? null : $wind_data,
 			);
 		}
 
 		return rest_ensure_response( $result );
+	}
+
+	public function create_user( $request ) {
+		$params = $request->get_json_params();
+
+		$email = sanitize_email( $params['email'] ?? '' );
+		if ( ! is_email( $email ) ) {
+			return new WP_Error( 'invalid_email', 'A valid email address is required.', array( 'status' => 400 ) );
+		}
+		if ( email_exists( $email ) ) {
+			return new WP_Error( 'email_exists', 'A user with that email already exists.', array( 'status' => 409 ) );
+		}
+
+		$login = sanitize_user( $params['username'] ?? '', true );
+		if ( '' === $login ) {
+			$login = sanitize_user( strstr( $email, '@', true ), true );
+		}
+		if ( '' === $login || username_exists( $login ) ) {
+			return new WP_Error( 'invalid_username', 'That username is empty or already taken.', array( 'status' => 409 ) );
+		}
+
+		$role  = sanitize_key( $params['role'] ?? get_option( 'default_role' ) );
+		$roles = get_editable_roles();
+		if ( ! isset( $roles[ $role ] ) ) {
+			return new WP_Error( 'invalid_role', 'You cannot assign that role.', array( 'status' => 403 ) );
+		}
+
+		$notify   = ! empty( $params['send_notification'] );
+		$password = (string) ( $params['password'] ?? '' );
+		if ( ! $notify && strlen( $password ) < 8 ) {
+			return new WP_Error( 'weak_password', 'Set a password of at least 8 characters, or email them a link instead.', array( 'status' => 400 ) );
+		}
+		if ( $notify || '' === $password ) {
+			$password = wp_generate_password( 24 );
+		}
+
+		$first = sanitize_text_field( $params['first_name'] ?? '' );
+		$last  = sanitize_text_field( $params['last_name'] ?? '' );
+		$name  = trim( $first . ' ' . $last );
+		if ( '' === $name ) {
+			$name  = sanitize_text_field( $params['name'] ?? '' );
+			$parts = explode( ' ', $name, 2 );
+			$first = $parts[0];
+			$last  = $parts[1] ?? '';
+		}
+
+		$user_id = wp_insert_user( array(
+			'user_login'   => $login,
+			'user_email'   => $email,
+			'user_pass'    => $password,
+			'display_name' => '' !== $name ? $name : $login,
+			'first_name'   => $first,
+			'last_name'    => $last,
+			'role'         => $role,
+		) );
+
+		if ( is_wp_error( $user_id ) ) {
+			return new WP_Error( $user_id->get_error_code(), $user_id->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		// Reuse the edit path for title, department and manager.
+		$request->set_param( 'id', $user_id );
+		$this->update_user( $request );
+
+		if ( $notify ) {
+			wp_new_user_notification( $user_id, null, 'user' );
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'user_id' => $user_id ) );
 	}
 
 	public function update_user( $request ) {
@@ -146,6 +257,49 @@ class Xophz_Compass_Matrix_API {
 		}
 
 		$params = $request->get_json_params();
+
+		// Core profile fields, the same ones WordPress's own profile screen edits.
+		$core = array( 'ID' => $user_id );
+		foreach ( array( 'first_name', 'last_name', 'nickname', 'display_name' ) as $field ) {
+			if ( isset( $params[ $field ] ) ) {
+				$core[ $field ] = sanitize_text_field( $params[ $field ] );
+			}
+		}
+		if ( isset( $params['description'] ) ) {
+			$core['description'] = sanitize_textarea_field( $params['description'] );
+		}
+		if ( isset( $params['url'] ) ) {
+			$core['user_url'] = esc_url_raw( $params['url'] );
+		}
+		if ( isset( $params['email'] ) ) {
+			$email = sanitize_email( $params['email'] );
+			if ( ! is_email( $email ) ) {
+				return new WP_Error( 'invalid_email', 'A valid email address is required.', array( 'status' => 400 ) );
+			}
+			$owner = email_exists( $email );
+			if ( $owner && (int) $owner !== $user_id ) {
+				return new WP_Error( 'email_exists', 'Another user already has that email.', array( 'status' => 409 ) );
+			}
+			$core['user_email'] = $email;
+		}
+		if ( isset( $params['role'] ) && '' !== $params['role'] ) {
+			$role = sanitize_key( $params['role'] );
+			if ( ! isset( get_editable_roles()[ $role ] ) ) {
+				return new WP_Error( 'invalid_role', 'You cannot assign that role.', array( 'status' => 403 ) );
+			}
+			if ( $user_id === get_current_user_id() && ! in_array( $role, $user->roles, true ) ) {
+				return new WP_Error( 'own_role', 'You cannot change your own role here.', array( 'status' => 403 ) );
+			}
+			if ( ! in_array( $role, $user->roles, true ) ) {
+				$core['role'] = $role;
+			}
+		}
+		if ( count( $core ) > 1 ) {
+			$saved = wp_update_user( $core );
+			if ( is_wp_error( $saved ) ) {
+				return new WP_Error( $saved->get_error_code(), $saved->get_error_message(), array( 'status' => 400 ) );
+			}
+		}
 
 		if ( isset( $params['department_id'] ) ) {
 			$dept_id = absint( $params['department_id'] );
@@ -164,7 +318,26 @@ class Xophz_Compass_Matrix_API {
 			if ( $manager_id === 0 || $manager_id === $user_id ) {
 				delete_user_meta( $user_id, 'compass_reports_to' );
 			} else {
+				// Refuse loops: the new manager must not already report (directly or not) to this user.
+				$cursor = $manager_id;
+				$guard  = 0;
+				while ( $cursor && $guard++ < 100 ) {
+					if ( $cursor === $user_id ) {
+						return new WP_Error( 'reports_loop', 'That would make a reporting loop.', array( 'status' => 400 ) );
+					}
+					$cursor = absint( get_user_meta( $cursor, 'compass_reports_to', true ) );
+				}
 				update_user_meta( $user_id, 'compass_reports_to', $manager_id );
+			}
+		}
+
+		if ( isset( $params['dotted_to'] ) ) {
+			$dotted = array_values( array_unique( array_filter( array_map( 'absint', (array) $params['dotted_to'] ) ) ) );
+			$dotted = array_values( array_diff( $dotted, array( $user_id ) ) );
+			if ( empty( $dotted ) ) {
+				delete_user_meta( $user_id, 'compass_dotted_to' );
+			} else {
+				update_user_meta( $user_id, 'compass_dotted_to', $dotted );
 			}
 		}
 
@@ -206,6 +379,85 @@ class Xophz_Compass_Matrix_API {
 		return rest_ensure_response( array( 'success' => true ) );
 	}
 
+	/**
+	 * Questbook keeps contacts in its own table. Returns the table name, or null when
+	 * Questbook is not installed on this site.
+	 */
+	private function contacts_table() {
+		global $wpdb;
+		$table = $wpdb->prefix . 'xophz_qb_contacts';
+		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		return $found === $table ? $table : null;
+	}
+
+	private function contact_group_column( $request ) {
+		$by      = sanitize_key( $request->get_param( 'by' ) );
+		$columns = array(
+			'stage'   => 'lead_status',
+			'source'  => 'source',
+			'company' => 'company',
+		);
+		return $columns[ $by ] ?? 'lead_status';
+	}
+
+	public function get_contact_groups( $request ) {
+		global $wpdb;
+		$table = $this->contacts_table();
+		if ( ! $table ) {
+			return rest_ensure_response( array( 'available' => false, 'total' => 0, 'groups' => array() ) );
+		}
+
+		$column = $this->contact_group_column( $request );
+		$rows   = $wpdb->get_results( "SELECT {$column} AS value, COUNT(id) AS total FROM {$table} GROUP BY {$column} ORDER BY total DESC" );
+
+		$groups = array();
+		$total  = 0;
+		foreach ( $rows as $row ) {
+			$total   += (int) $row->total;
+			$groups[] = array(
+				'value' => (string) $row->value,
+				'label' => '' === (string) $row->value ? 'Not set' : (string) $row->value,
+				'count' => (int) $row->total,
+			);
+		}
+
+		return rest_ensure_response( array( 'available' => true, 'total' => $total, 'groups' => $groups ) );
+	}
+
+	public function get_group_contacts( $request ) {
+		global $wpdb;
+		$table = $this->contacts_table();
+		if ( ! $table ) {
+			return rest_ensure_response( array() );
+		}
+
+		$column = $this->contact_group_column( $request );
+		$value  = (string) $request->get_param( 'value' );
+		$limit  = min( 100, max( 1, absint( $request->get_param( 'per_page' ) ?: 50 ) ) );
+
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT id, wp_user_id, first_name, last_name, email, company, source, lead_status FROM {$table} WHERE {$column} = %s ORDER BY updated_at DESC LIMIT %d",
+			$value,
+			$limit
+		) );
+
+		$result = array();
+		foreach ( $rows as $row ) {
+			$name     = trim( $row->first_name . ' ' . $row->last_name );
+			$result[] = array(
+				'id'         => (int) $row->id,
+				'wp_user_id' => (int) $row->wp_user_id,
+				'name'       => '' !== $name ? $name : $row->email,
+				'email'      => $row->email,
+				'company'    => $row->company,
+				'source'     => $row->source,
+				'stage'      => $row->lead_status,
+			);
+		}
+
+		return rest_ensure_response( $result );
+	}
+
 	public function get_departments( $request ) {
 		$terms = get_terms( array(
 			'taxonomy'   => 'compass_department',
@@ -224,6 +476,7 @@ class Xophz_Compass_Matrix_API {
 				'name'        => $term->name,
 				'slug'        => $term->slug,
 				'description' => $term->description,
+				'head'        => absint( get_term_meta( $term->term_id, 'compass_dept_head', true ) ),
 				'icon'        => get_term_meta( $term->term_id, 'compass_dept_icon', true ) ?: 'fad fa-building',
 				'color'       => get_term_meta( $term->term_id, 'compass_dept_color', true ) ?: '#62c9ff',
 				'parent'      => $term->parent,
@@ -259,6 +512,9 @@ class Xophz_Compass_Matrix_API {
 
 		if ( ! empty( $params['color'] ) ) {
 			update_term_meta( $term_id, 'compass_dept_color', sanitize_hex_color( $params['color'] ) );
+		}
+		if ( isset( $params['head'] ) ) {
+			update_term_meta( $term_id, 'compass_dept_head', absint( $params['head'] ) );
 		}
 
 		$term = get_term( $term_id, 'compass_department' );
@@ -307,6 +563,9 @@ class Xophz_Compass_Matrix_API {
 		}
 		if ( isset( $params['color'] ) ) {
 			update_term_meta( $term_id, 'compass_dept_color', sanitize_hex_color( $params['color'] ) );
+		}
+		if ( isset( $params['head'] ) ) {
+			update_term_meta( $term_id, 'compass_dept_head', absint( $params['head'] ) );
 		}
 
 		$term = get_term( $term_id, 'compass_department' );
