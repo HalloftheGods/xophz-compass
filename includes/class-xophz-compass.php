@@ -134,6 +134,11 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-diagnostics-api.php';
 
 		/**
+		 * The class serving live GitHub metrics and contact details to the phone app.
+		 */
+		require_once $plugin_dir . 'includes/class-xophz-compass-phone-metrics-api.php';
+
+		/**
 		 * The class responsible for handling external Sparks from plugins.
 		 */
 		require_once $plugin_dir . 'includes/class-xophz-compass-sparks-api.php';
@@ -254,6 +259,10 @@ class Xophz_Compass {
     // Register setup wizard diagnostics endpoint
     $plugin_diagnostics = new Xophz_Compass_Diagnostics_API();
     $this->loader->add_action( 'rest_api_init', $plugin_diagnostics, 'register_routes' );
+
+    // Register phone metrics and contact endpoints
+    $plugin_phone_metrics = new Xophz_Compass_Phone_Metrics_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_phone_metrics, 'register_routes' );
 
     // Register Sparks API
     $plugin_sparks = new Xophz_Compass_Sparks_API();
