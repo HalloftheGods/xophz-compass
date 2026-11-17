@@ -129,6 +129,11 @@ class Xophz_Compass {
 		require_once $plugin_dir . 'includes/class-xophz-compass-constellations-api.php';
 
 		/**
+		 * The class responsible for pre-flight diagnostics in the setup wizard.
+		 */
+		require_once $plugin_dir . 'includes/class-xophz-compass-diagnostics-api.php';
+
+		/**
 		 * The class responsible for handling external Sparks from plugins.
 		 */
 		require_once $plugin_dir . 'includes/class-xophz-compass-sparks-api.php';
@@ -245,6 +250,10 @@ class Xophz_Compass {
     $this->loader->add_action( 'rest_api_init', $plugin_constellations, 'register_routes' );
     $this->loader->add_action( 'before_delete_post', $plugin_constellations, 'cleanup_orphaned_post' );
     $this->loader->add_action( 'deleted_user', $plugin_constellations, 'cleanup_orphaned_user' );
+
+    // Register setup wizard diagnostics endpoint
+    $plugin_diagnostics = new Xophz_Compass_Diagnostics_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_diagnostics, 'register_routes' );
 
     // Register Sparks API
     $plugin_sparks = new Xophz_Compass_Sparks_API();
