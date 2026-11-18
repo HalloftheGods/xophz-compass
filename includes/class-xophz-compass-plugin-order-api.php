@@ -100,7 +100,7 @@ class Xophz_Compass_Plugin_Order_API {
 	/**
 	 * Sent ids take the slots they already hold in the stored order, in the
 	 * sent order. Stored ids that were not sent stay where they are. Sent ids
-	 * that were never stored are appended.
+	 * that were never stored go next to the sent neighbour they were placed by.
 	 */
 	public static function merge_order( array $stored, array $sent ) {
 		$sent_lookup   = array_flip( $sent );
@@ -113,11 +113,30 @@ class Xophz_Compass_Plugin_Order_API {
 		foreach ( $stored as $id ) {
 			$merged[] = isset( $sent_lookup[ $id ] ) ? array_shift( $queue ) : $id;
 		}
-		foreach ( $sent as $id ) {
+		foreach ( $sent as $index => $id ) {
 			if ( ! isset( $stored_lookup[ $id ] ) ) {
-				$merged[] = $id;
+				array_splice( $merged, self::insertion_index( $merged, $sent, $index ), 0, array( $id ) );
 			}
 		}
 		return $merged;
+	}
+
+	/**
+	 * After the sent id before it; else before the sent id after it; else at the end.
+	 */
+	private static function insertion_index( array $merged, array $sent, $index ) {
+		if ( $index > 0 ) {
+			$previous = array_search( $sent[ $index - 1 ], $merged, true );
+			if ( false !== $previous ) {
+				return $previous + 1;
+			}
+		}
+		if ( isset( $sent[ $index + 1 ] ) ) {
+			$next = array_search( $sent[ $index + 1 ], $merged, true );
+			if ( false !== $next ) {
+				return $next;
+			}
+		}
+		return count( $merged );
 	}
 }
