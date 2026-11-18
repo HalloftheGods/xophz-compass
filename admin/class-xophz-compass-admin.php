@@ -163,7 +163,21 @@ class Xophz_Compass_Admin {
       // Trigger third-party admin plugin registration hook
       do_action( 'xophz_compass_register_plugins' );
 
+      // Check if onboarding was completed or if the site is an established installation
+      $storedOnboarding = get_option( 'xophz_compass_onboarding_completed', null );
+      if ( null !== $storedOnboarding ) {
+          $onboardingCompleted = (bool) $storedOnboarding;
+      } else {
+          // Established sites (fresh_site is not '1') default to completed; brand-new sites run wizard.
+          $isFreshSite = (string) get_option( 'fresh_site', '0' ) === '1';
+          $onboardingCompleted = ! $isFreshSite;
+          if ( $onboardingCompleted ) {
+              update_option( 'xophz_compass_onboarding_completed', 1, false );
+          }
+      }
+
       $settings = [
+          'onboardingCompleted' => $onboardingCompleted,
           'adminColors' => $_wp_admin_css_colors,
           'currentUser' => [
               'ID' => $current_user->ID,

@@ -999,6 +999,7 @@ class Xophz_Compass_Connectors {
 			'date_format'        => get_option( 'date_format', 'F j, Y' ),
 			'time_format'        => get_option( 'time_format', 'g:i a' ),
 			'start_of_week'      => (int) get_option( 'start_of_week', 0 ),
+			'onboarding_completed' => (bool) get_option( 'xophz_compass_onboarding_completed', false ),
 		);
 
 		// The read is public; account and sign-up settings are for administrators only
@@ -1062,6 +1063,9 @@ class Xophz_Compass_Connectors {
 		}
 		if ( isset( $params['start_of_week'] ) ) {
 			update_option( 'start_of_week', (int) $params['start_of_week'] );
+		}
+		if ( isset( $params['onboarding_completed'] ) ) {
+			update_option( 'xophz_compass_onboarding_completed', ! empty( $params['onboarding_completed'] ) ? 1 : 0, false );
 		}
 
 		return self::get_site_settings_api( $request );

@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2026-11-17]
+## [2026-11-18]
+
+### Fixed
+- Fixed Setup Wizard repeatedly launching on root route navigation by persisting onboarding completion state to WordPress database options (`wp_options`).
+- Automatically detect established WordPress installations (`fresh_site !== '1'`) so existing setups are not prompted with the onboarding wizard.
+- Ensured "Skip Setup & Launch" and the final launch step synchronize completion state to both server options and `safeStorage`.
 
 ### Fixed
 - Fixed ReferenceError urlParams scope issue in mount-app preventing application initialization.
