@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-11-17]
+
+### Added
+- Bazaar Quick Add Scanner PWA Manifest: Added dedicated `/wp-json/xophz-compass/v1/scanner-manifest` endpoint and `?app=scanner` support.
+- Custom Bazaar Scanner Icons: Added 192px and 512px maskable icon assets (`bazaar-scanner-icon.svg`, `bazaar-scanner-icon-192.png`, `bazaar-scanner-icon-512.png`).
+- Direct Launcher Routing: Automatically launches directly into the Quick Add scanner view (`#/bazaar/quick-add`).
+- Added Quick Add Scanner shortcut to main Compass manifest.
+
 ## [2026-11-16]
 
 ### Added

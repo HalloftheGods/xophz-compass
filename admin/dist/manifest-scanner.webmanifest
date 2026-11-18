@@ -1,0 +1,32 @@
+{
+  "name": "Bazaar Scanner",
+  "short_name": "Scanner",
+  "description": "Quick Add product scanner for instant inventory management and barcode scanning",
+  "start_url": "/wp-admin/admin.php?page=xophz-compass&app=scanner#/bazaar/quick-add",
+  "scope": "/wp-admin/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#1b5e20",
+  "categories": ["utilities", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/bazaar-scanner-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/bazaar-scanner-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bazaar-scanner-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

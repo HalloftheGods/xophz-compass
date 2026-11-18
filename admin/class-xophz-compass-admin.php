@@ -194,6 +194,7 @@ class Xophz_Compass_Admin {
           'texturesUrl' => plugin_dir_url( dirname( __FILE__ ) ) . 'assets/textures/planets/',
           'externalPlugins' => apply_filters( 'xophz_compass_registered_plugins', Xophz_Compass::get_registered_admin_plugins() ),
           'pwaManifestUrl' => rest_url( 'xophz-compass/v1/admin-manifest' ),
+          'pwaScannerManifestUrl' => rest_url( 'xophz-compass/v1/scanner-manifest' ),
           'pwaSwUrl' => rest_url( 'xophz-compass/v1/admin-sw' ),
       ];
 
@@ -239,16 +240,32 @@ class Xophz_Compass_Admin {
    * Outputs PWA manifest link, mobile meta tags, and early beforeinstallprompt listener
    */
   public function output_pwa_head_tags() {
-    $manifest_base_url = rest_url( 'xophz-compass/v1/admin-manifest' );
+    $is_scanner = ( isset( $_GET['app'] ) && $_GET['app'] === 'scanner' ) || ( isset( $_GET['subpage'] ) && $_GET['subpage'] === 'quick-add' );
     $main_plugin_file  = dirname( dirname( __FILE__ ) ) . '/xophz-compass.php';
-    $icon_png          = plugins_url( 'icon.png', $main_plugin_file );
-    $icon_svg          = plugins_url( 'icon.svg', $main_plugin_file );
     $dist_path         = plugin_dir_path( __FILE__ ) . 'dist/';
-    if ( file_exists( $dist_path . 'compass-icon-512.png' ) ) {
-      $icon_png = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
-    }
-    if ( file_exists( $dist_path . 'compass-icon.svg' ) ) {
-      $icon_svg = plugins_url( 'dist/compass-icon.svg', __FILE__ );
+
+    if ( $is_scanner ) {
+      $manifest_base_url = rest_url( 'xophz-compass/v1/scanner-manifest' );
+      $icon_png          = file_exists( $dist_path . 'bazaar-scanner-icon-512.png' )
+        ? plugins_url( 'dist/bazaar-scanner-icon-512.png', __FILE__ )
+        : home_url( '/bazaar-scanner-icon-512.png' );
+      $icon_svg          = file_exists( $dist_path . 'bazaar-scanner-icon.svg' )
+        ? plugins_url( 'dist/bazaar-scanner-icon.svg', __FILE__ )
+        : home_url( '/bazaar-scanner-icon.svg' );
+      $theme_color       = '#ffffff';
+      $app_title         = 'Bazaar Scanner';
+    } else {
+      $manifest_base_url = rest_url( 'xophz-compass/v1/admin-manifest' );
+      $icon_png          = plugins_url( 'icon.png', $main_plugin_file );
+      $icon_svg          = plugins_url( 'icon.svg', $main_plugin_file );
+      if ( file_exists( $dist_path . 'compass-icon-512.png' ) ) {
+        $icon_png = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
+      }
+      if ( file_exists( $dist_path . 'compass-icon.svg' ) ) {
+        $icon_svg = plugins_url( 'dist/compass-icon.svg', __FILE__ );
+      }
+      $theme_color       = '#1a1e22';
+      $app_title         = 'My Compass';
     }
 
     $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : '26.11.7';
@@ -261,10 +278,10 @@ class Xophz_Compass_Admin {
     echo '<link rel="icon" type="image/svg+xml" href="' . esc_url( $icon_svg_url ) . '">';
     echo '<link rel="alternate icon" type="image/png" sizes="512x512" href="' . esc_url( $icon_png_url ) . '">';
     echo '<link rel="apple-touch-icon" href="' . esc_url( $icon_png_url ) . '">';
-    echo '<meta name="theme-color" content="#1a1e22">';
+    echo '<meta name="theme-color" content="' . esc_attr( $theme_color ) . '">';
     echo '<meta name="apple-mobile-web-app-capable" content="yes">';
     echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">';
-    echo '<meta name="apple-mobile-web-app-title" content="My Compass">';
+    echo '<meta name="apple-mobile-web-app-title" content="' . esc_attr( $app_title ) . '">';
   }
 
   /**
@@ -1264,6 +1281,12 @@ class Xophz_Compass_Admin {
       'permission_callback' => '__return_true'
     ]);
 
+    register_rest_route('xophz-compass/v1', '/scanner-manifest', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_scanner_manifest'],
+      'permission_callback' => '__return_true'
+    ]);
+
     register_rest_route('xophz-compass/v1', '/admin-sw', [
       'methods'  => 'GET',
       'callback' => [$this, 'get_admin_sw'],
@@ -1278,6 +1301,10 @@ class Xophz_Compass_Admin {
    * @return WP_REST_Response
    */
   public function get_admin_manifest( $request ) {
+    if ( $request->get_param( 'app' ) === 'scanner' ) {
+      return $this->get_scanner_manifest( $request );
+    }
+
     $site_name = get_bloginfo( 'name' );
     $name = 'My Compass on ' . $site_name;
     if ( stripos( $site_name, 'Compass' ) !== false ) {
@@ -1304,10 +1331,15 @@ class Xophz_Compass_Admin {
       $icon_512 = plugins_url( 'dist/compass-icon-512.png', __FILE__ );
     }
 
+    $scanner_icon_192 = file_exists( $dist_dir . 'bazaar-scanner-icon-192.png' )
+      ? plugins_url( 'dist/bazaar-scanner-icon-192.png', __FILE__ )
+      : home_url( '/bazaar-scanner-icon-192.png' );
+
     $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : '26.11.7';
     $icon_svg_v = add_query_arg( 'v', $v, $icon_svg );
     $icon_192_v = add_query_arg( 'v', $v, $icon_192 );
     $icon_512_v = add_query_arg( 'v', $v, $icon_512 );
+    $scanner_icon_192_v = add_query_arg( 'v', $v, $scanner_icon_192 );
 
     $manifest = [
       'name'             => $name,
@@ -1319,6 +1351,94 @@ class Xophz_Compass_Admin {
       'orientation'      => 'any',
       'background_color' => '#1a1e22',
       'theme_color'      => '#1a1e22',
+      'categories'       => ['utilities', 'productivity', 'business'],
+      'icons'            => [
+        [
+          'src'     => $icon_svg_v,
+          'sizes'   => 'any',
+          'type'    => 'image/svg+xml',
+          'purpose' => 'any'
+        ],
+        [
+          'src'     => $icon_192_v,
+          'sizes'   => '192x192',
+          'type'    => 'image/png',
+          'purpose' => 'any'
+        ],
+        [
+          'src'     => $icon_512_v,
+          'sizes'   => '512x512',
+          'type'    => 'image/png',
+          'purpose' => 'any maskable'
+        ]
+      ],
+      'shortcuts'        => [
+        [
+          'name'        => 'Quick Add Scanner',
+          'short_name'  => 'Scanner',
+          'description' => 'Jump directly into Bazaar barcode product scanner',
+          'url'         => admin_url( 'admin.php?page=xophz-compass&app=scanner#/bazaar/quick-add' ),
+          'icons'       => [
+            [
+              'src'   => $scanner_icon_192_v,
+              'sizes' => '192x192'
+            ]
+          ]
+        ]
+      ]
+    ];
+
+    $response = new WP_REST_Response( $manifest, 200 );
+    $response->header( 'Content-Type', 'application/manifest+json; charset=UTF-8' );
+    $response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
+    $response->header( 'Pragma', 'no-cache' );
+    $response->header( 'Expires', '0' );
+    return $response;
+  }
+
+  /**
+   * Generates dynamic Web App Manifest for Bazaar Quick Add Scanner PWA.
+   *
+   * @param WP_REST_Request $request
+   * @return WP_REST_Response
+   */
+  public function get_scanner_manifest( $request ) {
+    $site_name = get_bloginfo( 'name' );
+    $name = 'Bazaar Scanner on ' . $site_name;
+    if ( stripos( $site_name, 'Bazaar' ) !== false ) {
+      $name = $site_name;
+    }
+
+    $admin_url = admin_url( 'admin.php?page=xophz-compass&app=scanner#/bazaar/quick-add' );
+    $parsed_admin = parse_url( $admin_url, PHP_URL_PATH ) ?: '/wp-admin/';
+    $scope = dirname( $parsed_admin ) . '/';
+
+    $dist_dir = plugin_dir_path( __FILE__ ) . 'dist/';
+    $icon_svg = file_exists( $dist_dir . 'bazaar-scanner-icon.svg' )
+      ? plugins_url( 'dist/bazaar-scanner-icon.svg', __FILE__ )
+      : home_url( '/bazaar-scanner-icon.svg' );
+    $icon_192 = file_exists( $dist_dir . 'bazaar-scanner-icon-192.png' )
+      ? plugins_url( 'dist/bazaar-scanner-icon-192.png', __FILE__ )
+      : home_url( '/bazaar-scanner-icon-192.png' );
+    $icon_512 = file_exists( $dist_dir . 'bazaar-scanner-icon-512.png' )
+      ? plugins_url( 'dist/bazaar-scanner-icon-512.png', __FILE__ )
+      : home_url( '/bazaar-scanner-icon-512.png' );
+
+    $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : '26.11.7';
+    $icon_svg_v = add_query_arg( 'v', $v, $icon_svg );
+    $icon_192_v = add_query_arg( 'v', $v, $icon_192 );
+    $icon_512_v = add_query_arg( 'v', $v, $icon_512 );
+
+    $manifest = [
+      'name'             => $name,
+      'short_name'       => 'Scanner',
+      'description'      => 'Quick Add product barcode scanner for inventory management',
+      'start_url'        => $admin_url,
+      'scope'            => $scope,
+      'display'          => 'standalone',
+      'orientation'      => 'any',
+      'background_color' => '#ffffff',
+      'theme_color'      => '#1b5e20',
       'categories'       => ['utilities', 'productivity', 'business'],
       'icons'            => [
         [

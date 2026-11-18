@@ -13,9 +13,13 @@ const CACHE_NAME = 'compass-admin-v2';
 
 const PRECACHE_ASSETS = [
   './manifest.webmanifest',
+  './manifest-scanner.webmanifest',
   './compass-icon.svg',
   './compass-icon-192.png',
   './compass-icon-512.png',
+  './bazaar-scanner-icon.svg',
+  './bazaar-scanner-icon-192.png',
+  './bazaar-scanner-icon-512.png',
   './favicon.svg',
   './favicon.png'
 ];

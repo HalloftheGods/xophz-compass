@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bazaar-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d3b66" />
+      <stop offset="100%" stop-color="#081e35" />
+    </linearGradient>
+
+    <!-- Gold Rim Gradient -->
+    <linearGradient id="bazaar-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd56b" />
+      <stop offset="50%" stop-color="#ffbb3d" />
+      <stop offset="100%" stop-color="#e39500" />
+    </linearGradient>
+
+    <!-- Laser Beam Glow -->
+    <linearGradient id="laser-beam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0" />
+      <stop offset="20%" stop-color="#34d399" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#6ee7b7" stop-opacity="1" />
+      <stop offset="80%" stop-color="#34d399" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Awning Stripe Gradient -->
+    <linearGradient id="awning-amber" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="awning-cream" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="100%" stop-color="#fef3c7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base Rounded Squircle -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bazaar-bg)" stroke="url(#bazaar-gold)" stroke-width="12" />
+
+  <!-- Inner Soft Accent Ring -->
+  <rect x="36" y="36" width="440" height="440" rx="90" fill="none" stroke="#ffbb3d" stroke-width="2" stroke-opacity="0.3" />
+
+  <!-- Bazaar Market Canopy (Top Header) -->
+  <g id="bazaar-canopy">
+    <!-- Canopy Shadow/Backing -->
+    <path d="M 80 148 L 432 148 L 416 96 L 96 96 Z" fill="#061626" opacity="0.4" />
+    
+    <!-- Canopy Stripes -->
+    <!-- Stripe 1 (Amber) -->
+    <path d="M 96 96 L 144 96 L 138 152 C 122 152 112 144 96 144 Z" fill="url(#awning-amber)" />
+    <!-- Stripe 2 (Cream) -->
+    <path d="M 144 96 L 192 96 L 192 152 C 174 152 156 152 138 152 Z" fill="url(#awning-cream)" />
+    <!-- Stripe 3 (Amber) -->
+    <path d="M 192 96 L 240 96 L 246 152 C 228 152 210 152 192 152 Z" fill="url(#awning-amber)" />
+    <!-- Stripe 4 (Cream) -->
+    <path d="M 240 96 L 272 96 L 266 152 C 256 152 246 152 246 152 Z" fill="url(#awning-cream)" />
+    <!-- Stripe 5 (Amber) -->
+    <path d="M 272 96 L 320 96 L 320 152 C 302 152 284 152 266 152 Z" fill="url(#awning-amber)" />
+    <!-- Stripe 6 (Cream) -->
+    <path d="M 320 96 L 368 96 L 374 152 C 356 152 338 152 320 152 Z" fill="url(#awning-cream)" />
+    <!-- Stripe 7 (Amber) -->
+    <path d="M 368 96 L 416 96 L 416 144 C 400 144 390 152 374 152 Z" fill="url(#awning-amber)" />
+
+    <!-- Canopy Valance Scallops -->
+    <circle cx="117" cy="152" r="15" fill="url(#awning-amber)" />
+    <circle cx="165" cy="152" r="15" fill="url(#awning-cream)" />
+    <circle cx="219" cy="152" r="15" fill="url(#awning-amber)" />
+    <circle cx="256" cy="152" r="15" fill="url(#awning-cream)" />
+    <circle cx="293" cy="152" r="15" fill="url(#awning-amber)" />
+    <circle cx="347" cy="152" r="15" fill="url(#awning-cream)" />
+    <circle cx="395" cy="152" r="15" fill="url(#awning-amber)" />
+  </g>
+
+  <!-- Viewfinder Target Reticle / Scanner Brackets -->
+  <g id="scanner-reticle" stroke="url(#bazaar-gold)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Top-Left Corner -->
+    <path d="M 152 216 L 112 216 L 112 256" />
+    <!-- Top-Right Corner -->
+    <path d="M 360 216 L 400 216 L 400 256" />
+    <!-- Bottom-Left Corner -->
+    <path d="M 112 376 L 112 416 L 152 416" />
+    <!-- Bottom-Right Corner -->
+    <path d="M 400 376 L 400 416 L 360 416" />
+  </g>
+
+  <!-- Barcode Pattern (High-Contrast Clean Bars) -->
+  <g id="barcode-bars" fill="#fffbeb">
+    <!-- Bar 1 -->
+    <rect x="144" y="244" width="16" height="144" rx="4" />
+    <!-- Bar 2 -->
+    <rect x="172" y="244" width="8" height="144" rx="3" />
+    <!-- Bar 3 -->
+    <rect x="192" y="244" width="22" height="144" rx="5" />
+    <!-- Bar 4 -->
+    <rect x="226" y="244" width="12" height="144" rx="4" />
+    <!-- Bar 5 -->
+    <rect x="250" y="244" width="24" height="144" rx="5" />
+    <!-- Bar 6 -->
+    <rect x="286" y="244" width="10" height="144" rx="3" />
+    <!-- Bar 7 -->
+    <rect x="308" y="244" width="28" height="144" rx="5" />
+    <!-- Bar 8 -->
+    <rect x="348" y="244" width="20" height="144" rx="4" />
+  </g>
+
+  <!-- Vibrant Emerald/Green Laser Beam across center -->
+  <g id="scanner-laser">
+    <!-- Laser Halo/Glow -->
+    <rect x="80" y="310" width="352" height="12" fill="url(#laser-beam)" opacity="0.8" />
+    <!-- Laser Core Line -->
+    <line x1="88" y1="316" x2="424" y2="316" stroke="#a7f3d0" stroke-width="4" stroke-linecap="round" />
+    <!-- Center Bright Highlight -->
+    <circle cx="256" cy="316" r="6" fill="#ffffff" />
+    <circle cx="256" cy="316" r="14" fill="#34d399" opacity="0.6" />
+  </g>
+
+  <!-- Decorative Gold Stars (Zelda / Bazaar Compass Motif) -->
+  <g id="bazaar-stars" fill="#ffbb3d">
+    <!-- Star Left -->
+    <polygon points="80,188 83,197 92,197 85,202 88,211 80,205 72,211 75,202 68,197 77,197" />
+    <!-- Star Right -->
+    <polygon points="432,188 435,197 444,197 437,202 440,211 432,205 424,211 427,202 420,197 429,197" />
+    <!-- Little Sparkle Bottom Center -->
+    <circle cx="256" cy="432" r="5" fill="#ffd56b" />
+  </g>
+</svg>
