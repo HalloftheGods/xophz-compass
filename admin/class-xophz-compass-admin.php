@@ -176,6 +176,21 @@ class Xophz_Compass_Admin {
           }
       }
 
+      $siteLogo = '';
+      $custom_logo_id = function_exists( 'get_theme_mod' ) ? get_theme_mod( 'custom_logo' ) : 0;
+      if ( $custom_logo_id && function_exists( 'wp_get_attachment_image_url' ) ) {
+          $logo_url = wp_get_attachment_image_url( $custom_logo_id, 'full' );
+          if ( $logo_url ) {
+              $siteLogo = $logo_url;
+          }
+      }
+      if ( empty( $siteLogo ) && function_exists( 'get_site_icon_url' ) ) {
+          $site_icon = get_site_icon_url( 512 );
+          if ( ! empty( $site_icon ) ) {
+              $siteLogo = $site_icon;
+          }
+      }
+
       $settings = [
           'onboardingCompleted' => $onboardingCompleted,
           'adminColors' => $_wp_admin_css_colors,
@@ -198,6 +213,7 @@ class Xophz_Compass_Admin {
           'siteName' => get_bloginfo('name'),
           'siteDescription' => get_bloginfo('description'),
           'siteUrl' => get_bloginfo('url'),
+          'siteLogo' => $siteLogo,
           'compassVersion' => XOPHZ_COMPASS_VERSION,
           'eventHorizonVersion' => $ehVersion,
           'hasBedrockLifestream' => $hasBedrockLifestream,
@@ -401,19 +417,41 @@ class Xophz_Compass_Admin {
       ),
     ) );
 
-    // ── Group 1: Dashboard links ──
+    // ── Group 1: Dashboard link ──
     $wp_admin_bar->add_node( array(
       'parent' => 'compass-menu',
       'id'     => 'compass-dashboard',
-      'title'  => 'Dashboard',
+      'title'  => __( 'Dashboard', 'xophz-compass' ),
       'href'   => admin_url( 'admin.php?page=xophz-compass#/' ),
+    ) );
+
+    // ── Active My Compass Plugins ──
+    $active_plugins = class_exists( 'Xophz_Compass' ) && method_exists( 'Xophz_Compass', 'get_active_compass_plugins' )
+      ? Xophz_Compass::get_active_compass_plugins()
+      : array();
+
+    foreach ( $active_plugins as $plugin ) {
+      $wp_admin_bar->add_node( array(
+        'parent' => 'compass-menu',
+        'id'     => 'compass-plugin-' . sanitize_key( $plugin['slug'] ),
+        'title'  => esc_html( $plugin['title'] ),
+        'href'   => esc_url( $plugin['url'] ),
+      ) );
+    }
+
+    // ── Branding & Settings ──
+    $wp_admin_bar->add_node( array(
+      'parent' => 'compass-menu',
+      'id'     => 'compass-branding',
+      'title'  => __( 'Branding', 'xophz-compass' ),
+      'href'   => admin_url( 'admin.php?page=xophz-compass#/system/branding' ),
     ) );
 
     $wp_admin_bar->add_node( array(
       'parent' => 'compass-menu',
       'id'     => 'compass-settings',
-      'title'  => 'Settings',
-      'href'   => admin_url( 'admin.php?page=xophz-compass#/settings' ),
+      'title'  => __( 'Settings', 'xophz-compass' ),
+      'href'   => admin_url( 'options-general.php?page=w4-my-compass' ),
     ) );
 
     // ── Group 2: External links ──

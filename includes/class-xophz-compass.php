@@ -880,6 +880,115 @@ class Xophz_Compass {
 		return self::$registered_admin_plugins;
 	}
 
+	/**
+	 * Get all active COMPASS companion plugins.
+	 *
+	 * Uses $submenu['xophz-compass'] if available (backend),
+	 * or resolves active plugins from get_option('active_plugins') and active_sitewide_plugins (frontend).
+	 *
+	 * @return array Array of active plugins with slug, title, and url.
+	 */
+	public static function get_active_compass_plugins() {
+		$plugins = array();
+
+		// In admin area, if submenu is already populated, extract active child items
+		global $submenu;
+		if ( ! empty( $submenu['xophz-compass'] ) && is_array( $submenu['xophz-compass'] ) ) {
+			foreach ( $submenu['xophz-compass'] as $index => $item ) {
+				// Skip first item which is Compass / Dashboard
+				if ( 0 === $index ) {
+					continue;
+				}
+				$title = isset( $item[0] ) ? $item[0] : '';
+				$cap   = isset( $item[1] ) ? $item[1] : 'manage_options';
+				$url   = isset( $item[2] ) ? $item[2] : '';
+
+				if ( ! current_user_can( $cap ) ) {
+					continue;
+				}
+
+				if ( strpos( $url, 'http://' ) !== 0 && strpos( $url, 'https://' ) !== 0 ) {
+					$url = admin_url( $url );
+				}
+
+				$slug = '';
+				if ( preg_match( '#[?&]page=xophz-compass(?:#/|/)?([a-z0-9_-]+)#i', $url, $m ) ) {
+					$slug = $m[1];
+				} else {
+					$slug = sanitize_key( wp_strip_all_tags( $title ) );
+				}
+
+				$plugins[] = array(
+					'slug'  => $slug,
+					'title' => wp_strip_all_tags( $title ),
+					'url'   => $url,
+				);
+			}
+
+			return apply_filters( 'xophz_compass_active_plugins', $plugins );
+		}
+
+		// Frontend or early fallback: inspect active plugins
+		$active_plugins = (array) get_option( 'active_plugins', array() );
+		if ( is_multisite() ) {
+			$sitewide = (array) get_site_option( 'active_sitewide_plugins', array() );
+			$active_plugins = array_merge( $active_plugins, array_keys( $sitewide ) );
+		}
+
+		if ( empty( $active_plugins ) ) {
+			return apply_filters( 'xophz_compass_active_plugins', $plugins );
+		}
+
+		if ( ! function_exists( 'get_file_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$route_map = array(
+			'quests'        => 'questbook',
+			'alphabet-soup' => 'newsroom',
+		);
+
+		foreach ( $active_plugins as $plugin_file ) {
+			$folder = dirname( $plugin_file );
+			if ( strpos( $folder, 'xophz-compass-' ) !== 0 ) {
+				continue;
+			}
+
+			$slug      = str_replace( 'xophz-compass-', '', $folder );
+			$full_file = WP_PLUGIN_DIR . '/' . $plugin_file;
+
+			$name = '';
+			if ( file_exists( $full_file ) ) {
+				$data = get_file_data( $full_file, array( 'name' => 'Plugin Name' ) );
+				if ( ! empty( $data['name'] ) ) {
+					$name = trim( str_replace( 'Xophz', '', $data['name'] ) );
+				}
+			}
+			if ( empty( $name ) ) {
+				$name = ucwords( str_replace( '-', ' ', $slug ) );
+			}
+
+			if ( class_exists( 'Xophz_Compass_Branding' ) ) {
+				$name = Xophz_Compass_Branding::get_plugin_name( $slug, $name );
+			}
+
+			$route_slug = isset( $route_map[ $slug ] ) ? $route_map[ $slug ] : $slug;
+			$url        = admin_url( 'admin.php?page=xophz-compass#/' . $route_slug );
+
+			$plugins[] = array(
+				'slug'  => $slug,
+				'title' => $name,
+				'url'   => $url,
+			);
+		}
+
+		usort( $plugins, function( $a, $b ) {
+			return strcasecmp( $a['title'], $b['title'] );
+		} );
+
+		return apply_filters( 'xophz_compass_active_plugins', $plugins );
+	}
+
   public static function add_submenu($plugin, $args=[]){
       global $submenu;
 
