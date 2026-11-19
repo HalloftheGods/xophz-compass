@@ -822,8 +822,24 @@ class Xophz_Compass_Dev_Proxy {
 			? wp_specialchars_decode( $raw_title, ENT_QUOTES )
 			: htmlspecialchars_decode( (string) $raw_title, ENT_QUOTES );
 
+		$site_logo = '';
+		$custom_logo_id = function_exists( 'get_theme_mod' ) ? get_theme_mod( 'custom_logo' ) : 0;
+		if ( $custom_logo_id && function_exists( 'wp_get_attachment_image_url' ) ) {
+			$logo_url = wp_get_attachment_image_url( $custom_logo_id, 'full' );
+			if ( $logo_url ) {
+				$site_logo = $logo_url;
+			}
+		}
+		if ( empty( $site_logo ) && function_exists( 'get_site_icon_url' ) ) {
+			$site_icon = get_site_icon_url( 512 );
+			if ( ! empty( $site_icon ) ) {
+				$site_logo = $site_icon;
+			}
+		}
+
 		$payload = array(
 			'siteTitle'   => $site_title,
+			'siteLogo'    => $site_logo,
 			'root'        => esc_url_raw( $root_url ),
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
 			'pluginUrl'   => esc_url_raw( $plugin_url ),
