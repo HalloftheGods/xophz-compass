@@ -1084,11 +1084,12 @@ class Xophz_Compass_Admin {
   }
   public function change_footer(){
     $plugin = 'My Compass';
-    $version_string = 'v' . $this->version;
+    $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : ( $this->version ?: '26.11.20' );
+    $version_string = 'v' . $v;
     $year = date("Y");
     $copy = "&copy;";
     $footer = "{$plugin} {$version_string} {$year} {$copy} My Compass Consulting"; 
-    echo $footer;
+    return $footer;
   }
 
   public function getCurrentUser(){
