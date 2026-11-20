@@ -9,7 +9,7 @@
  * - Zero em dashes (hyphens or colons only)
  */
 
-const CACHE_NAME = 'compass-admin-v2';
+const CACHE_NAME = 'compass-admin-v3';
 
 const PRECACHE_ASSETS = [
   './manifest.webmanifest',
@@ -45,13 +45,14 @@ self.onactivate = (event) => {
 };
 
 const shouldBypassRequest = (request, url) => {
+  const isNotHttp = url.protocol !== 'http:' && url.protocol !== 'https:';
   const isNotGet = request.method !== 'GET';
   const isRestApi = url.pathname.includes('/wp-json/');
   const isAdminAjax = url.pathname.includes('admin-ajax.php');
   const isWpLogin = url.pathname.includes('wp-login.php');
   const hasWpNonce = url.searchParams.has('_wpnonce') || url.searchParams.has('nonce');
 
-  return isNotGet || isRestApi || isAdminAjax || isWpLogin || hasWpNonce;
+  return isNotHttp || isNotGet || isRestApi || isAdminAjax || isWpLogin || hasWpNonce;
 };
 
 self.onfetch = (event) => {
@@ -89,7 +90,7 @@ self.onfetch = (event) => {
 
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
+            cache.put(request, responseToCache).catch(() => {});
           });
 
           return networkResponse;
