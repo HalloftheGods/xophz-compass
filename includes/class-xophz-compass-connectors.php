@@ -38,6 +38,7 @@ class Xophz_Compass_Connectors {
 		}
 		$compass_callers = array(
 			'xophz-compass/xophz-compass.php',
+			'xophz-compass-bazaar/xophz-compass-bazaar.php',
 			'xophz-compass-moving-castle/xophz-compass-moving-castle.php',
 			'xophz-kitchen-synk/xophz-kitchen-synk.php',
 			'xophz-nook-phone/xophz-nook-phone.php',
