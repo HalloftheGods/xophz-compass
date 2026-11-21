@@ -64,6 +64,7 @@ class Xophz_Compass_Branding {
             'vendor_prefix' => 'Xophz ',
             'menu_title'    => 'My Compass',
             'menu_icon'     => 'dashicons-editor-customchar',
+            'naming_style'  => 'basic',
             'plugins'       => []
         ];
     }
@@ -256,6 +257,11 @@ class Xophz_Compass_Branding {
 
         if (isset($config['menu_icon'])) {
             $sanitized['menu_icon'] = sanitize_text_field($config['menu_icon']);
+        }
+
+        if (isset($config['naming_style'])) {
+            $style = sanitize_key($config['naming_style']);
+            $sanitized['naming_style'] = in_array($style, ['basic', 'codename'], true) ? $style : 'basic';
         }
 
         if (isset($config['plugins']) && is_array($config['plugins'])) {
