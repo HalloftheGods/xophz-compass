@@ -1358,10 +1358,13 @@ class Xophz_Compass_Admin {
       return $this->get_scanner_manifest( $request );
     }
 
-    $site_name = get_bloginfo( 'name' );
-    $name = 'My Compass on ' . $site_name;
-    if ( stripos( $site_name, 'Compass' ) !== false ) {
+    $site_name = trim( (string) get_bloginfo( 'name' ) );
+    if ( $site_name === '' || strcasecmp( $site_name, 'Compass' ) === 0 || strcasecmp( $site_name, 'My Compass' ) === 0 ) {
+      $name = 'My Compass';
+    } elseif ( stripos( $site_name, 'My Compass' ) !== false ) {
       $name = $site_name;
+    } else {
+      $name = 'My Compass on ' . $site_name;
     }
 
     $admin_url = admin_url( 'admin.php?page=xophz-compass#/' );
@@ -1396,7 +1399,7 @@ class Xophz_Compass_Admin {
 
     $manifest = [
       'name'             => $name,
-      'short_name'       => 'Compass',
+      'short_name'       => 'My Compass',
       'description'      => 'My Compass Suite Systems Interface and Sovereign Administrative Command Center',
       'start_url'        => $admin_url,
       'scope'            => $scope,
@@ -1422,7 +1425,7 @@ class Xophz_Compass_Admin {
           'src'     => $icon_512_v,
           'sizes'   => '512x512',
           'type'    => 'image/png',
-          'purpose' => 'any maskable'
+          'purpose' => 'any'
         ]
       ],
       'shortcuts'        => [

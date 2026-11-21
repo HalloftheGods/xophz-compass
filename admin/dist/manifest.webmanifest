@@ -1,6 +1,6 @@
 {
   "name": "My Compass",
-  "short_name": "Compass",
+  "short_name": "My Compass",
   "description": "My Compass Suite Systems Interface and Sovereign Administrative Command Center",
   "start_url": "/wp-admin/admin.php?page=xophz-compass#/",
   "scope": "/wp-admin/",
@@ -26,7 +26,7 @@
       "src": "/compass-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
