@@ -130,6 +130,40 @@ class Xophz_Compass_Branding {
         return array_values(array_unique(array_filter($aliases)));
     }
 
+    /**
+     * Load the shared Basic name map (also read by the Vue app, so both agree).
+     *
+     * @return array<string,string> Plugin slug => plain display name.
+     */
+    private static function get_basic_names(): array {
+        static $names = null;
+        if ($names === null) {
+            $file = plugin_dir_path(__FILE__) . 'data/basic-names.json';
+            $decoded = is_readable($file) ? json_decode((string) file_get_contents($file), true) : null;
+            $names = is_array($decoded) ? $decoded : [];
+        }
+        return $names;
+    }
+
+    /**
+     * The Basic name for a plugin when the naming style is "basic", otherwise null.
+     *
+     * @param  array $aliases Candidate alias slugs for the plugin.
+     * @return string|null
+     */
+    private static function get_basic_name(array $aliases): ?string {
+        if (self::get('naming_style', 'basic') !== 'basic') {
+            return null;
+        }
+        $names = self::get_basic_names();
+        foreach ($aliases as $alias) {
+            if (!empty($names[$alias])) {
+                return $names[$alias];
+            }
+        }
+        return null;
+    }
+
     public static function get_plugin_name(string $slug, string $default_name = ''): string {
         $config = self::get_config();
         $aliases = self::get_alias_slugs($slug);
@@ -139,6 +173,11 @@ class Xophz_Compass_Branding {
             if (isset($config['plugins'][$alias]['name']) && !empty(trim($config['plugins'][$alias]['name']))) {
                 return trim($config['plugins'][$alias]['name']);
             }
+        }
+
+        $basic_name = self::get_basic_name($aliases);
+        if ($basic_name !== null) {
+            return $basic_name;
         }
 
         // Return header name stripped of Xophz
