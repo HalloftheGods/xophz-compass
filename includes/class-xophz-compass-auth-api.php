@@ -24,9 +24,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Xophz_Compass_Auth_API {
 
 	/**
+	 * Guard against duplicate hook registration.
+	 *
+	 * @var bool
+	 */
+	private static $hooks_registered = false;
+
+	/**
+	 * Register cookie bridging, session restoration, and AJAX nonce refresh hooks.
+	 */
+	public function register_hooks() {
+		if ( self::$hooks_registered ) {
+			return;
+		}
+		self::$hooks_registered = true;
+
+		if ( ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === strtolower( (string) $_SERVER['HTTP_X_FORWARDED_PROTO'] ) ) ||
+		     ( isset( $_SERVER['HTTP_CF_VISITOR'] ) && strpos( (string) $_SERVER['HTTP_CF_VISITOR'], 'https' ) !== false ) ) {
+			$_SERVER['HTTPS']      = 'on';
+			$_SERVER['SERVER_PORT'] = '443';
+		}
+
+		self::bridge_auth_cookies_to_logged_in();
+
+		add_action( 'plugins_loaded', array( __CLASS__, 'bridge_auth_cookies_to_logged_in' ), 1 );
+		add_action( 'init', array( __CLASS__, 'bridge_auth_cookies_to_logged_in' ), 1 );
+		add_filter( 'determine_current_user', array( $this, 'fallback_determine_current_user' ), 15 );
+		add_action( 'set_logged_in_cookie', array( $this, 'sync_logged_in_cookie_in_memory' ), 10, 1 );
+
+		add_action( 'wp_ajax_compass_refresh_nonce', array( $this, 'ajax_refresh_nonce' ) );
+		add_action( 'wp_ajax_nopriv_compass_refresh_nonce', array( $this, 'ajax_refresh_nonce' ) );
+		add_action( 'wp_ajax_youmeos_refresh_nonce', array( $this, 'ajax_refresh_nonce' ) );
+		add_action( 'wp_ajax_nopriv_youmeos_refresh_nonce', array( $this, 'ajax_refresh_nonce' ) );
+	}
+
+	/**
 	 * Register REST routes under xophz-compass/v1.
 	 */
 	public function register_routes() {
+		$this->register_hooks();
+
 		// Bypass nonce check and cookie check for centralized authentication endpoints
 		add_filter( 'rest_authentication_errors', array( $this, 'bypass_cookie_check_for_auth' ), 999 );
 
@@ -48,11 +85,206 @@ class Xophz_Compass_Auth_API {
 			'permission_callback' => '__return_true',
 		) );
 
+		register_rest_route( 'xophz-compass/v1', '/refresh-nonce', array(
+			'methods'             => array( WP_REST_Server::READABLE, WP_REST_Server::CREATABLE ),
+			'callback'            => array( $this, 'handle_refresh_nonce' ),
+			'permission_callback' => '__return_true',
+		) );
+
 		register_rest_route( 'xophz-compass/v1', '/lostpassword', array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => array( $this, 'handle_lostpassword' ),
 			'permission_callback' => '__return_true',
 		) );
+	}
+
+	/**
+	 * Populate $_COOKIE with LOGGED_IN_COOKIE immediately when WordPress sets auth cookies.
+	 *
+	 * @param string $logged_in_cookie Generated logged-in cookie value.
+	 */
+	public function sync_logged_in_cookie_in_memory( $logged_in_cookie ) {
+		$logged_in_cookie = (string) $logged_in_cookie;
+		if ( '' === $logged_in_cookie ) {
+			return;
+		}
+		if ( defined( 'LOGGED_IN_COOKIE' ) ) {
+			$_COOKIE[ LOGGED_IN_COOKIE ] = $logged_in_cookie;
+		}
+		$_COOKIE['wordpress_logged_in_'] = $logged_in_cookie;
+		if ( defined( 'COOKIEHASH' ) && COOKIEHASH !== '' ) {
+			$_COOKIE[ 'wordpress_logged_in_' . COOKIEHASH ] = $logged_in_cookie;
+		}
+	}
+
+	/**
+	 * Bridge a valid SECURE_AUTH_COOKIE or AUTH_COOKIE into LOGGED_IN_COOKIE in memory
+	 * so REST nonces bind to the active session token even when only admin auth cookies are present.
+	 */
+	public static function bridge_auth_cookies_to_logged_in(): void {
+		$logged_in_cookie_name = defined( 'LOGGED_IN_COOKIE' ) ? LOGGED_IN_COOKIE : ( defined( 'COOKIEHASH' ) && COOKIEHASH !== '' ? 'wordpress_logged_in_' . COOKIEHASH : 'wordpress_logged_in_' );
+		if ( ! function_exists( 'wp_validate_auth_cookie' ) || ! function_exists( 'wp_parse_auth_cookie' ) || ! function_exists( 'wp_generate_auth_cookie' ) ) {
+			return;
+		}
+
+		$candidates = array();
+		if ( defined( 'SECURE_AUTH_COOKIE' ) && ! empty( $_COOKIE[ SECURE_AUTH_COOKIE ] ) ) {
+			$candidates[] = array( 'cookie' => $_COOKIE[ SECURE_AUTH_COOKIE ], 'scheme' => 'secure_auth' );
+		}
+		if ( defined( 'AUTH_COOKIE' ) && ! empty( $_COOKIE[ AUTH_COOKIE ] ) ) {
+			$candidates[] = array( 'cookie' => $_COOKIE[ AUTH_COOKIE ], 'scheme' => 'auth' );
+		}
+		foreach ( $_COOKIE as $c_name => $c_val ) {
+			if ( empty( $c_val ) || ! is_string( $c_val ) ) {
+				continue;
+			}
+			if ( strpos( $c_name, 'wordpress_sec_' ) === 0 ) {
+				$candidates[] = array( 'cookie' => $c_val, 'scheme' => 'secure_auth' );
+			} elseif ( strpos( $c_name, 'wordpress_' ) === 0 && strpos( $c_name, 'wordpress_logged_in_' ) !== 0 ) {
+				$candidates[] = array( 'cookie' => $c_val, 'scheme' => 'auth' );
+			}
+		}
+
+		foreach ( $candidates as $candidate ) {
+			$uid = wp_validate_auth_cookie( $candidate['cookie'], $candidate['scheme'] );
+			if ( ! $uid ) {
+				continue;
+			}
+			$parsed = wp_parse_auth_cookie( $candidate['cookie'], $candidate['scheme'] );
+			if ( ! $parsed || empty( $parsed['token'] ) || empty( $parsed['expiration'] ) ) {
+				continue;
+			}
+
+			$existing_logged_in = isset( $_COOKIE[ $logged_in_cookie_name ] ) ? (string) $_COOKIE[ $logged_in_cookie_name ] : '';
+			$existing_uid       = $existing_logged_in !== '' ? wp_validate_auth_cookie( $existing_logged_in, 'logged_in' ) : false;
+			$existing_parsed    = $existing_uid ? wp_parse_auth_cookie( $existing_logged_in, 'logged_in' ) : false;
+			$token_matches      = (int) $existing_uid === (int) $uid && is_array( $existing_parsed ) && ! empty( $existing_parsed['token'] ) && hash_equals( (string) $parsed['token'], (string) $existing_parsed['token'] );
+			if ( $token_matches ) {
+				return;
+			}
+
+			$gen_cookie = wp_generate_auth_cookie( $uid, (int) $parsed['expiration'], 'logged_in', $parsed['token'] );
+			$_COOKIE[ $logged_in_cookie_name ] = $gen_cookie;
+			$_COOKIE['wordpress_logged_in_']   = $gen_cookie;
+			if ( defined( 'COOKIEHASH' ) && COOKIEHASH !== '' ) {
+				$_COOKIE[ 'wordpress_logged_in_' . COOKIEHASH ] = $gen_cookie;
+			}
+			return;
+		}
+	}
+
+	/**
+	 * Fallback user determination when LOGGED_IN_COOKIE is absent or stale but SECURE_AUTH/AUTH cookie is valid.
+	 *
+	 * @param int|bool $user_id Determined user ID.
+	 * @return int|bool
+	 */
+	public function fallback_determine_current_user( $user_id ) {
+		self::bridge_auth_cookies_to_logged_in();
+
+		if ( ! empty( $user_id ) ) {
+			return $user_id;
+		}
+		if ( ! function_exists( 'wp_validate_auth_cookie' ) ) {
+			return $user_id;
+		}
+
+		$uid = wp_validate_auth_cookie( '', 'logged_in' );
+		if ( $uid ) {
+			return $uid;
+		}
+		$uid = wp_validate_auth_cookie( '', 'secure_auth' );
+		if ( $uid ) {
+			return $uid;
+		}
+		$uid = wp_validate_auth_cookie( '', 'auth' );
+		return $uid ?: $user_id;
+	}
+
+	/**
+	 * Resolve authenticated user ID from active WordPress cookies even if REST nonce check cleared current_user.
+	 *
+	 * @return int
+	 */
+	private static function resolve_authenticated_cookie_user_id(): int {
+		$user_id = get_current_user_id();
+		if ( $user_id > 0 ) {
+			self::bridge_auth_cookies_to_logged_in();
+			return $user_id;
+		}
+
+		self::bridge_auth_cookies_to_logged_in();
+		foreach ( array( 'logged_in', 'secure_auth', 'auth' ) as $scheme ) {
+			$uid = wp_validate_auth_cookie( '', $scheme );
+			if ( $uid ) {
+				wp_set_current_user( $uid );
+				return (int) $uid;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Handle admin-ajax nonce refresh (wp_ajax_compass_refresh_nonce / wp_ajax_youmeos_refresh_nonce).
+	 */
+	public function ajax_refresh_nonce() {
+		nocache_headers();
+		$uid = self::resolve_authenticated_cookie_user_id();
+		if ( ! $uid ) {
+			wp_send_json_error(
+				array(
+					'code'    => 'rest_not_logged_in',
+					'message' => __( 'User not logged in.', 'xophz-compass' ),
+				),
+				401
+			);
+		}
+
+		$nonce = wp_create_nonce( 'wp_rest' );
+		wp_send_json_success(
+			array(
+				'nonce'   => $nonce,
+				'user_id' => $uid,
+			)
+		);
+	}
+
+	/**
+	 * Handle /xophz-compass/v1/refresh-nonce REST endpoint.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function handle_refresh_nonce() {
+		$uid = self::resolve_authenticated_cookie_user_id();
+		if ( ! $uid ) {
+			$response = new WP_REST_Response(
+				array(
+					'success' => false,
+					'code'    => 'rest_not_logged_in',
+					'message' => __( 'User not logged in.', 'xophz-compass' ),
+				),
+				401
+			);
+			$response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
+			return $response;
+		}
+
+		$nonce    = wp_create_nonce( 'wp_rest' );
+		$response = new WP_REST_Response(
+			array(
+				'success' => true,
+				'nonce'   => $nonce,
+				'user_id' => $uid,
+				'data'    => array(
+					'nonce'   => $nonce,
+					'user_id' => $uid,
+				),
+			),
+			200
+		);
+		$response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
+		return $response;
 	}
 
 	/**
@@ -74,6 +306,7 @@ class Xophz_Compass_Auth_API {
 		$is_auth_route  = strpos( $rest_route, '/xophz-compass/v1/login' ) !== false ||
 		                  strpos( $rest_route, '/xophz-compass/v1/logout' ) !== false ||
 		                  strpos( $rest_route, '/xophz-compass/v1/me' ) !== false ||
+		                  strpos( $rest_route, '/xophz-compass/v1/refresh-nonce' ) !== false ||
 		                  strpos( $rest_route, '/xophz-compass/v1/lostpassword' ) !== false ||
 		                  strpos( $rest_route, '/xophz-compass/v1/register' ) !== false;
 
@@ -301,12 +534,24 @@ class Xophz_Compass_Auth_API {
 		// Populate $_COOKIE with newly generated auth cookie using plaintext token
 		if ( function_exists( 'wp_generate_auth_cookie' ) ) {
 			$logged_in_cookie = wp_generate_auth_cookie( $user->ID, $expiration, 'logged_in', $session_token );
+			$logged_in_name   = defined( 'LOGGED_IN_COOKIE' ) ? LOGGED_IN_COOKIE : 'wordpress_logged_in_' . ( defined( 'COOKIEHASH' ) ? COOKIEHASH : '' );
 			if ( defined( 'LOGGED_IN_COOKIE' ) ) {
 				$_COOKIE[ LOGGED_IN_COOKIE ] = $logged_in_cookie;
 			}
 			$_COOKIE['wordpress_logged_in_'] = $logged_in_cookie;
 			if ( defined( 'COOKIEHASH' ) && COOKIEHASH !== '' ) {
 				$_COOKIE[ 'wordpress_logged_in_' . COOKIEHASH ] = $logged_in_cookie;
+			}
+			if ( ! headers_sent() && ( ! defined( 'COOKIEPATH' ) || COOKIEPATH !== '/' ) ) {
+				setcookie(
+					$logged_in_name,
+					$logged_in_cookie,
+					$expiration,
+					'/',
+					defined( 'COOKIE_DOMAIN' ) ? (string) COOKIE_DOMAIN : '',
+					$is_secure_conn,
+					true
+				);
 			}
 		}
 
@@ -389,7 +634,7 @@ class Xophz_Compass_Auth_API {
 	 * @return WP_REST_Response
 	 */
 	public function handle_me() {
-		$user_id = get_current_user_id();
+		$user_id = self::resolve_authenticated_cookie_user_id();
 
 		if ( ! $user_id ) {
 			return new WP_REST_Response( array(

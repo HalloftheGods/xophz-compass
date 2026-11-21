@@ -9,7 +9,7 @@
  * - Zero em dashes (hyphens or colons only)
  */
 
-const CACHE_NAME = 'compass-admin-v4';
+const CACHE_NAME = 'compass-admin-v5';
 
 const PRECACHE_ASSETS = [
   './manifest.webmanifest',

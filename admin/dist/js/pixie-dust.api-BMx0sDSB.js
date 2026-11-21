@@ -1,1 +1,0 @@
-import{x as t}from"./index-BVq8Apkd.js";const i=()=>t.get("pixie_dust_get_pixels"),p=e=>t.get("pixie_dust_get_pixel",{id:e}),x=()=>t.get("pixie_dust_get_templates"),_=e=>t.post("pixie_dust_save_pixel",e),l=e=>t.post("pixie_dust_delete_pixel",{id:e}),g=e=>t.post("pixie_dust_toggle_pixel",{id:e});export{x as a,p as b,l as d,i as g,_ as s,g as t};

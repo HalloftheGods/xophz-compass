@@ -386,6 +386,10 @@ class Xophz_Compass {
 
     // Dynamic /buy/... route resolver for Compass plugins and themes
     $this->loader->add_filter( 'xophz_resolve_buy_request', $this, 'resolve_compass_buy_request', 10, 3 );
+
+    // Register auth cookie bridging and AJAX nonce refresh hooks early on all requests
+    $plugin_auth_hooks = new Xophz_Compass_Auth_API();
+    $plugin_auth_hooks->register_hooks();
 	}
 
 	/**

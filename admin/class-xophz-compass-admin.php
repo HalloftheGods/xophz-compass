@@ -1399,7 +1399,7 @@ class Xophz_Compass_Admin {
 
     $manifest = [
       'name'             => $name,
-      'short_name'       => 'My Compass',
+      'short_name'       => 'Compass',
       'description'      => 'My Compass Suite Systems Interface and Sovereign Administrative Command Center',
       'start_url'        => $admin_url,
       'scope'            => $scope,
@@ -1425,7 +1425,7 @@ class Xophz_Compass_Admin {
           'src'     => $icon_512_v,
           'sizes'   => '512x512',
           'type'    => 'image/png',
-          'purpose' => 'any'
+          'purpose' => 'any maskable'
         ]
       ],
       'shortcuts'        => [
