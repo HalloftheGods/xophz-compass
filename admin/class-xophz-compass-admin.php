@@ -1123,6 +1123,7 @@ class Xophz_Compass_Admin {
     $is_multisite = is_multisite();
     $is_super_admin = $is_multisite && is_super_admin( $user_id );
     $user_sites = array();
+    $networks = array();
 
     if ( $is_multisite && $user_id ) {
       $blogs = get_blogs_of_user( $user_id );
@@ -1133,25 +1134,98 @@ class Xophz_Compass_Admin {
         $admin_url = get_admin_url( $blog_id );
         $compass_url = get_admin_url( $blog_id, 'admin.php?page=xophz-compass' );
 
+        $network_id = 1;
+        if ( isset( $blog->site_id ) && ! empty( $blog->site_id ) ) {
+          $network_id = (int) $blog->site_id;
+        } elseif ( function_exists( 'get_blog_details' ) ) {
+          $blog_details = get_blog_details( $blog_id );
+          if ( $blog_details && ! empty( $blog_details->site_id ) ) {
+            $network_id = (int) $blog_details->site_id;
+          }
+        }
+
+        $network_name = '';
+        $net_admin_url = '';
+        if ( function_exists( 'get_network' ) ) {
+          $network = get_network( $network_id );
+          if ( $network ) {
+            $network_name = function_exists( 'get_network_option' )
+              ? ( get_network_option( $network_id, 'site_name' ) ?: ( isset( $network->site_name ) ? $network->site_name : '' ) )
+              : ( isset( $network->site_name ) ? $network->site_name : '' );
+            if ( empty( $network_name ) && isset( $network->domain ) ) {
+              $network_name = $network->domain;
+            }
+            if ( function_exists( 'switch_to_network' ) && function_exists( 'restore_current_network' ) ) {
+              switch_to_network( $network_id );
+              $net_admin_url = network_admin_url();
+              restore_current_network();
+            } else {
+              $scheme = is_ssl() ? 'https://' : 'http://';
+              $net_admin_url = $scheme . $network->domain . $network->path . 'wp-admin/network/';
+            }
+          }
+        }
+        if ( empty( $network_name ) ) {
+          $network_name = 'Network #' . $network_id;
+        }
+        if ( empty( $net_admin_url ) ) {
+          $net_admin_url = network_admin_url();
+        }
+
         $user_sites[] = array(
-          'blog_id'     => $blog_id,
-          'domain'      => $blog->domain,
-          'path'        => $blog->path,
-          'site_name'   => $site_name,
-          'site_url'    => $site_url,
-          'admin_url'   => $admin_url,
-          'compass_url' => $compass_url,
+          'blog_id'           => $blog_id,
+          'network_id'        => $network_id,
+          'network_name'      => $network_name,
+          'network_admin_url' => $net_admin_url,
+          'domain'            => $blog->domain,
+          'path'              => $blog->path,
+          'site_name'         => $site_name,
+          'site_url'          => $site_url,
+          'admin_url'         => $admin_url,
+          'compass_url'       => $compass_url,
         );
+      }
+
+      if ( $is_super_admin && function_exists( 'get_networks' ) ) {
+        $all_networks = get_networks();
+        if ( is_array( $all_networks ) ) {
+          foreach ( $all_networks as $net ) {
+            $net_id = (int) $net->id;
+            $net_name = function_exists( 'get_network_option' )
+              ? ( get_network_option( $net_id, 'site_name' ) ?: ( isset( $net->site_name ) ? $net->site_name : '' ) )
+              : ( isset( $net->site_name ) ? $net->site_name : '' );
+            if ( empty( $net_name ) && isset( $net->domain ) ) {
+              $net_name = $net->domain;
+            }
+            if ( function_exists( 'switch_to_network' ) && function_exists( 'restore_current_network' ) ) {
+              switch_to_network( $net_id );
+              $net_admin = network_admin_url();
+              restore_current_network();
+            } else {
+              $scheme = is_ssl() ? 'https://' : 'http://';
+              $net_admin = $scheme . $net->domain . $net->path . 'wp-admin/network/';
+            }
+            $networks[] = array(
+              'id'                => $net_id,
+              'name'              => $net_name,
+              'network_admin_url' => $net_admin,
+              'domain'            => $net->domain,
+            );
+          }
+        }
       }
     } else {
       $user_sites[] = array(
-        'blog_id'     => (int) get_current_blog_id(),
-        'domain'      => isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '',
-        'path'        => '/',
-        'site_name'   => get_bloginfo( 'name' ),
-        'site_url'    => get_bloginfo( 'url' ),
-        'admin_url'   => admin_url(),
-        'compass_url' => admin_url( 'admin.php?page=xophz-compass' ),
+        'blog_id'           => (int) get_current_blog_id(),
+        'network_id'        => 1,
+        'network_name'      => get_bloginfo( 'name' ),
+        'network_admin_url' => admin_url(),
+        'domain'            => isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '',
+        'path'              => '/',
+        'site_name'         => get_bloginfo( 'name' ),
+        'site_url'          => get_bloginfo( 'url' ),
+        'admin_url'         => admin_url(),
+        'compass_url'       => admin_url( 'admin.php?page=xophz-compass' ),
       );
     }
 
@@ -1166,6 +1240,7 @@ class Xophz_Compass_Admin {
       'is_multisite' => $is_multisite,
       'is_super_admin' => $is_super_admin,
       'network_admin_url' => $is_multisite ? network_admin_url() : '',
+      'networks' => $networks,
       'user_sites' => $user_sites,
     ];
 
