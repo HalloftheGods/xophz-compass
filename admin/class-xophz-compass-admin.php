@@ -225,6 +225,13 @@ class Xophz_Compass_Admin {
           'externalPlugins' => apply_filters( 'xophz_compass_registered_plugins', Xophz_Compass::get_registered_admin_plugins() ),
           'pwaManifestUrl' => rest_url( 'xophz-compass/v1/admin-manifest' ),
           'pwaScannerManifestUrl' => rest_url( 'xophz-compass/v1/scanner-manifest' ),
+          'pwaScannerStartUrl' => admin_url( 'admin.php?page=xophz-compass&app=scanner#/bazaar/quick-add' ),
+          'pwaScannerIconUrl' => file_exists( plugin_dir_path( __FILE__ ) . 'dist/bazaar-scanner-icon-512.png' )
+            ? plugins_url( 'dist/bazaar-scanner-icon-512.png', __FILE__ )
+            : home_url( '/bazaar-scanner-icon-512.png' ),
+          'pwaScannerIconSvgUrl' => file_exists( plugin_dir_path( __FILE__ ) . 'dist/bazaar-scanner-icon.svg' )
+            ? plugins_url( 'dist/bazaar-scanner-icon.svg', __FILE__ )
+            : home_url( '/bazaar-scanner-icon.svg' ),
           'pwaSwUrl' => rest_url( 'xophz-compass/v1/admin-sw' ),
       ];
 
