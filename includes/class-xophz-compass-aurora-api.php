@@ -261,8 +261,6 @@ class Xophz_Compass_Aurora_API {
 			return new WP_Error( 'aurora_forbidden_token', 'Token does not belong to the current user.', array( 'status' => 403 ) );
 		}
 
-		delete_transient( $transient_key );
-
 		$ability_id = (string) ( $payload['ability_id'] ?? '' );
 		$arguments  = isset( $payload['arguments'] ) && is_array( $payload['arguments'] ) ? $payload['arguments'] : array();
 		$override   = $request->get_param( 'arguments_override' );
@@ -283,6 +281,8 @@ class Xophz_Compass_Aurora_API {
 		if ( ! $result['ok'] ) {
 			return new WP_Error( 'aurora_execute_failed', (string) $result['error'], array( 'status' => 400 ) );
 		}
+
+		delete_transient( $transient_key );
 
 		return rest_ensure_response(
 			array(
