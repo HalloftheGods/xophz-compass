@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-11-22]
+
+### Added
+- Bazaar POS PWA Manifest: Added dedicated `/wp-json/xophz-compass/v1/pos-manifest` endpoint and `?app=pos` support.
+- Scoped Cashier Role Gateway: Allowed users with `bazaar_sell` capability to access `admin.php?page=xophz-compass` so cashiers can access the POS without requiring `manage_options`.
+
 ## [2026-11-18]
 
 ### Fixed

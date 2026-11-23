@@ -232,6 +232,18 @@ class Xophz_Compass_Admin {
           'pwaScannerIconSvgUrl' => file_exists( plugin_dir_path( __FILE__ ) . 'dist/bazaar-scanner-icon.svg' )
             ? plugins_url( 'dist/bazaar-scanner-icon.svg', __FILE__ )
             : home_url( '/bazaar-scanner-icon.svg' ),
+          'pwaPosManifestUrl' => rest_url( 'xophz-compass/v1/pos-manifest' ),
+          'pwaPosStartUrl' => admin_url( 'admin.php?page=xophz-compass&app=pos#/bazaar/pos' ),
+          'pwaPosIconUrl' => file_exists( plugin_dir_path( __FILE__ ) . 'dist/bazaar-pos-icon-512.png' )
+            ? plugins_url( 'dist/bazaar-pos-icon-512.png', __FILE__ )
+            : ( file_exists( plugin_dir_path( __FILE__ ) . 'dist/compass-icon-512.png' )
+              ? plugins_url( 'dist/compass-icon-512.png', __FILE__ )
+              : home_url( '/icon.png' ) ),
+          'pwaPosIconSvgUrl' => file_exists( plugin_dir_path( __FILE__ ) . 'dist/bazaar-pos-icon.svg' )
+            ? plugins_url( 'dist/bazaar-pos-icon.svg', __FILE__ )
+            : ( file_exists( plugin_dir_path( __FILE__ ) . 'dist/compass-icon.svg' )
+              ? plugins_url( 'dist/compass-icon.svg', __FILE__ )
+              : home_url( '/icon.svg' ) ),
           'pwaSwUrl' => rest_url( 'xophz-compass/v1/admin-sw' ),
       ];
 
@@ -278,10 +290,25 @@ class Xophz_Compass_Admin {
    */
   public function output_pwa_head_tags() {
     $is_scanner = ( isset( $_GET['app'] ) && $_GET['app'] === 'scanner' ) || ( isset( $_GET['subpage'] ) && $_GET['subpage'] === 'quick-add' );
+    $is_pos     = ( isset( $_GET['app'] ) && $_GET['app'] === 'pos' ) || ( isset( $_GET['subpage'] ) && $_GET['subpage'] === 'pos' );
     $main_plugin_file  = dirname( dirname( __FILE__ ) ) . '/xophz-compass.php';
     $dist_path         = plugin_dir_path( __FILE__ ) . 'dist/';
 
-    if ( $is_scanner ) {
+    if ( $is_pos ) {
+      $manifest_base_url = rest_url( 'xophz-compass/v1/pos-manifest' );
+      $icon_png          = file_exists( $dist_path . 'bazaar-pos-icon-512.png' )
+        ? plugins_url( 'dist/bazaar-pos-icon-512.png', __FILE__ )
+        : ( file_exists( $dist_path . 'compass-icon-512.png' )
+          ? plugins_url( 'dist/compass-icon-512.png', __FILE__ )
+          : plugins_url( 'icon.png', $main_plugin_file ) );
+      $icon_svg          = file_exists( $dist_path . 'bazaar-pos-icon.svg' )
+        ? plugins_url( 'dist/bazaar-pos-icon.svg', __FILE__ )
+        : ( file_exists( $dist_path . 'compass-icon.svg' )
+          ? plugins_url( 'dist/compass-icon.svg', __FILE__ )
+          : plugins_url( 'icon.svg', $main_plugin_file ) );
+      $theme_color       = '#0c192c';
+      $app_title         = 'Bazaar POS';
+    } elseif ( $is_scanner ) {
       $manifest_base_url = rest_url( 'xophz-compass/v1/scanner-manifest' );
       $icon_png          = file_exists( $dist_path . 'bazaar-scanner-icon-512.png' )
         ? plugins_url( 'dist/bazaar-scanner-icon-512.png', __FILE__ )
@@ -301,7 +328,7 @@ class Xophz_Compass_Admin {
       if ( file_exists( $dist_path . 'compass-icon.svg' ) ) {
         $icon_svg = plugins_url( 'dist/compass-icon.svg', __FILE__ );
       }
-      $theme_color       = '#1a1e22';
+      $theme_color       = $this->get_user_theme_primary_color();
       $app_title         = 'My Compass';
     }
 
@@ -342,6 +369,22 @@ class Xophz_Compass_Admin {
       }
     }
     return $classes;
+  }
+
+  /**
+   * Returns the current user's WordPress admin theme primary color (colors[2])
+   * for PWA theme-color / device status bar tinting.
+   */
+  private function get_user_theme_primary_color() {
+    global $_wp_admin_css_colors;
+    $color_scheme = get_user_option( 'admin_color' );
+    if ( is_string( $color_scheme ) && isset( $_wp_admin_css_colors[ $color_scheme ]->colors[2] ) ) {
+      $hex = sanitize_hex_color( $_wp_admin_css_colors[ $color_scheme ]->colors[2] );
+      if ( $hex ) {
+        return $hex;
+      }
+    }
+    return '#2271b1';
   }
 
   /**
@@ -511,6 +554,10 @@ class Xophz_Compass_Admin {
     global $submenu;
 
     $capability = 'manage_options';
+    if ( current_user_can( 'bazaar_sell' ) ) {
+      $capability = 'bazaar_sell';
+    }
+    $capability = apply_filters( 'xophz_compass_admin_menu_capability', $capability );
     $slug       = 'xophz-compass';
     
     // Use branding helper for customizable menu title and icon
@@ -535,7 +582,7 @@ class Xophz_Compass_Admin {
     $platform_name = Xophz_Compass_Branding::get('platform_name', 'Compass');
     array_unshift($submenu[ $slug ] ,[
         __( $platform_name, 'xophz-compass' ),
-        'manage_options',
+        $capability,
         'admin.php?page=' . $slug . '#/', 
     ]);
   }
@@ -1422,6 +1469,12 @@ class Xophz_Compass_Admin {
       'permission_callback' => '__return_true'
     ]);
 
+    register_rest_route('xophz-compass/v1', '/pos-manifest', [
+      'methods'  => 'GET',
+      'callback' => [$this, 'get_pos_manifest'],
+      'permission_callback' => '__return_true'
+    ]);
+
     register_rest_route('xophz-compass/v1', '/admin-sw', [
       'methods'  => 'GET',
       'callback' => [$this, 'get_admin_sw'],
@@ -1438,6 +1491,9 @@ class Xophz_Compass_Admin {
   public function get_admin_manifest( $request ) {
     if ( $request->get_param( 'app' ) === 'scanner' ) {
       return $this->get_scanner_manifest( $request );
+    }
+    if ( $request->get_param( 'app' ) === 'pos' ) {
+      return $this->get_pos_manifest( $request );
     }
 
     $site_name = trim( (string) get_bloginfo( 'name' ) );
@@ -1488,7 +1544,7 @@ class Xophz_Compass_Admin {
       'display'          => 'standalone',
       'orientation'      => 'any',
       'background_color' => '#1a1e22',
-      'theme_color'      => '#1a1e22',
+      'theme_color'      => $this->get_user_theme_primary_color(),
       'categories'       => ['utilities', 'productivity', 'business'],
       'icons'            => [
         [
@@ -1596,6 +1652,94 @@ class Xophz_Compass_Admin {
           'sizes'   => '512x512',
           'type'    => 'image/png',
           'purpose' => 'any maskable'
+        ]
+      ]
+    ];
+
+    $response = new WP_REST_Response( $manifest, 200 );
+    $response->header( 'Content-Type', 'application/manifest+json; charset=UTF-8' );
+    $response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
+    $response->header( 'Pragma', 'no-cache' );
+    $response->header( 'Expires', '0' );
+    return $response;
+  }
+
+  /**
+   * Generates dynamic Web App Manifest for Bazaar POS PWA.
+   *
+   * @param WP_REST_Request $request
+   * @return WP_REST_Response
+   */
+  public function get_pos_manifest( $request ) {
+    $site_name = get_bloginfo( 'name' );
+    $name = 'Bazaar POS on ' . $site_name;
+    if ( stripos( $site_name, 'Bazaar' ) !== false ) {
+      $name = $site_name;
+    }
+
+    $admin_url = admin_url( 'admin.php?page=xophz-compass&app=pos#/bazaar/pos' );
+    $parsed_admin = parse_url( $admin_url, PHP_URL_PATH ) ?: '/wp-admin/';
+    $scope = dirname( $parsed_admin ) . '/';
+
+    $dist_dir = plugin_dir_path( __FILE__ ) . 'dist/';
+    $icon_svg = file_exists( $dist_dir . 'bazaar-pos-icon.svg' )
+      ? plugins_url( 'dist/bazaar-pos-icon.svg', __FILE__ )
+      : ( file_exists( $dist_dir . 'compass-icon.svg' ) ? plugins_url( 'dist/compass-icon.svg', __FILE__ ) : plugins_url( 'icon.svg', dirname( dirname( __FILE__ ) ) . '/xophz-compass.php' ) );
+    $icon_192 = file_exists( $dist_dir . 'bazaar-pos-icon-192.png' )
+      ? plugins_url( 'dist/bazaar-pos-icon-192.png', __FILE__ )
+      : ( file_exists( $dist_dir . 'compass-icon-512.png' ) ? plugins_url( 'dist/compass-icon-512.png', __FILE__ ) : plugins_url( 'icon.png', dirname( dirname( __FILE__ ) ) . '/xophz-compass.php' ) );
+    $icon_512 = file_exists( $dist_dir . 'bazaar-pos-icon-512.png' )
+      ? plugins_url( 'dist/bazaar-pos-icon-512.png', __FILE__ )
+      : ( file_exists( $dist_dir . 'compass-icon-512.png' ) ? plugins_url( 'dist/compass-icon-512.png', __FILE__ ) : plugins_url( 'icon.png', dirname( dirname( __FILE__ ) ) . '/xophz-compass.php' ) );
+
+    $v = defined( 'XOPHZ_COMPASS_VERSION' ) ? XOPHZ_COMPASS_VERSION : '26.11.7';
+    $icon_svg_v = add_query_arg( 'v', $v, $icon_svg );
+    $icon_192_v = add_query_arg( 'v', $v, $icon_192 );
+    $icon_512_v = add_query_arg( 'v', $v, $icon_512 );
+
+    $manifest = [
+      'name'             => $name,
+      'short_name'       => 'Bazaar POS',
+      'description'      => 'Point of Sale register for Bazaar retail checkouts',
+      'start_url'        => $admin_url,
+      'scope'            => $scope,
+      'display'          => 'standalone',
+      'orientation'      => 'any',
+      'background_color' => '#0c192c',
+      'theme_color'      => '#0c192c',
+      'categories'       => ['business', 'finance', 'utilities'],
+      'icons'            => [
+        [
+          'src'     => $icon_svg_v,
+          'sizes'   => 'any',
+          'type'    => 'image/svg+xml',
+          'purpose' => 'any'
+        ],
+        [
+          'src'     => $icon_192_v,
+          'sizes'   => '192x192',
+          'type'    => 'image/png',
+          'purpose' => 'any'
+        ],
+        [
+          'src'     => $icon_512_v,
+          'sizes'   => '512x512',
+          'type'    => 'image/png',
+          'purpose' => 'any maskable'
+        ]
+      ],
+      'shortcuts'        => [
+        [
+          'name'        => 'Point of Sale Register',
+          'short_name'  => 'Register',
+          'description' => 'Open Bazaar retail register',
+          'url'         => $admin_url,
+          'icons'       => [
+            [
+              'src'   => $icon_192_v,
+              'sizes' => '192x192'
+            ]
+          ]
         ]
       ]
     ];
