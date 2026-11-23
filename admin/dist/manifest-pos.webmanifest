@@ -1,0 +1,46 @@
+{
+  "name": "Bazaar POS",
+  "short_name": "Bazaar POS",
+  "description": "Point of Sale register for Bazaar retail transactions and checkouts",
+  "start_url": "/wp-admin/admin.php?page=xophz-compass&app=pos#/bazaar/pos",
+  "scope": "/wp-admin/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0c192c",
+  "theme_color": "#0c192c",
+  "categories": ["business", "finance", "utilities"],
+  "icons": [
+    {
+      "src": "/compass-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/compass-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/compass-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Point of Sale Register",
+      "short_name": "Register",
+      "description": "Open Bazaar retail register",
+      "url": "/wp-admin/admin.php?page=xophz-compass&app=pos#/bazaar/pos",
+      "icons": [
+        {
+          "src": "/compass-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

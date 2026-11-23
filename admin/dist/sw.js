@@ -14,6 +14,7 @@ const CACHE_NAME = 'compass-admin-v5';
 const PRECACHE_ASSETS = [
   './manifest.webmanifest',
   './manifest-scanner.webmanifest',
+  './manifest-pos.webmanifest',
   './compass-icon.svg',
   './compass-icon-192.png',
   './compass-icon-512.png',
