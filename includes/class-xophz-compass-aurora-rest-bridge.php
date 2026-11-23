@@ -266,6 +266,8 @@ class Xophz_Compass_Aurora_REST_Bridge {
 			return new WP_Error( 'aurora_blocked_route', 'Route is empty or restricted.' );
 		}
 
+		$payload = self::normalize_write_payload( $payload );
+
 		$request = new WP_REST_Request( $method, $route );
 		$request->set_header( 'content-type', 'application/json' );
 		$request->set_body( wp_json_encode( $payload ) );
@@ -463,6 +465,104 @@ class Xophz_Compass_Aurora_REST_Bridge {
 			}
 		}
 		return array();
+	}
+
+	/**
+	 * Normalize common LLM payload quirks before dispatching a WP/WC REST write:
+	 * - Strip leading `$` / commas from price fields (`regular_price`, `sale_price`, `price`).
+	 * - Normalize `images` entries from bare URL strings into `array( 'src' => $url )`.
+	 *
+	 * @param array<string, mixed> $payload
+	 * @return array<string, mixed>
+	 */
+	private static function normalize_write_payload( array $payload ): array {
+		foreach ( array( 'regular_price', 'sale_price', 'price' ) as $price_key ) {
+			if ( isset( $payload[ $price_key ] ) && is_string( $payload[ $price_key ] ) ) {
+				$payload[ $price_key ] = preg_replace( '/[^0-9.\-]/', '', $payload[ $price_key ] );
+			}
+		}
+
+		if ( isset( $payload['images'] ) && is_array( $payload['images'] ) ) {
+			$normalized = array();
+			foreach ( $payload['images'] as $img ) {
+				if ( is_string( $img ) && '' !== trim( $img ) ) {
+					$img = array( 'src' => trim( $img ) );
+				}
+				if ( ! is_array( $img ) ) {
+					continue;
+				}
+				if ( ! empty( $img['id'] ) ) {
+					$normalized[] = $img;
+					continue;
+				}
+				if ( ! empty( $img['src'] ) && is_string( $img['src'] ) ) {
+					$sideloaded_id = self::sideload_remote_image( trim( $img['src'] ) );
+					if ( $sideloaded_id > 0 ) {
+						$normalized[] = array( 'id' => $sideloaded_id );
+					} else {
+						$normalized[] = $img;
+					}
+				}
+			}
+			$payload['images'] = $normalized;
+		}
+
+		return $payload;
+	}
+
+	/**
+	 * Download an external image URL with a descriptive User-Agent (required by Wikimedia Commons)
+	 * and import it into the WordPress Media Library, returning the attachment ID.
+	 */
+	private static function sideload_remote_image( string $url ): int {
+		if ( ! preg_match( '#^https?://#i', $url ) ) {
+			return 0;
+		}
+		if ( ! function_exists( 'media_handle_sideload' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+		}
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => 15,
+				'user-agent' => 'XophzCompass/1.0 (+https://xophz.com) WordPress',
+			)
+		);
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return 0;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		if ( '' === $body ) {
+			return 0;
+		}
+
+		$path     = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$filename = sanitize_file_name( basename( $path ) );
+		if ( '' === $filename || false === strpos( $filename, '.' ) ) {
+			$filename = 'aurora-product-' . wp_generate_password( 6, false ) . '.jpg';
+		}
+
+		$tmp = wp_tempnam( $filename );
+		if ( ! $tmp || false === file_put_contents( $tmp, $body ) ) {
+			return 0;
+		}
+
+		$file_array = array(
+			'name'     => $filename,
+			'tmp_name' => $tmp,
+		);
+
+		$attachment_id = media_handle_sideload( $file_array, 0 );
+		if ( is_wp_error( $attachment_id ) ) {
+			@unlink( $tmp );
+			return 0;
+		}
+
+		return (int) $attachment_id;
 	}
 
 	private static function normalize_route( string $raw ): string {
