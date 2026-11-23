@@ -806,6 +806,13 @@ class Xophz_Compass_Connectors {
 	 * Aggregates all registered WP Abilities across COMPASS plugins.
 	 */
 	public static function get_abilities_api( WP_REST_Request $request ) {
+		if ( class_exists( 'Xophz_Compass_Aurora_Abilities' ) ) {
+			return rest_ensure_response( array(
+				'success'   => true,
+				'abilities' => Xophz_Compass_Aurora_Abilities::get_public_manifest(),
+			) );
+		}
+
 		$raw_abilities = array();
 
 		// Allow individual COMPASS plugins to register their abilities via filter hook

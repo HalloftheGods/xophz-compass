@@ -313,6 +313,14 @@ class Xophz_Compass {
     $plugin_gemini = new Xophz_Compass_Gemini_API();
     $this->loader->add_action( 'rest_api_init', $plugin_gemini, 'register_routes' );
 
+    // Register Aurora / North AI Chat Orchestrator & Abilities Engine
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-aurora-rest-bridge.php';
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-aurora-abilities.php';
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-ai-providers.php';
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-aurora-api.php';
+    $plugin_aurora = new Xophz_Compass_Aurora_API();
+    $this->loader->add_action( 'rest_api_init', $plugin_aurora, 'register_routes' );
+
     // Register Stripe API wrapper
     require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-xophz-compass-stripe-api.php';
     $stripe_api = new Xophz_Compass_Stripe_API();
