@@ -1,0 +1,1 @@
+import{g as e,r as a}from"./vendor-1rLsuPxu.js";const s=a(!1);function n(){const o=e(()=>s.value);return{isPosUnlocked:s,isUnlocked:o,unlockCompass:()=>{s.value=!0},lockCompass:()=>{s.value=!1},toggleCompass:()=>{s.value=!s.value}}}export{n as u};
